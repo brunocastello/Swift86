@@ -42,14 +42,14 @@ struct GeneralSettingsView: View {
                     }) {
                         Text(LocalizedStringKey("Browse..."))
                     }
-                    .accessibilityLabel(Text(LocalizedStringKey("Browse...")))
+                    .accessibilityLabel(LocalizedStringKey("Browse..."))
                     // Reset default location
                     Button(action: {
                         settingsViewModel.resetPath(.emulatorPath)
                     }) {
                         Text(LocalizedStringKey("Default Location"))
                     }
-                    .accessibilityLabel(Text(LocalizedStringKey("Default Location")))
+                    .accessibilityLabel(LocalizedStringKey("Default Location"))
                 }
             }
                         
@@ -74,14 +74,14 @@ struct GeneralSettingsView: View {
                     }) {
                         Text(LocalizedStringKey("Browse..."))
                     }
-                    .accessibilityLabel(Text(LocalizedStringKey("Browse...")))
+                    .accessibilityLabel(LocalizedStringKey("Browse..."))
                     // Reset default location
                     Button(action: {
                         settingsViewModel.resetPath(.machinesPath)
                     }) {
                         Text(LocalizedStringKey("Default Location"))
                     }
-                    .accessibilityLabel(Text(LocalizedStringKey("Default Location")))
+                    .accessibilityLabel(LocalizedStringKey("Default Location"))
                 }
             }
             
@@ -92,9 +92,8 @@ struct GeneralSettingsView: View {
                     get: { settingsViewModel.settings[SettingsKeys.customROMs.rawValue] as? Bool ?? false },
                     set: { settingsViewModel.settings[SettingsKeys.customROMs.rawValue] = $0 }
                 )) {
-                    Text(LocalizedStringKey("Custom ROMs"))
+                    Text(LocalizedStringKey("Enable Custom ROMs"))
                 }
-                .padding(.vertical, 4)
                 .onChange(of: settingsViewModel.settings[SettingsKeys.customROMs.rawValue] as? Bool) { customROMs in
                     // User Custom ROMs choice
                     settingsViewModel.toggleCustomROMs(customROMs!)
@@ -115,14 +114,14 @@ struct GeneralSettingsView: View {
                         }) {
                             Text(LocalizedStringKey("Browse..."))
                         }
-                        .accessibilityLabel(Text(LocalizedStringKey("Browse...")))
+                        .accessibilityLabel(LocalizedStringKey("Browse..."))
                         // Reset default location
                         Button(action: {
                             settingsViewModel.settings[SettingsKeys.customROMs.rawValue] = false
                         }) {
                             Text(LocalizedStringKey("Default Location"))
                         }
-                        .accessibilityLabel(Text(LocalizedStringKey("Default Location")))
+                        .accessibilityLabel(LocalizedStringKey("Default Location"))
                     }
                 } else {
                     Text(LocalizedStringKey("Default ROMs location"))

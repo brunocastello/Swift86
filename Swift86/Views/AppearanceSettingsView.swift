@@ -28,11 +28,13 @@ struct AppearanceSettingsView: View {
                     get: { AppearanceKeys(rawValue: settingsViewModel.settings[SettingsKeys.appearance.rawValue] as? String ?? "") ?? .none },
                     set: { appearance in settingsViewModel.toggleAppearance(appearance) }
                 )) {
+                    Text(LocalizedStringKey("System")).tag(AppearanceKeys.none)
+                    Divider()
                     Text(LocalizedStringKey("Light")).tag(AppearanceKeys.aqua)
                     Text(LocalizedStringKey("Dark")).tag(AppearanceKeys.darkAqua)
-                    Text(LocalizedStringKey("Auto")).tag(AppearanceKeys.none)
                 }
-                .pickerStyle(.inline)
+                .pickerStyle(.menu)
+                .accessibilityLabel(LocalizedStringKey("Appearance"))
             }
         }
         .formStyle(.grouped)
