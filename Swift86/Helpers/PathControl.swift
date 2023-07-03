@@ -16,7 +16,7 @@ struct PathControl: NSViewRepresentable {
     // MARK: - Properties
 
     // Path
-    @Binding var path: String?
+    @Binding var path: String
 
     // MARK: - Methods
 
@@ -35,9 +35,7 @@ struct PathControl: NSViewRepresentable {
 
     // Updates the NSPathControl with the current path
     func updateNSView(_ nsView: NSPathControl, context: Context) {
-        if let path = expandPath(path) {
-            nsView.url = URL(fileURLWithPath: path)
-        }
+        nsView.url = URL(fileURLWithPath: path)
     }
 
     // Interpret user home folder paths

@@ -8,38 +8,39 @@
 // Import necessary frameworks and libraries
 import SwiftUI
 
-// MARK: - Settings View (Appearance)
+// MARK: - Settings View
 
-// Application appearance view
+// Application settings view
 struct AppearanceSettingsView: View {
     
-    // MARK: - Environment Objects
-    
-    // MachineViewModel observed object for machines
-    @ObservedObject var settingsViewModel: SettingsViewModel
+    // MARK: - Properties
+    @AppStorage("Appearance") private var appearance: String = ""
     
     // MARK: - Scene
- 
+    
     var body: some View {
         Form {
-            // Inside the Form section
-            Section(header: Text(LocalizedStringKey("Appearance"))) {
-                Picker(LocalizedStringKey("Appearance"), selection: Binding<AppearanceKeys>(
-                    get: { AppearanceKeys(rawValue: settingsViewModel.settings[SettingsKeys.appearance.rawValue] as? String ?? "") ?? .none },
-                    set: { appearance in settingsViewModel.toggleAppearance(appearance) }
-                )) {
-                    Text(LocalizedStringKey("System")).tag(AppearanceKeys.none)
+            Group {
+                // Appearance selection
+                Picker(LocalizedStringKey("Appearance:"), selection: $appearance) {
+                    Text(LocalizedStringKey("System")).tag("")
                     Divider()
-                    Text(LocalizedStringKey("Light")).tag(AppearanceKeys.aqua)
-                    Text(LocalizedStringKey("Dark")).tag(AppearanceKeys.darkAqua)
+                    Text(LocalizedStringKey("Light")).tag("NSAppearanceNameAqua")
+                    Text(LocalizedStringKey("Dark")).tag("NSAppearanceNameDarkAqua")
                 }
                 .pickerStyle(.menu)
+                .frame(width: 200)
+                .padding(.bottom, 10)
                 .accessibilityLabel(LocalizedStringKey("Appearance"))
             }
+            .frame(minWidth: 421)
+            .onChange(of: appearance) { theme in
+                // Theme changer
+                NSApp.appearance = NSAppearance(named: NSAppearance.Name(rawValue: theme))
+            }
         }
-        .formStyle(.grouped)
         .fixedSize()
-        .scrollDisabled(true)
+        .padding(EdgeInsets(top: 16, leading: 32, bottom: 16, trailing: 32))
     }
 }
 
@@ -47,7 +48,6 @@ struct AppearanceSettingsView: View {
 
 struct AppearanceSettingsView_Previews: PreviewProvider {
     static var previews: some View {
-        AppearanceSettingsView(settingsViewModel: SettingsViewModel())
+        AppearanceSettingsView()
     }
 }
-

@@ -8,23 +8,27 @@
 // Import necessary frameworks and libraries
 import SwiftUI
 
-// MARK: - Edit Machine View
+// MARK: - Add Machine View
 
 // Add machine view
 struct EditMachineView: View {
     
     // MARK: - Environment Objects
     
-    // MachineViewModel observed object for machines
-    @ObservedObject var machineViewModel: MachineViewModel
+    // Observed object machine store
+    @ObservedObject var store: Store
     
     // Environment variable to dismiss the current view
     @Environment(\.presentationMode) var presentationMode
     
-    init(machineViewModel: MachineViewModel) {
-        self.machineViewModel = machineViewModel
-    }
-        
+    // Application theme
+    @Environment(\.colorScheme) var colorScheme
+    
+    // MARK: - Properties
+    
+    // Machine instance
+    @State var machine: Machine
+    
     // MARK: - Scene
     
     var body: some View {
@@ -33,7 +37,7 @@ struct EditMachineView: View {
                 // Machine name input
                 Text(LocalizedStringKey("Name"))
                 HStack {
-                    TextField("", text: $machineViewModel.machine.name)
+                    TextField("", text: $machine.name)
                         .textFieldStyle(.squareBorder)
                         .frame(minWidth: 200)
                         .lineLimit(1)
@@ -44,12 +48,13 @@ struct EditMachineView: View {
                 // Machine notes input
                 Text(LocalizedStringKey("Notes"))
                 HStack {
-                    TextEditor(text: $machineViewModel.machine.notes)
+                    TextEditor(text: $machine.notes)
                         .textFieldStyle(.squareBorder)
                         .padding(.vertical, 5)
                         .frame(minWidth: 200, minHeight: 100)
                         .lineLimit(4)
-                        .border(Color(.darkGray), width: 1)
+                        .border(colorScheme == .dark ? Color(.darkGray).opacity(0.5) : Color(.darkGray).opacity(0.25), width: 0.5)
+                        .background(colorScheme == .dark ? Color(NSColor.windowBackgroundColor).opacity(0.5) : Color(.clear))
                 }
                 .padding([.bottom], 8)
                 
@@ -57,19 +62,19 @@ struct EditMachineView: View {
                 Text(LocalizedStringKey("Icon"))
                 HStack {
                     // Thumbnail
-                    machineViewModel.selectedIcon
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 32, height: 32)
-                            .foregroundColor(machineViewModel.machine.iconCustom ? Color.blue : Color.primary)
-                            .onTapGesture {
-                                // Icon Picker
-                                machineViewModel.iconPicker()
-                            }
+                    machine.selectedIcon
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 32, height: 32)
+                        .foregroundColor(machine.iconCustom ? Color.blue : Color.primary)
+                        .onTapGesture {
+                            // Icon Picker
+                            iconPicker(machine: machine)
+                        }
                     // Toggle default or custom icon
                     VStack {
                         // Radio Button toggle
-                        Picker(selection: $machineViewModel.machine.iconCustom, label: EmptyView()) {
+                        Picker(selection: $machine.iconCustom, label: EmptyView()) {
                             Text(LocalizedStringKey("Default icon")).tag(false)
                             Text(LocalizedStringKey("Custom icon")).tag(true)
                         }
@@ -90,8 +95,7 @@ struct EditMachineView: View {
                     Spacer()
                     // Cancel button
                     Button(action: {
-                        // Reset machine instance
-                        machineViewModel.machine = Machine()
+                        // Cancel instance
                         presentationMode.wrappedValue.dismiss()
                     }) {
                         Text(LocalizedStringKey("Cancel"))
@@ -101,8 +105,14 @@ struct EditMachineView: View {
                     
                     // Save button
                     Button(action: {
-                        // Save machine changes
-                        machineViewModel.editMachine()
+                        // Check first if an icon was selected
+                        if machine.iconCustom && machine.icon == nil {
+                            machine.iconCustom = false
+                        }
+
+                        // Save machine and reload library
+                        store.editMachine(machine: machine)
+                        store.loadMachines()
                         presentationMode.wrappedValue.dismiss()
                     }) {
                         Text(LocalizedStringKey("Save"))
@@ -115,8 +125,16 @@ struct EditMachineView: View {
             }
         }
         .frame(minWidth: 480, maxWidth: .infinity, maxHeight: .infinity)
-        .onAppear {
-            machineViewModel.customIcon = machineViewModel.machine.icon
+    }
+    
+    // Browse for machine icon
+    private func iconPicker(machine: Machine) {
+        store.showIconPicker(machine: machine) { iconURL in
+            // Unwrap url variable
+            if let iconURL = iconURL {
+                // Set selected icon
+                self.machine.icon = NSImage(contentsOf: iconURL)!
+            }
         }
     }
 }
@@ -125,6 +143,6 @@ struct EditMachineView: View {
 
 struct EditMachineView_Previews: PreviewProvider {
     static var previews: some View {
-        EditMachineView(machineViewModel: MachineViewModel())
+        EditMachineView(store: Store(), machine: Machine())
     }
 }

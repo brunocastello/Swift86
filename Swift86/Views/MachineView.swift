@@ -8,38 +8,41 @@
 // Import necessary frameworks and libraries
 import SwiftUI
 
-// MARK: - Machine Detail View
+// MARK: - Sidebar View
 
-// Selected machine detail view
+// Sidebar view
 struct MachineView: View {
     
     // MARK: - Environment Objects
     
-    // MachineViewModel observed object for machines
-    @ObservedObject var machineViewModel: MachineViewModel
+    // Observed object machine store
+    @ObservedObject var store: Store
     
-    // Viewing machine
+    // Environment variable to dismiss the current view
+    @Environment(\.presentationMode) var presentationMode
+    
+    // MARK: - Properties
+    
+    // machines observed object for machines
     let machine: Machine?
-
+    
     // MARK: - Scene
     
     var body: some View {
-        // Update the view, observing for excluded or updated machines.
-        if let machine = machine, let machine = machineViewModel.machines.first(where: { $0 == machine }) {
+        if let machine = machine, store.machines.contains(where: { $0.id == machine.id }) {
             ScrollView {
                 VStack(spacing: 0) {
                     // Machine header title
                     HStack {
                         // Start/Stop machine
                         Button(action: {
-                            machineViewModel.runMachine(machine)
+                            store.runMachine(machine: machine)
                         }) {
                             Image(systemName: "power")
                                 .imageScale(.large)
                         }
                         .disabled(machine.status == .running)
                         .buttonStyle(MachineButtonStyle(isDisabled: machine.status == .running))
-                        .help(Text(LocalizedStringKey("Start")))
                         
                         // Machine name and status
                         VStack(alignment: .leading, spacing: 0) {
@@ -56,40 +59,38 @@ struct MachineView: View {
                         
                         // Edit machine details
                         Button(action: {
-                            machineViewModel.machine = machine.copy()
-                            machineViewModel.isShowingEditMachine.toggle()
+                            store.editMachine = machine
+                            store.isShowingEditMachine.toggle()
                         }) {
                             Image(systemName: "pencil")
                                 .imageScale(.large)
                         }
-                        .disabled(machineViewModel.isShowingEditMachine == true)
-                        .buttonStyle(MachineButtonStyle(isDisabled: machineViewModel.isShowingEditMachine == true))
-                        .help(Text(LocalizedStringKey("Edit machine")))
+                        .disabled(store.isShowingEditMachine == true)
+                        .buttonStyle(MachineButtonStyle(isDisabled: store.isShowingEditMachine == true))
                         
                         // Configure machine
                         Button(action: {
-                            machineViewModel.configureMachine(machine)
+                            store.configureMachine(machine: machine)
                         }) {
                             Image(systemName: "gearshape")
                                 .imageScale(.large)
                         }
-                        .disabled(machineViewModel.isConfiguringMachine == true)
-                        .buttonStyle(MachineButtonStyle(isDisabled: machineViewModel.isConfiguringMachine == true))
-                        .help(Text(LocalizedStringKey("Configure machine")))
+                        .disabled(store.isConfiguringMachine == true)
+                        .buttonStyle(MachineButtonStyle(isDisabled: store.isConfiguringMachine == true))
                         // Delete machine
                         Button(action: {
-                            machineViewModel.deleteMachine(machine)
+                            store.deleteMachine(machine: machine)
                         }) {
                             Image(systemName: "trash")
                                 .imageScale(.large)
                         }
                         .buttonStyle(MachineButtonStyle(isDisabled: false))
-                        .help(Text(LocalizedStringKey("Delete machine")))
                     }
                     .padding(EdgeInsets(top: 20, leading: 20, bottom: 10, trailing: 20))
                     
-                    Section {
-                        HStack {
+                    Form {
+                        Section {
+                            // Machine description
                             if !machine.notes.isEmpty {
                                 Text(machine.notes)
                                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -99,16 +100,20 @@ struct MachineView: View {
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             }
                         }
-                        .padding()
+                        
+                        Section {
+                            // Machine size
+                            LabeledContent(LocalizedStringKey("Size"), value: store.machineSize(machine: machine.name) ?? "N/A")
+                        }
                     }
-                    .background(Color(NSColor.windowBackgroundColor))
-                    .cornerRadius(10)
-                    .padding(EdgeInsets(top: 10, leading: 20, bottom: 0, trailing: 20))
+                    .formStyle(.grouped)
+                    .padding(.top, -8)
                 }
             }
             .navigationSubtitle(machine.name)
         } else {
-            WelcomeView(machineViewModel: machineViewModel)
+            // Welcome view
+            WelcomeView(store: store)
         }
     }
 }
@@ -117,6 +122,6 @@ struct MachineView: View {
 
 struct MachineView_Previews: PreviewProvider {
     static var previews: some View {
-        MachineView( machineViewModel: MachineViewModel(), machine: Machine())
+        MachineView(store: Store(), machine: Machine())
     }
 }

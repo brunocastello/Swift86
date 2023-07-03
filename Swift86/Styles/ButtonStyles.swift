@@ -14,7 +14,7 @@ import SwiftUI
 struct ButtonStandardStyle: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .frame(minWidth: 60, minHeight: 30)
+            .frame(minWidth: 60)
     }
 }
 

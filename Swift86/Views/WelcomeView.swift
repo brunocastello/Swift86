@@ -15,8 +15,8 @@ struct WelcomeView: View {
     
     // MARK: - Environment Objects
     
-    // MachineViewModel observed object for machines
-    @ObservedObject var machineViewModel: MachineViewModel
+    // Observed object machine store
+    @ObservedObject var store: Store
     
     // MARK: - Scene
     
@@ -33,51 +33,48 @@ struct WelcomeView: View {
             HStack {
                 // Add a new machine
                 Button(action: {
-                    machineViewModel.isShowingAddMachine.toggle()
+                    store.isShowingAddMachine.toggle()
                 }) {
                     VStack {
                         Image(systemName: "plus.circle")
                             .font(.system(size: 48))
-                            .padding(.vertical, 8)
+                            .padding(.bottom, 8)
                         Text(LocalizedStringKey("Add machine"))
                     }
-                    .padding(12)
                     .multilineTextAlignment(.center)
-                    .frame(maxWidth: 150, maxHeight: 150, alignment: .top)
+                    .frame(maxWidth: 150, maxHeight: 150, alignment: .center)
                 }
                 .buttonStyle(WelcomeButtonStyle())
                 
                 // 86Box Documentation
                 Button(action: {
-                    let url = URL(string: extLinks.support.rawValue)!
+                    let url = URL(string: "https://86box.readthedocs.io/en/latest/index.html")!
                     NSWorkspace.shared.open(url)
                 }) {
                     VStack {
                         Image(systemName: "questionmark.circle")
                             .font(.system(size: 48))
-                            .padding(.vertical, 8)
+                            .padding(.bottom, 8)
                         Text(LocalizedStringKey("Documentation"))
                     }
-                    .padding(12)
                     .multilineTextAlignment(.center)
-                    .frame(maxWidth: 150, maxHeight: 150, alignment: .top)
+                    .frame(maxWidth: 150, maxHeight: 150, alignment: .center)
                 }
                 .buttonStyle(WelcomeButtonStyle())
 
                 // 86Box Discord
                 Button(action: {
-                    let url = URL(string: extLinks.discord.rawValue)!
+                    let url = URL(string: "https://discord.gg/v5fCgFw")!
                     NSWorkspace.shared.open(url)
                 }) {
                     VStack {
                         Image(systemName: "ellipsis.message")
                             .font(.system(size: 48))
-                            .padding(.vertical, 8)
+                            .padding(.bottom, 8)
                         Text(LocalizedStringKey("86Box Discord"))
                     }
-                    .padding(12)
                     .multilineTextAlignment(.center)
-                    .frame(maxWidth: 150, maxHeight: 150, alignment: .top)
+                    .frame(maxWidth: 150, maxHeight: 150, alignment: .center)
                 }
                 .buttonStyle(WelcomeButtonStyle())
             }
@@ -90,6 +87,6 @@ struct WelcomeView: View {
 
 struct WelcomeView_Previews: PreviewProvider {
     static var previews: some View {
-        WelcomeView(machineViewModel: MachineViewModel())
+        WelcomeView(store: Store())
     }
 }

@@ -13,28 +13,33 @@ import SwiftUI
 // Application settings view
 struct SettingsView: View {
     
-    // MARK: - Environment Objects
+    // MARK: - Settings Tabs
     
-    // MachineViewModel observed object for machines
-    @ObservedObject var settingsViewModel: SettingsViewModel
+    // Selected tab
+    @State private var selection = Tabs.general
     
-    // MachineViewModel observed object for machines
-    @ObservedObject var machineViewModel: MachineViewModel
+    // Enumerate tabs
+    private enum Tabs: Hashable {
+        case general, appearance
+    }
     
     // MARK: - Scene
- 
+    
     var body: some View {
-        TabView {
-            // General settings tab
-            GeneralSettingsView(settingsViewModel: settingsViewModel, machineViewModel: machineViewModel)
+        // Settings tabs
+        TabView(selection: $selection) {
+            // General tab
+            GeneralSettingsView()
                 .tabItem {
                     Label(LocalizedStringKey("General"), systemImage: "gearshape")
                 }
-            // Appearance settings tab
-            AppearanceSettingsView(settingsViewModel: settingsViewModel)
+                .tag(Tabs.general)
+            // Appearance tab
+            AppearanceSettingsView()
                 .tabItem {
                     Label(LocalizedStringKey("Appearance"), systemImage: "paintbrush")
                 }
+                .tag(Tabs.appearance)
         }
     }
 }
@@ -43,6 +48,6 @@ struct SettingsView: View {
 
 struct SettingsView_Previews: PreviewProvider {
     static var previews: some View {
-        SettingsView(settingsViewModel: SettingsViewModel(), machineViewModel: MachineViewModel())
+        SettingsView()
     }
 }

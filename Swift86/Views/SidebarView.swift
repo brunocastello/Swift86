@@ -15,8 +15,13 @@ struct SidebarView: View {
     
     // MARK: - Environment Objects
     
-    // MachineViewModel observed object for machines
-    @ObservedObject var machineViewModel: MachineViewModel
+    // Observed object machine store
+    @ObservedObject var store: Store
+    
+    // MARK: - Properties
+    
+    // Default machines library path
+    @AppStorage("MachinesPath") private var machinesPath: String = ""
 
     // MARK: - Scene
     
@@ -24,20 +29,20 @@ struct SidebarView: View {
         // Machines list
         List {
             Section {
-                ForEach(machineViewModel.machines) { machine in
-                    // Machine item view
-                    VStack(alignment: .leading, spacing: 0) {
-                        // Link for machine view
-                        NavigationLink(value: machine) {
+                ForEach(store.machines) { machine in
+                    // Machine link
+                    NavigationLink {
+                        MachineView(store: store, machine: machine)
+                    } label: {
+                        // Link button
+                        VStack(alignment: .leading, spacing: 0) {
                             HStack(spacing: 0) {
                                 // Machine icon
-                                if let nsImage = machine.icon ?? machineViewModel.defaultIcon {
-                                    Image(nsImage: nsImage)
-                                        .resizable()
-                                        .scaledToFit()
-                                        .frame(width: 30, height: 30, alignment: .center)
-                                        .padding(2)
-                                }
+                                machine.selectedIcon
+                                    .resizable()
+                                    .scaledToFit()
+                                    .frame(width: 30, height: 30, alignment: .center)
+                                    .padding(2)
                                 // Machine details
                                 VStack(alignment: .leading) {
                                     // Machine name
@@ -54,57 +59,61 @@ struct SidebarView: View {
                                 .padding(.leading, 7)
                             }
                         }
-                        // Context menu
-                        .contextMenu {
-                            // Start/Stop machine
-                            Button(action: {
-                                machineViewModel.runMachine(machine)
-                            }) {
-                                Text(LocalizedStringKey("Start"))
-                            }
-                            .disabled(machine.status == .running)
-                            Divider()
-                            // Edit machine details
-                            Button(action: {
-                                machineViewModel.machine = machine.copy()
-                                machineViewModel.isShowingEditMachine.toggle()
-                            }) {
-                                Text(LocalizedStringKey("Edit..."))
-                            }
-                            .disabled(machineViewModel.isShowingEditMachine == true)
-                            // Configure machine
-                            Button(action: {
-                                machineViewModel.configureMachine(machine)
-                            }) {
-                                Text(LocalizedStringKey("Configure..."))
-                            }
-                            .disabled(machineViewModel.isConfiguringMachine == true)
-                            Divider()
-                            // Clone machine
-                            Button(action: {
-                                machineViewModel.cloneMachine(machine)
-                            }) {
-                                Text(LocalizedStringKey("Clone..."))
-                            }
-                            // Delete machine
-                            Button(action: {
-                                machineViewModel.deleteMachine(machine)
-                            }) {
-                                Text(LocalizedStringKey("Remove \"\(machine.name)\"..."))
-                            }
-                            Divider()
-                            // Show in Finder
-                            Button(action: {
-                                machineViewModel.showInFinder(machine)
-                            }) {
-                                Text(LocalizedStringKey("Show in Finder"))
-                            }
+                    }
+                    // Context menu
+                    .contextMenu {
+                        // Start/Stop machine
+                        Button(action: {
+                            store.runMachine(machine: machine)
+                        }) {
+                            Text(LocalizedStringKey("Start"))
+                        }
+                        .disabled(machine.status == .running)
+                        Divider()
+                        // Edit machine details
+                        Button(action: {
+                            store.editMachine = machine
+                            store.isShowingEditMachine.toggle()
+                        }) {
+                            Text(LocalizedStringKey("Edit..."))
+                        }
+                        .disabled(store.isShowingEditMachine == true)
+                        // Configure machine
+                        Button(action: {
+                            store.configureMachine(machine: machine)
+                        }) {
+                            Text(LocalizedStringKey("Configure..."))
+                        }
+                        .disabled(store.isConfiguringMachine == true)
+                        Divider()
+                        // Clone machine
+                        Button(action: {
+                            store.cloneMachine(machine: machine)
+                        }) {
+                            Text(LocalizedStringKey("Clone..."))
+                        }
+                        // Delete machine
+                        Button(action: {
+                            store.deleteMachine(machine: machine)
+                        }) {
+                            Text(LocalizedStringKey("Remove \"\(machine.name)\"..."))
+                        }
+                        Divider()
+                        // Show in Finder
+                        Button(action: {
+                            store.showInFinder(machine: machine)
+                        }) {
+                            Text(LocalizedStringKey("Show in Finder"))
                         }
                     }
                 }
                 // Alow user sorting of the machines list
                 .onMove { indices, newOffset in
-                    machineViewModel.moveMachine(fromOffsets: indices, toOffset: newOffset)
+                    store.moveMachine(fromOffsets: indices, toOffset: newOffset)
+                }
+                // Update list on changes to path
+                .onChange(of: machinesPath) { _ in
+                    store.loadMachines()
                 }
             } header: {
                 // List header
@@ -113,10 +122,6 @@ struct SidebarView: View {
             }
             .collapsible(false)
         }
-        .listStyle(SidebarListStyle())
-        .navigationDestination(for: Machine.self) { machine in
-            MachineView(machineViewModel: machineViewModel, machine: machine)
-        }
     }
 }
 
@@ -124,6 +129,6 @@ struct SidebarView: View {
 
 struct SidebarView_Previews: PreviewProvider {
     static var previews: some View {
-        SidebarView(machineViewModel: MachineViewModel())
+        SidebarView(store: Store())
     }
 }

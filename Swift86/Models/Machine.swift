@@ -8,74 +8,37 @@
 // Import necessary frameworks and libraries
 import SwiftUI
 
-// MARK: - Machine model
+// MARK: - Machine Model
 
 // Model for the machine properties
-class Machine: ObservableObject, Identifiable, Hashable, Equatable {
-    
-    // MARK: - Properties
+struct Machine: Identifiable {
+
+    // MARK: - Single Machine Properties
     
     // Machine properties
     var id = UUID()
-    var name: String
-    var iconCustom: Bool
-    var icon: NSImage?
-    var notes: String
+    var name: String = ""
+    var iconCustom: Bool = false
+    var icon: NSImage? = nil
+    var notes: String = ""
+        
+    // Machine status
     var status: MachineStatus = .stopped
     
-    // MARK: - Identifiable
+    // Default machine icon
+    let defaultIcon: NSImage? = NSImage(systemSymbolName: "desktopcomputer", accessibilityDescription: "")
     
-    // Initialize model
-    init(
-        id: UUID = UUID(),
-        name: String = "",
-        iconCustom: Bool = false,
-        icon: NSImage? = nil,
-        notes: String = "",
-        status: MachineStatus = .stopped
-    ) {
-        self.id = id
-        self.name = name
-        self.iconCustom = iconCustom
-        self.icon = icon
-        self.notes = notes
-        self.status = status
-    }
-
-    // MARK: - Hashable
-    
-    // Hash value for the machine based on its unique identifier
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-    
-    // MARK: - Equatable
-    
-    // Define equality between two machine models for comparison
-    static func == (lhs: Machine, rhs: Machine) -> Bool {
-        lhs.id == rhs.id &&
-        lhs.name == rhs.name &&
-        lhs.iconCustom == rhs.iconCustom &&
-        lhs.icon == rhs.icon &&
-        lhs.notes == rhs.notes &&
-        lhs.status == rhs.status
-    }
-}
-
-// MARK: - Copy Machine Extension
-
-// Extension for cloning a machine
-extension Machine {
-    func copy() -> Machine {
-        let machine = Machine(
-            id: self.id,
-            name: self.name,
-            iconCustom: self.iconCustom,
-            icon: self.icon,
-            notes: self.notes,
-            status: self.status
-        )
-        return machine
+    // Selected machine icon
+    var selectedIcon: Image {
+        if iconCustom && icon != nil,
+           // Custom icon
+           let nsImage = icon {
+            return Image(nsImage: nsImage)
+        } else {
+            // Default icon
+            let nsImage = defaultIcon!
+            return Image(nsImage: nsImage)
+        }
     }
 }
 

@@ -8,50 +8,25 @@
 // Import necessary frameworks and libraries
 import SwiftUI
 
-// MARK: - MacBoxApp
+// MARK: - Swift86App Entry Point
 
-// Main struct view
-@main
-struct Swift86App: App {
-    
+// App main struct view
+@main struct Manager86App: App {
+
     // MARK: - Environment Objects
     
-    // Application delegate call
+    // Application delegate
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
-    // MachineViewModel observed object for machines
-    @StateObject private var settingsViewModel = SettingsViewModel()
-    
-    // MachineViewModel observed object for machines
-    @StateObject private var machineViewModel = MachineViewModel()
-    
-    // Check for application first run
-    @AppStorage(SettingsKeys.firstRun.rawValue) var FirstRun: Bool = false
-    
+    // Observed object machine store
+    @StateObject private var store = Store()
+
     // MARK: - Scene
     
     var body: some Scene {
+        // Main view
         WindowGroup {
-            // Content view
-            ContentView(machineViewModel: machineViewModel)
-                .onAppear {
-                    // Reset UserDefaults FOR DEBUGGING ONLY!
-                    // UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier!)
-                    
-                    // Check if it's the first launch
-                    if UserDefaults.standard.bool(forKey: SettingsKeys.firstRun.rawValue) != true {
-                        // Set the flag indicating that the app has launched before
-                        UserDefaults.standard.set(true, forKey: SettingsKeys.firstRun.rawValue)
-                        
-                        // Perform any first launch setup or logic here
-                        if #available(macOS 13.0, *) {
-                            NSApp.sendAction(Selector(("showSettingsWindow:")), to: nil, from: nil)
-                        }
-                        else {
-                            NSApp.sendAction(Selector(("showPreferencesWindow:")), to: nil, from: nil)
-                        }
-                    }
-                }
+            ContentView(store: store)
         }
         // Menu bar commands
         .commands {
@@ -59,7 +34,7 @@ struct Swift86App: App {
             CommandGroup(replacing: CommandGroupPlacement.newItem) {
                 // Show Add machine
                 Button(action: {
-                    machineViewModel.isShowingAddMachine.toggle()
+                    store.isShowingAddMachine.toggle()
                 }) {
                     Text(LocalizedStringKey("Add machine"))
                 }
@@ -73,7 +48,7 @@ struct Swift86App: App {
             CommandGroup(replacing: .help) {
                 // 86Box Documentation
                 Button(action: {
-                    let url = URL(string: extLinks.support.rawValue)!
+                    let url = URL(string: "https://86box.readthedocs.io/en/latest/index.html")!
                     NSWorkspace.shared.open(url)
                 }, label: {
                     Text(LocalizedStringKey("Documentation"))
@@ -81,17 +56,19 @@ struct Swift86App: App {
                 
                 // 86Box Discord
                 Button(action: {
-                    let url = URL(string: extLinks.discord.rawValue)!
+                    let url = URL(string: "https://discord.gg/v5fCgFw")!
                     NSWorkspace.shared.open(url)
                 }, label: {
                     Text(LocalizedStringKey("86Box Discord"))
                 }).keyboardShortcut(KeyEquivalent("2"), modifiers: [.command, .control])
             }
         }
+
+        // MARK: - Settings
         
-        // Settings View
+        // Settings view
         Settings {
-            SettingsView(settingsViewModel: settingsViewModel, machineViewModel: machineViewModel)
+            SettingsView()
                 .navigationTitle(LocalizedStringKey("Settings"))
         }
     }

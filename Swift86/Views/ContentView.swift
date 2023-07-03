@@ -12,11 +12,13 @@ import SwiftUI
 
 // Main Content view
 struct ContentView: View {
-
+    
     // MARK: - Environment Objects
     
-    // MachineViewModel observed object for machines
-    @ObservedObject var machineViewModel: MachineViewModel
+    // Observed object machine store
+    @ObservedObject var store: Store
+    
+    // MARK: - Properties
     
     // Constant for sidebar width
     let sidebarWidth: CGFloat = 200
@@ -28,12 +30,12 @@ struct ContentView: View {
         NavigationSplitView(
             sidebar: {
                 // Sidebar view
-                SidebarView(machineViewModel: machineViewModel)
+                SidebarView(store: store)
                     .navigationSplitViewColumnWidth(min: sidebarWidth, ideal: sidebarWidth, max: .infinity)
             },
             detail: {
-                // Welcome view
-                MachineView(machineViewModel: machineViewModel, machine: nil)
+                // Machine view
+                MachineView(store: store, machine: nil)
             }
         )
         // Toolbar
@@ -41,7 +43,7 @@ struct ContentView: View {
             ToolbarItem(placement: .primaryAction) {
                 // Add machine
                 Button(action: {
-                    machineViewModel.isShowingAddMachine.toggle()
+                    store.isShowingAddMachine.toggle()
                 }) {
                     Label("Add", systemImage: "plus")
                 }
@@ -49,12 +51,21 @@ struct ContentView: View {
             }
         }
         // Add machine view
-        .sheet(isPresented: $machineViewModel.isShowingAddMachine, onDismiss: {}) {
-            AddMachineView(machineViewModel: machineViewModel)
+        .sheet(isPresented: $store.isShowingAddMachine, onDismiss: {}) {
+            AddMachineView(store: store, machine: Machine())
         }
         // Edit machine view
-        .sheet(isPresented: $machineViewModel.isShowingEditMachine, onDismiss: {}) {
-            EditMachineView(machineViewModel: machineViewModel)
+        .sheet(isPresented: $store.isShowingEditMachine, onDismiss: {}) {
+            EditMachineView(store: store, machine: store.editMachine!)
+        }
+        // Reusable alerts for errors
+        .alert(store.alertTitle, isPresented: $store.showAlert) {
+            Button(LocalizedStringKey("OK"), action: store.okAction ?? { })
+            if store.showCancelButton {
+                Button(LocalizedStringKey("Cancel"), role: .cancel, action: {})
+            }
+        } message: {
+            Text(store.alertMessage)
         }
     }
 }
@@ -63,6 +74,18 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(machineViewModel: MachineViewModel())
+        ContentView(store: Store())
+    }
+}
+
+// MARK: - TextField Extension
+
+// Extend NSTextView for custom text fields
+extension NSTextView {
+    open override var frame: CGRect {
+        didSet {
+            backgroundColor = .clear
+            drawsBackground = true
+        }
     }
 }
