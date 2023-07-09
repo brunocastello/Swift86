@@ -47,6 +47,7 @@
 		DE2AF1052A46800D0060CEAF /* SidebarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		DE2AF1062A46800D0060CEAF /* WelcomeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
 		DE2AF1072A46800D0060CEAF /* MachineView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MachineView.swift; sourceTree = "<group>"; };
+		DE66F78B2A5B5399009212D2 /* pl */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = pl; path = pl.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DE6A2F4D2A5B4BEC00E8B10E /* ca */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ca; path = ca.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DE6A2F4E2A5B4BF600E8B10E /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DE9431332A5777DB0013600D /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
@@ -192,6 +193,7 @@
 				"pt-BR",
 				es,
 				ca,
+				pl,
 			);
 			mainGroup = DE2AF0D12A467E120060CEAF;
 			productRefGroup = DE2AF0DB2A467E120060CEAF /* Products */;
@@ -249,6 +251,7 @@
 				DEEA7FA32A5B382100B72438 /* pt-BR */,
 				DE6A2F4D2A5B4BEC00E8B10E /* ca */,
 				DE6A2F4E2A5B4BF600E8B10E /* es */,
+				DE66F78B2A5B5399009212D2 /* pl */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
