@@ -15,28 +15,31 @@ struct MachineView: View {
     
     // MARK: - Environment Objects
     
-    // Observed object machine store
-    @ObservedObject var store: Store
+    // Environment object machine library
+    @EnvironmentObject var library: Library
     
     // Environment variable to dismiss the current view
     @Environment(\.presentationMode) var presentationMode
     
     // MARK: - Properties
     
-    // machines observed object for machines
+    // Machine instance
     let machine: Machine?
+    
+    // Machine size
+    @State private var machineSize: String?
     
     // MARK: - Scene
     
     var body: some View {
-        if let machine = machine, store.machines.contains(where: { $0.id == machine.id }) {
+        if let machine = library.machines.first(where: { $0.id == machine?.id }) {
             ScrollView {
                 VStack(spacing: 0) {
                     // Machine header title
                     HStack {
                         // Start/Stop machine
                         Button(action: {
-                            store.runMachine(machine: machine)
+                            library.runMachine(machine: machine)
                         }) {
                             Image(systemName: "power")
                                 .imageScale(.large)
@@ -49,7 +52,7 @@ struct MachineView: View {
                             Text(machine.name)
                                 .font(.system(.title2, design: .rounded))
                                 .fontWeight(.semibold)
-                            Text(machine.status == .running ? LocalizedStringKey("Running") : LocalizedStringKey("Stopped"))
+                            Text(machine.status == .running ? LocalizedStringKey("Running") : (machine.status == .stopped ? LocalizedStringKey("Stopped") : LocalizedStringKey("Configuring")))
                                 .font(.callout)
                                 .foregroundColor(.secondary)
                         }
@@ -59,27 +62,27 @@ struct MachineView: View {
                         
                         // Edit machine details
                         Button(action: {
-                            store.editMachine = machine
-                            store.isShowingEditMachine.toggle()
+                            library.editMachine = machine
                         }) {
                             Image(systemName: "pencil")
                                 .imageScale(.large)
                         }
-                        .disabled(store.isShowingEditMachine == true)
-                        .buttonStyle(MachineButtonStyle(isDisabled: store.isShowingEditMachine == true))
+                        .disabled(library.editMachine != nil)
+                        .buttonStyle(MachineButtonStyle(isDisabled: library.editMachine != nil))
                         
                         // Configure machine
                         Button(action: {
-                            store.configureMachine(machine: machine)
+                            library.configureMachine(machine: machine)
                         }) {
                             Image(systemName: "gearshape")
                                 .imageScale(.large)
                         }
-                        .disabled(store.isConfiguringMachine == true)
-                        .buttonStyle(MachineButtonStyle(isDisabled: store.isConfiguringMachine == true))
+                        .disabled(machine.status == .configuring)
+                        .buttonStyle(MachineButtonStyle(isDisabled: machine.status == .configuring))
+                        
                         // Delete machine
                         Button(action: {
-                            store.deleteMachine(machine: machine)
+                            library.delete(machine: machine)
                         }) {
                             Image(systemName: "trash")
                                 .imageScale(.large)
@@ -95,15 +98,20 @@ struct MachineView: View {
                                 Text(machine.notes)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             } else {
-                                Text(LocalizedStringKey("Add a note here"))
+                                Text(LocalizedStringKey("Click here to add a note"))
                                     .foregroundColor(.gray)
                                     .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+                        }
+                        .onTapGesture {
+                            if machine.notes.isEmpty {
+                                library.editMachine = machine
                             }
                         }
                         
                         Section {
                             // Machine size
-                            LabeledContent(LocalizedStringKey("Size"), value: store.machineSize(machine: machine.name) ?? "N/A")
+                            LabeledContent(LocalizedStringKey("Size"), value: machineSize ?? "0 KB")
                         }
                     }
                     .formStyle(.grouped)
@@ -111,9 +119,17 @@ struct MachineView: View {
                 }
             }
             .navigationSubtitle(machine.name)
+            .onAppear {
+                // Show machine size on view load
+                machineSize = library.sizeOf(machine: machine.name)
+            }
+            .onChange(of: machine.status) { _ in
+                // Update machine size on status changes
+                machineSize = library.sizeOf(machine: machine.name)
+            }
         } else {
             // Welcome view
-            WelcomeView(store: store)
+            WelcomeView()
         }
     }
 }
@@ -122,6 +138,7 @@ struct MachineView: View {
 
 struct MachineView_Previews: PreviewProvider {
     static var previews: some View {
-        MachineView(store: Store(), machine: Machine())
+        MachineView(machine: Machine())
+            .environmentObject(Library())
     }
 }

@@ -15,8 +15,8 @@ struct WelcomeView: View {
     
     // MARK: - Environment Objects
     
-    // Observed object machine store
-    @ObservedObject var store: Store
+    // Environment object machine library
+    @EnvironmentObject var library: Library
     
     // MARK: - Scene
     
@@ -33,7 +33,7 @@ struct WelcomeView: View {
             HStack {
                 // Add a new machine
                 Button(action: {
-                    store.isShowingAddMachine.toggle()
+                    library.newMachine = Machine()
                 }) {
                     VStack {
                         Image(systemName: "plus.circle")
@@ -48,7 +48,7 @@ struct WelcomeView: View {
                 
                 // 86Box Documentation
                 Button(action: {
-                    let url = URL(string: "https://86box.readthedocs.io/en/latest/index.html")!
+                    let url = URL(string: WebLinks.support.rawValue)!
                     NSWorkspace.shared.open(url)
                 }) {
                     VStack {
@@ -64,7 +64,7 @@ struct WelcomeView: View {
 
                 // 86Box Discord
                 Button(action: {
-                    let url = URL(string: "https://discord.gg/v5fCgFw")!
+                    let url = URL(string: WebLinks.discord.rawValue)!
                     NSWorkspace.shared.open(url)
                 }) {
                     VStack {
@@ -87,6 +87,6 @@ struct WelcomeView: View {
 
 struct WelcomeView_Previews: PreviewProvider {
     static var previews: some View {
-        WelcomeView(store: Store())
+        WelcomeView()
     }
 }

@@ -16,7 +16,6 @@
 		DE2AF0F82A467F5F0060CEAF /* PathControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2AF0F72A467F5E0060CEAF /* PathControl.swift */; };
 		DE2AF0FA2A467F980060CEAF /* Machine.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2AF0F92A467F980060CEAF /* Machine.swift */; };
 		DE2AF1082A46800D0060CEAF /* AppearanceSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2AF0FF2A46800C0060CEAF /* AppearanceSettingsView.swift */; };
-		DE2AF1092A46800D0060CEAF /* AddMachineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2AF1002A46800C0060CEAF /* AddMachineView.swift */; };
 		DE2AF10A2A46800D0060CEAF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2AF1012A46800C0060CEAF /* ContentView.swift */; };
 		DE2AF10B2A46800D0060CEAF /* GeneralSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2AF1022A46800C0060CEAF /* GeneralSettingsView.swift */; };
 		DE2AF10C2A46800D0060CEAF /* EditMachineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2AF1032A46800D0060CEAF /* EditMachineView.swift */; };
@@ -24,7 +23,8 @@
 		DE2AF10E2A46800D0060CEAF /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2AF1052A46800D0060CEAF /* SidebarView.swift */; };
 		DE2AF10F2A46800D0060CEAF /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2AF1062A46800D0060CEAF /* WelcomeView.swift */; };
 		DE2AF1102A46800D0060CEAF /* MachineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2AF1072A46800D0060CEAF /* MachineView.swift */; };
-		DEE74D412A531D860029615E /* Store.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE74D402A531D860029615E /* Store.swift */; };
+		DE9431342A5777DB0013600D /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9431332A5777DB0013600D /* AppSettings.swift */; };
+		DEE74D412A531D860029615E /* Library.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE74D402A531D860029615E /* Library.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,7 +39,6 @@
 		DE2AF0F72A467F5E0060CEAF /* PathControl.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PathControl.swift; sourceTree = "<group>"; };
 		DE2AF0F92A467F980060CEAF /* Machine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Machine.swift; sourceTree = "<group>"; };
 		DE2AF0FF2A46800C0060CEAF /* AppearanceSettingsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppearanceSettingsView.swift; sourceTree = "<group>"; };
-		DE2AF1002A46800C0060CEAF /* AddMachineView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AddMachineView.swift; sourceTree = "<group>"; };
 		DE2AF1012A46800C0060CEAF /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		DE2AF1022A46800C0060CEAF /* GeneralSettingsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GeneralSettingsView.swift; sourceTree = "<group>"; };
 		DE2AF1032A46800D0060CEAF /* EditMachineView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditMachineView.swift; sourceTree = "<group>"; };
@@ -47,7 +46,8 @@
 		DE2AF1052A46800D0060CEAF /* SidebarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		DE2AF1062A46800D0060CEAF /* WelcomeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
 		DE2AF1072A46800D0060CEAF /* MachineView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MachineView.swift; sourceTree = "<group>"; };
-		DEE74D402A531D860029615E /* Store.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Store.swift; sourceTree = "<group>"; };
+		DE9431332A5777DB0013600D /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
+		DEE74D402A531D860029615E /* Library.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Library.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,7 +81,6 @@
 			isa = PBXGroup;
 			children = (
 				DE2AF0F02A467E5C0060CEAF /* Views */,
-				DE2AF0EF2A467E570060CEAF /* Data */,
 				DE2AF0EE2A467E500060CEAF /* Models */,
 				DE2AF0ED2A467E490060CEAF /* Helpers */,
 				DE2AF0EC2A467E440060CEAF /* Styles */,
@@ -122,30 +121,23 @@
 		DE2AF0EE2A467E500060CEAF /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				DE9431332A5777DB0013600D /* AppSettings.swift */,
+				DEE74D402A531D860029615E /* Library.swift */,
 				DE2AF0F92A467F980060CEAF /* Machine.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
 		};
-		DE2AF0EF2A467E570060CEAF /* Data */ = {
-			isa = PBXGroup;
-			children = (
-				DEE74D402A531D860029615E /* Store.swift */,
-			);
-			path = Data;
-			sourceTree = "<group>";
-		};
 		DE2AF0F02A467E5C0060CEAF /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				DE2AF1042A46800D0060CEAF /* SettingsView.swift */,
+				DE2AF1022A46800C0060CEAF /* GeneralSettingsView.swift */,
+				DE2AF0FF2A46800C0060CEAF /* AppearanceSettingsView.swift */,
 				DE2AF1012A46800C0060CEAF /* ContentView.swift */,
 				DE2AF1052A46800D0060CEAF /* SidebarView.swift */,
 				DE2AF1062A46800D0060CEAF /* WelcomeView.swift */,
 				DE2AF1072A46800D0060CEAF /* MachineView.swift */,
-				DE2AF1042A46800D0060CEAF /* SettingsView.swift */,
-				DE2AF1022A46800C0060CEAF /* GeneralSettingsView.swift */,
-				DE2AF0FF2A46800C0060CEAF /* AppearanceSettingsView.swift */,
-				DE2AF1002A46800C0060CEAF /* AddMachineView.swift */,
 				DE2AF1032A46800D0060CEAF /* EditMachineView.swift */,
 			);
 			path = Views;
@@ -222,13 +214,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				DEE74D412A531D860029615E /* Store.swift in Sources */,
+				DEE74D412A531D860029615E /* Library.swift in Sources */,
 				DE2AF0F22A467E8B0060CEAF /* AppDelegate.swift in Sources */,
 				DE2AF0F62A467F130060CEAF /* ButtonStyles.swift in Sources */,
 				DE2AF10C2A46800D0060CEAF /* EditMachineView.swift in Sources */,
 				DE2AF1082A46800D0060CEAF /* AppearanceSettingsView.swift in Sources */,
 				DE2AF10B2A46800D0060CEAF /* GeneralSettingsView.swift in Sources */,
-				DE2AF1092A46800D0060CEAF /* AddMachineView.swift in Sources */,
 				DE2AF0F82A467F5F0060CEAF /* PathControl.swift in Sources */,
 				DE2AF10A2A46800D0060CEAF /* ContentView.swift in Sources */,
 				DE2AF10E2A46800D0060CEAF /* SidebarView.swift in Sources */,
@@ -236,6 +227,7 @@
 				DE2AF0DE2A467E120060CEAF /* Swift86App.swift in Sources */,
 				DE2AF1102A46800D0060CEAF /* MachineView.swift in Sources */,
 				DE2AF0FA2A467F980060CEAF /* Machine.swift in Sources */,
+				DE9431342A5777DB0013600D /* AppSettings.swift in Sources */,
 				DE2AF10D2A46800D0060CEAF /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

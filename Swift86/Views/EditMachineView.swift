@@ -15,8 +15,8 @@ struct EditMachineView: View {
     
     // MARK: - Environment Objects
     
-    // Observed object machine store
-    @ObservedObject var store: Store
+    // Environment object machine library
+    @EnvironmentObject var library: Library
     
     // Environment variable to dismiss the current view
     @Environment(\.presentationMode) var presentationMode
@@ -29,10 +29,13 @@ struct EditMachineView: View {
     // Machine instance
     @State var machine: Machine
     
+    // Editing or creating machine?
+    @State var isUpdating: Bool = false
+    
     // MARK: - Scene
     
     var body: some View {
-        VStack {
+        VStack(spacing: 0) {
             VStack(alignment: .leading) {
                 // Machine name input
                 Text(LocalizedStringKey("Name"))
@@ -57,20 +60,28 @@ struct EditMachineView: View {
                         .background(colorScheme == .dark ? Color(NSColor.windowBackgroundColor).opacity(0.5) : Color(.clear))
                 }
                 .padding([.bottom], 8)
-                
+            
                 // Machine icon thumbnail
                 Text(LocalizedStringKey("Icon"))
                 HStack {
                     // Thumbnail
-                    machine.selectedIcon
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 32, height: 32)
-                        .foregroundColor(machine.iconCustom ? Color.blue : Color.primary)
-                        .onTapGesture {
-                            // Icon Picker
-                            iconPicker(machine: machine)
-                        }
+                    VStack {
+                        machine.selectedIcon()
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 32, height: 32)
+                            .foregroundColor(machine.iconCustom ? Color.blue : Color.primary)
+                            .padding(12)
+                            .onTapGesture {
+                                // Icon Picker
+                                library.iconPicker(machine: machine) { iconURL in
+                                    if let iconURL = iconURL { self.machine.icon = iconURL.path }
+                                }
+                            }
+                    }
+                    .background(Color(NSColor.windowBackgroundColor))
+                    .cornerRadius(8)
+                    
                     // Toggle default or custom icon
                     VStack {
                         // Radio Button toggle
@@ -80,11 +91,9 @@ struct EditMachineView: View {
                         }
                         .pickerStyle(RadioGroupPickerStyle())
                     }
-                    .frame(height: 50)
-                    .padding(.leading, 8)
+                    .padding(.leading, 2)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 8)
             }
             .padding()
             
@@ -95,7 +104,7 @@ struct EditMachineView: View {
                     Spacer()
                     // Cancel button
                     Button(action: {
-                        // Cancel instance
+                        // Dismiss view
                         presentationMode.wrappedValue.dismiss()
                     }) {
                         Text(LocalizedStringKey("Cancel"))
@@ -105,19 +114,20 @@ struct EditMachineView: View {
                     
                     // Save button
                     Button(action: {
-                        // Check first if an icon was selected
-                        if machine.iconCustom && machine.icon == nil {
-                            machine.iconCustom = false
+                        // Update or create?
+                        if isUpdating {
+                            // Update machine
+                            library.edit(machine: machine)
+                        } else {
+                            // Create machine
+                            library.create(machine: machine)
                         }
-
-                        // Save machine and reload library
-                        store.editMachine(machine: machine)
-                        store.loadMachines()
                         presentationMode.wrappedValue.dismiss()
                     }) {
                         Text(LocalizedStringKey("Save"))
                             .standardStyle()
                     }
+                    .disabled(machine.name.isEmpty)
                     .keyboardShortcut(.defaultAction)
                 }
                 .padding([.top], 8)
@@ -126,15 +136,16 @@ struct EditMachineView: View {
         }
         .frame(minWidth: 480, maxWidth: .infinity, maxHeight: .infinity)
     }
-    
-    // Browse for machine icon
-    private func iconPicker(machine: Machine) {
-        store.showIconPicker(machine: machine) { iconURL in
-            // Unwrap url variable
-            if let iconURL = iconURL {
-                // Set selected icon
-                self.machine.icon = NSImage(contentsOf: iconURL)!
-            }
+}
+
+// MARK: - TextField Extension
+
+// Extend NSTextView for custom text fields
+extension NSTextView {
+    open override var frame: CGRect {
+        didSet {
+            backgroundColor = .clear
+            drawsBackground = true
         }
     }
 }
@@ -143,6 +154,6 @@ struct EditMachineView: View {
 
 struct EditMachineView_Previews: PreviewProvider {
     static var previews: some View {
-        EditMachineView(store: Store(), machine: Machine())
+        EditMachineView(machine: Machine())
     }
 }

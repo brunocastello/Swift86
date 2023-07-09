@@ -15,8 +15,8 @@ struct SidebarView: View {
     
     // MARK: - Environment Objects
     
-    // Observed object machine store
-    @ObservedObject var store: Store
+    // Environment object machine library
+    @EnvironmentObject var library: Library
     
     // MARK: - Properties
     
@@ -29,20 +29,21 @@ struct SidebarView: View {
         // Machines list
         List {
             Section {
-                ForEach(store.machines) { machine in
+                ForEach(library.machines) { machine in
                     // Machine link
                     NavigationLink {
-                        MachineView(store: store, machine: machine)
+                        MachineView(machine: machine)
                     } label: {
                         // Link button
                         VStack(alignment: .leading, spacing: 0) {
                             HStack(spacing: 0) {
                                 // Machine icon
-                                machine.selectedIcon
+                                machine.selectedIcon()
                                     .resizable()
                                     .scaledToFit()
                                     .frame(width: 30, height: 30, alignment: .center)
                                     .padding(2)
+                                
                                 // Machine details
                                 VStack(alignment: .leading) {
                                     // Machine name
@@ -51,8 +52,9 @@ struct SidebarView: View {
                                         .truncationMode(.tail)
                                         .lineLimit(1)
                                         .frame(maxWidth: .infinity, alignment: .leading)
+                                    
                                     // Machine status
-                                    Text(machine.status == .running ? LocalizedStringKey("Running") : LocalizedStringKey("Stopped"))
+                                    Text(machine.status == .running ? LocalizedStringKey("Running") : (machine.status == .stopped ? LocalizedStringKey("Stopped") : LocalizedStringKey("Configuring")))
                                         .font(.caption)
                                         .lineLimit(1)
                                 }
@@ -64,44 +66,48 @@ struct SidebarView: View {
                     .contextMenu {
                         // Start/Stop machine
                         Button(action: {
-                            store.runMachine(machine: machine)
+                            library.runMachine(machine: machine)
                         }) {
                             Text(LocalizedStringKey("Start"))
                         }
                         .disabled(machine.status == .running)
                         Divider()
-                        // Edit machine details
+                        
+                        // Edit machine
                         Button(action: {
-                            store.editMachine = machine
-                            store.isShowingEditMachine.toggle()
+                            library.editMachine = machine
                         }) {
                             Text(LocalizedStringKey("Edit..."))
                         }
-                        .disabled(store.isShowingEditMachine == true)
+                        .disabled(library.editMachine != nil)
+                        
                         // Configure machine
                         Button(action: {
-                            store.configureMachine(machine: machine)
+                            library.configureMachine(machine: machine)
                         }) {
                             Text(LocalizedStringKey("Configure..."))
                         }
-                        .disabled(store.isConfiguringMachine == true)
+                        .disabled(machine.status == .configuring)
                         Divider()
+                        
                         // Clone machine
                         Button(action: {
-                            store.cloneMachine(machine: machine)
+                            library.clone(machine: machine)
                         }) {
                             Text(LocalizedStringKey("Clone..."))
                         }
+                        
                         // Delete machine
                         Button(action: {
-                            store.deleteMachine(machine: machine)
+                            library.delete(machine: machine)
                         }) {
                             Text(LocalizedStringKey("Remove \"\(machine.name)\"..."))
                         }
                         Divider()
+                        
                         // Show in Finder
                         Button(action: {
-                            store.showInFinder(machine: machine)
+                            library.find(machine: machine)
                         }) {
                             Text(LocalizedStringKey("Show in Finder"))
                         }
@@ -109,11 +115,11 @@ struct SidebarView: View {
                 }
                 // Alow user sorting of the machines list
                 .onMove { indices, newOffset in
-                    store.moveMachine(fromOffsets: indices, toOffset: newOffset)
+                    library.move(fromOffsets: indices, toOffset: newOffset)
                 }
                 // Update list on changes to path
                 .onChange(of: machinesPath) { _ in
-                    store.loadMachines()
+                    library.load()
                 }
             } header: {
                 // List header
@@ -129,6 +135,7 @@ struct SidebarView: View {
 
 struct SidebarView_Previews: PreviewProvider {
     static var previews: some View {
-        SidebarView(store: Store())
+        SidebarView()
+            .environmentObject(Library())
     }
 }

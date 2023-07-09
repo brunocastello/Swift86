@@ -12,6 +12,11 @@ import SwiftUI
 
 // Application settings view
 struct GeneralSettingsView: View {
+
+    // MARK: - Environment Objects
+    
+    // Environment object application settings
+    @EnvironmentObject var appSettings: AppSettings
     
     // MARK: - Properties
     @AppStorage("EmulatorPath") private var emulatorPath: String = ""
@@ -35,14 +40,14 @@ struct GeneralSettingsView: View {
                 HStack {
                     // Browse location
                     Button(action: {
-                        browsePath(path: emulatorPath, key: "EmulatorPath")
+                        appSettings.browsePath(path: emulatorPath, key: "EmulatorPath")
                     }) {
                         Text(LocalizedStringKey("Browse..."))
                     }
                     .accessibilityLabel(LocalizedStringKey("Browse..."))
                     // Reset default location
                     Button(action: {
-                        UserDefaults.standard.removeObject(forKey: "EmulatorPath")
+                        UserDefaults.standard.set(appSettings.emulatorPath, forKey: "EmulatorPath")
                     }) {
                         Text(LocalizedStringKey("Default Location"))
                     }
@@ -63,14 +68,14 @@ struct GeneralSettingsView: View {
                 HStack {
                     // Browse location
                     Button(action: {
-                        browsePath(path: machinesPath, key: "MachinesPath")
+                        appSettings.browsePath(path: machinesPath, key: "MachinesPath")
                     }) {
                         Text(LocalizedStringKey("Browse..."))
                     }
                     .accessibilityLabel(LocalizedStringKey("Browse..."))
                     // Reset default location
                     Button(action: {
-                        UserDefaults.standard.removeObject(forKey: "MachinesPath")
+                        UserDefaults.standard.set(appSettings.machinesPath, forKey: "MachinesPath")
                     }) {
                         Text(LocalizedStringKey("Default Location"))
                     }
@@ -83,7 +88,7 @@ struct GeneralSettingsView: View {
             Group {
                 // Show location
                 LabeledContent(LocalizedStringKey("ROMs Location:")) {
-                    if customROMs == true {
+                    if customROMs {
                         PathControl(path: $romsPath)
                             .frame(height: 22)
                     } else {
@@ -97,7 +102,7 @@ struct GeneralSettingsView: View {
                 HStack {
                     // Browse location
                     Button(action: {
-                        browsePath(path: romsPath, key: "RomsPath")
+                        appSettings.browsePath(path: romsPath, key: "RomsPath")
                     }) {
                         Text(LocalizedStringKey("Browse..."))
                     }
@@ -107,8 +112,7 @@ struct GeneralSettingsView: View {
                     // Reset default location
                     Button(action: {
                         // Reset path and checkbox
-                        UserDefaults.standard.removeObject(forKey: "RomsPath")
-                        UserDefaults.standard.set(false, forKey: "CustomROMs")
+                        UserDefaults.standard.set(appSettings.customROMs, forKey: "CustomROMs")
                     }) {
                         Text(LocalizedStringKey("Default Location"))
                     }
@@ -124,7 +128,7 @@ struct GeneralSettingsView: View {
                 .padding(.bottom, 10)
                 .onChange(of: customROMs) { customROMs in
                     if customROMs == false {
-                        UserDefaults.standard.removeObject(forKey: "RomsPath")
+                        UserDefaults.standard.set(appSettings.romsPath, forKey: "RomsPath")
                     }
                 }
             }
@@ -135,59 +139,8 @@ struct GeneralSettingsView: View {
             // Reset ROMs path and checkbox if same as default after Settings window close
             if let window = notification.object as? NSWindow, window.identifier?.rawValue == "com_apple_SwiftUI_Settings_window",
                romsPath == UserDefaults.standard.object(forKey: "RomsPath") as! String, customROMs == true {
-                UserDefaults.standard.removeObject(forKey: "RomsPath")
-                UserDefaults.standard.set(false, forKey: "CustomROMs")
+                UserDefaults.standard.set(appSettings.customROMs, forKey: "CustomROMs")
            }
-        }
-    }
-    
-    // MARK: - Methods
-
-    // Show panel to browse for the paths
-    private func browsePath(path: String, key: String) {
-        // Create an instance of NSOpenPanel
-        let openPanel = NSOpenPanel()
-        openPanel.allowsMultipleSelection = false
-        
-        // If emulator path do this, else continue
-        if path == UserDefaults.standard.string(forKey: "EmulatorPath") {
-            // Applications folder
-            openPanel.allowedContentTypes = [.applicationBundle]
-            openPanel.canChooseFiles = true
-            openPanel.canChooseDirectories = false
-
-            // Check for user home folder path
-            let url = URL(filePath: path)
-            if url.path.hasPrefix("~") {
-                _ = (url.path as NSString).expandingTildeInPath
-                openPanel.directoryURL = URL(filePath: url.path).deletingLastPathComponent()
-            } else {
-                openPanel.directoryURL = URL(filePath: url.path).deletingLastPathComponent()
-            }
-        } else {
-            // Machines and ROMs folders
-            openPanel.canChooseDirectories = true
-            openPanel.canChooseFiles = false
-            openPanel.canCreateDirectories = true
-            
-            // Check for user home folder path
-            let url = URL(filePath: path)
-            if url.path.hasPrefix("~") {
-                _ = (url.path as NSString).expandingTildeInPath
-                openPanel.directoryURL = URL(filePath: url.path)
-            } else {
-                openPanel.directoryURL = URL(filePath: url.path)
-            }
-        }
-        
-        // Present an NSOpenPanel to allow the user to select a new path
-        openPanel.begin { response in
-            if response == .OK {
-                // Get the selected URL and update UserDefaults
-                if let url = openPanel.url {
-                    UserDefaults.standard.set(url.path, forKey: key)
-                }
-            }
         }
     }
 }

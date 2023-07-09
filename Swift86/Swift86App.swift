@@ -11,32 +11,33 @@ import SwiftUI
 // MARK: - Swift86App Entry Point
 
 // App main struct view
-@main struct Manager86App: App {
+@main struct Swift86App: App {
 
     // MARK: - Environment Objects
     
     // Application delegate
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
-    // Observed object machine store
-    @StateObject private var store = Store()
+    // Observed object machine library
+    @StateObject var library = Library()
 
     // MARK: - Scene
     
     var body: some Scene {
         // Main view
         WindowGroup {
-            ContentView(store: store)
+            ContentView()
+                .environmentObject(library)
         }
         // Menu bar commands
         .commands {
             // Add new machine command
             CommandGroup(replacing: CommandGroupPlacement.newItem) {
-                // Show Add machine
+                // Create new machine
                 Button(action: {
-                    store.isShowingAddMachine.toggle()
+                    library.newMachine = Machine()
                 }) {
-                    Text(LocalizedStringKey("Add machine"))
+                    Text(LocalizedStringKey("New Machine"))
                 }
                 .keyboardShortcut("N", modifiers: [.command])
             }
@@ -48,7 +49,7 @@ import SwiftUI
             CommandGroup(replacing: .help) {
                 // 86Box Documentation
                 Button(action: {
-                    let url = URL(string: "https://86box.readthedocs.io/en/latest/index.html")!
+                    let url = URL(string: WebLinks.support.rawValue)!
                     NSWorkspace.shared.open(url)
                 }, label: {
                     Text(LocalizedStringKey("Documentation"))
@@ -56,7 +57,7 @@ import SwiftUI
                 
                 // 86Box Discord
                 Button(action: {
-                    let url = URL(string: "https://discord.gg/v5fCgFw")!
+                    let url = URL(string: WebLinks.discord.rawValue)!
                     NSWorkspace.shared.open(url)
                 }, label: {
                     Text(LocalizedStringKey("86Box Discord"))

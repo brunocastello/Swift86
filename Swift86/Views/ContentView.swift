@@ -15,8 +15,8 @@ struct ContentView: View {
     
     // MARK: - Environment Objects
     
-    // Observed object machine store
-    @ObservedObject var store: Store
+    // Environment object machine library
+    @EnvironmentObject var library: Library
     
     // MARK: - Properties
     
@@ -30,42 +30,42 @@ struct ContentView: View {
         NavigationSplitView(
             sidebar: {
                 // Sidebar view
-                SidebarView(store: store)
+                SidebarView()
                     .navigationSplitViewColumnWidth(min: sidebarWidth, ideal: sidebarWidth, max: .infinity)
             },
             detail: {
                 // Machine view
-                MachineView(store: store, machine: nil)
+                MachineView(machine: nil)
             }
         )
         // Toolbar
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                // Add machine
+                // Create new machine
                 Button(action: {
-                    store.isShowingAddMachine.toggle()
+                    library.newMachine = Machine()
                 }) {
-                    Label("Add", systemImage: "plus")
+                    Label("New Machine", systemImage: "plus")
                 }
-                .help(Text(LocalizedStringKey("Add Machine")))
+                .help(LocalizedStringKey("New Machine"))
             }
         }
-        // Add machine view
-        .sheet(isPresented: $store.isShowingAddMachine, onDismiss: {}) {
-            AddMachineView(store: store, machine: Machine())
+        // Add new machine
+        .sheet(item: $library.newMachine) { machine in
+            EditMachineView(machine: machine, isUpdating: false)
         }
-        // Edit machine view
-        .sheet(isPresented: $store.isShowingEditMachine, onDismiss: {}) {
-            EditMachineView(store: store, machine: store.editMachine!)
+        // Edit machine
+        .sheet(item: $library.editMachine) { machine in
+            EditMachineView(machine: machine, isUpdating: true)
         }
         // Reusable alerts for errors
-        .alert(store.alertTitle, isPresented: $store.showAlert) {
-            Button(LocalizedStringKey("OK"), action: store.okAction ?? { })
-            if store.showCancelButton {
+        .alert(library.alertTitle, isPresented: $library.showAlert) {
+            Button(LocalizedStringKey("OK"), action: library.alertOK ?? { })
+            if library.showCancel {
                 Button(LocalizedStringKey("Cancel"), role: .cancel, action: {})
             }
         } message: {
-            Text(store.alertMessage)
+            Text(library.alertMessage)
         }
     }
 }
@@ -74,18 +74,7 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(store: Store())
-    }
-}
-
-// MARK: - TextField Extension
-
-// Extend NSTextView for custom text fields
-extension NSTextView {
-    open override var frame: CGRect {
-        didSet {
-            backgroundColor = .clear
-            drawsBackground = true
-        }
+        ContentView()
+            .environmentObject(Library())
     }
 }

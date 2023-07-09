@@ -22,11 +22,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         // Set default values for UserDefaults
         let settings: [String: Any] = [
-            "EmulatorPath": "/Applications/86Box.app",
-            "MachinesPath": ("~/Documents" as NSString).expandingTildeInPath,
-            "RomsPath": ("~/Library/Application Support/net.86box.86Box/roms" as NSString).expandingTildeInPath,
-            "CustomROMs": false,
-            "Appearance": ""
+            "EmulatorPath": AppSettings.shared.emulatorPath,
+            "MachinesPath": AppSettings.shared.machinesPath,
+            "RomsPath": AppSettings.shared.romsPath,
+            "CustomROMs": AppSettings.shared.customROMs,
+            "Appearance": AppSettings.shared.appearance
         ]
 
         // Check if any of the keys in the settings dictionary is empty and update its value if necessary

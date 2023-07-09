@@ -19,25 +19,24 @@ struct Machine: Identifiable {
     var id = UUID()
     var name: String = ""
     var iconCustom: Bool = false
-    var icon: NSImage? = nil
+    var icon: String = ""
     var notes: String = ""
         
     // Machine status
     var status: MachineStatus = .stopped
     
     // Default machine icon
-    let defaultIcon: NSImage? = NSImage(systemSymbolName: "desktopcomputer", accessibilityDescription: "")
+    let defaultIcon: Image = Image(systemName: "desktopcomputer")
     
     // Selected machine icon
-    var selectedIcon: Image {
-        if iconCustom && icon != nil,
+    func selectedIcon() -> Image {
+        if iconCustom && !icon.isEmpty,
+           let nsImage = NSImage(contentsOfFile: icon) {
            // Custom icon
-           let nsImage = icon {
             return Image(nsImage: nsImage)
         } else {
             // Default icon
-            let nsImage = defaultIcon!
-            return Image(nsImage: nsImage)
+            return defaultIcon
         }
     }
 }
@@ -48,4 +47,5 @@ struct Machine: Identifiable {
 enum MachineStatus: String, Codable {
     case stopped
     case running
+    case configuring
 }

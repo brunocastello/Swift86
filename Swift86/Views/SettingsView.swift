@@ -13,6 +13,11 @@ import SwiftUI
 // Application settings view
 struct SettingsView: View {
     
+    // MARK: - Environment Objects
+    
+    // Environment object application settings
+    @StateObject private var appSettings = AppSettings()
+    
     // MARK: - Settings Tabs
     
     // Selected tab
@@ -30,6 +35,7 @@ struct SettingsView: View {
         TabView(selection: $selection) {
             // General tab
             GeneralSettingsView()
+                .environmentObject(appSettings)
                 .tabItem {
                     Label(LocalizedStringKey("General"), systemImage: "gearshape")
                 }
