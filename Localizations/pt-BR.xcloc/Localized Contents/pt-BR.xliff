@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd">
+  <file original="Swift86/en.lproj/Localizable.strings" datatype="plaintext" source-language="en" target-language="pt-BR">
+    <header>
+      <tool tool-id="com.apple.dt.xcode" tool-name="Xcode" tool-version="14.3" build-num="14E222b"/>
+    </header>
+    <body>
+      <trans-unit id="86Box Discord" xml:space="preserve">
+        <source>86Box Discord</source>
+        <target>86Box Discord</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="An error occurred" xml:space="preserve">
+        <source>An error occurred</source>
+        <target>Um erro ocorreu</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Appearance" xml:space="preserve">
+        <source>Appearance</source>
+        <target>Aparência</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Appearance:" xml:space="preserve">
+        <source>Appearance:</source>
+        <target>Aparência:</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Are you sure you want to delete &quot;%@&quot; permanently?" xml:space="preserve">
+        <source>Are you sure you want to delete "%@" permanently?</source>
+        <target>Você tem certeza de que deseja excluir "%@" permanentemente?</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Browse..." xml:space="preserve">
+        <source>Browse...</source>
+        <target>Procurar...</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Cancel" xml:space="preserve">
+        <source>Cancel</source>
+        <target>Cancelar</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Click here to add a note" xml:space="preserve">
+        <source>Click here to add a note</source>
+        <target>Clique aqui para adicionar uma descrição</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Clone..." xml:space="preserve">
+        <source>Clone...</source>
+        <target>Clonar...</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Configure..." xml:space="preserve">
+        <source>Configure...</source>
+        <target>Configurar...</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Configuring" xml:space="preserve">
+        <source>Configuring</source>
+        <target>Configurando</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Could not find machine &quot;%@&quot;" xml:space="preserve">
+        <source>Could not find machine "%@"</source>
+        <target>Não foi possível encontrar a máquina "%@"</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Could not save machine &quot;%@&quot;" xml:space="preserve">
+        <source>Could not save machine "%@"</source>
+        <target>Não foi possível salvar a máquina "%@"</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Custom icon" xml:space="preserve">
+        <source>Custom icon</source>
+        <target>Ícone customizado</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Customize Path" xml:space="preserve">
+        <source>Customize Path</source>
+        <target>Customizar caminho</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Dark" xml:space="preserve">
+        <source>Dark</source>
+        <target>Escuro</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Default Path" xml:space="preserve">
+        <source>Default Path</source>
+        <target>Caminho Padrão</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Default icon" xml:space="preserve">
+        <source>Default icon</source>
+        <target>Ícone padrão</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Documentation" xml:space="preserve">
+        <source>Documentation</source>
+        <target>Documentação</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Edit..." xml:space="preserve">
+        <source>Edit...</source>
+        <target>Editar...</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Emulator:" xml:space="preserve">
+        <source>Emulator:</source>
+        <target>Emulador:</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Error" xml:space="preserve">
+        <source>Error</source>
+        <target>Erro</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Error cloning machine &quot;%@&quot;" xml:space="preserve">
+        <source>Error cloning machine "%@"</source>
+        <target>Erro ao clonar a máquina "%@"</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Error deleting icon for machine &quot;%@&quot;" xml:space="preserve">
+        <source>Error deleting icon for machine "%@"</source>
+        <target>Erro ao excluir ícone da máquina "%@"</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Error deleting machine &quot;%@&quot;" xml:space="preserve">
+        <source>Error deleting machine "%@"</source>
+        <target>Erro ao excluir a máquina "%@"</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Error saving icon for machine &quot;%@&quot;" xml:space="preserve">
+        <source>Error saving icon for machine "%@"</source>
+        <target>Erro ao salvar ícone da máquina "%@"</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Error saving machine &quot;%@&quot;" xml:space="preserve">
+        <source>Error saving machine "%@"</source>
+        <target>Erro ao salvar a máquina "%@"</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="General" xml:space="preserve">
+        <source>General</source>
+        <target>Geral</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Icon:" xml:space="preserve">
+        <source>Icon:</source>
+        <target>Ícone</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Light" xml:space="preserve">
+        <source>Light</source>
+        <target>Claro</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="MACHINES" xml:space="preserve">
+        <source>MACHINES</source>
+        <target>MÁQUINAS</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Machines:" xml:space="preserve">
+        <source>Machines:</source>
+        <target>Máquinas:</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Name:" xml:space="preserve">
+        <source>Name:</source>
+        <target>Nome:</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="New Machine" xml:space="preserve">
+        <source>New Machine</source>
+        <target>Nova Máquina</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Notes:" xml:space="preserve">
+        <source>Notes:</source>
+        <target>Descrição:</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="OK" xml:space="preserve">
+        <source>OK</source>
+        <target>OK</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Please configure the application in Settings" xml:space="preserve">
+        <source>Please configure the application in Settings</source>
+        <target>Por favor configure o aplicativo em Ajustes</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="ROMs:" xml:space="preserve">
+        <source>ROMs:</source>
+        <target>ROMs:</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Remove &quot;%@&quot;..." xml:space="preserve">
+        <source>Remove "%@"...</source>
+        <target>Remover "%@"...</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Running" xml:space="preserve">
+        <source>Running</source>
+        <target>Executando</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Save" xml:space="preserve">
+        <source>Save</source>
+        <target>Salvar</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Select or add a machine." xml:space="preserve">
+        <source>Select or add a machine.</source>
+        <target>Selecione ou adicione uma máquina.</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Settings" xml:space="preserve">
+        <source>Settings</source>
+        <target>Ajustes</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Show in Finder" xml:space="preserve">
+        <source>Show in Finder</source>
+        <target>Mostrar no Finder</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Size" xml:space="preserve">
+        <source>Size</source>
+        <target>Tamanho</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Start" xml:space="preserve">
+        <source>Start</source>
+        <target>Iniciar</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Stopped" xml:space="preserve">
+        <source>Stopped</source>
+        <target>Parada</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="System" xml:space="preserve">
+        <source>System</source>
+        <target>Sistema</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="This machine must have a name." xml:space="preserve">
+        <source>This machine must have a name.</source>
+        <target>Esta máquina tem de ter um nome.</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Welcome" xml:space="preserve">
+        <source>Welcome</source>
+        <target>Bem-vindo</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="Welcome to Swift86" xml:space="preserve">
+        <source>Welcome to Swift86</source>
+        <target>Bem-vindo ao Swift86</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="You cannot undo this action." xml:space="preserve">
+        <source>You cannot undo this action.</source>
+        <target>Você não pode desfazer esta ação.</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+    </body>
+  </file>
+  <file original="Swift86/en.lproj/Swift86-InfoPlist.strings" datatype="plaintext" source-language="en" target-language="pt-BR">
+    <header>
+      <tool tool-id="com.apple.dt.xcode" tool-name="Xcode" tool-version="14.3" build-num="14E222b"/>
+    </header>
+    <body>
+      <trans-unit id="CFBundleDisplayName" xml:space="preserve">
+        <source>Swift86</source>
+        <note>Bundle display name</note>
+      </trans-unit>
+      <trans-unit id="CFBundleName" xml:space="preserve">
+        <source>Swift86</source>
+        <note>Bundle name</note>
+      </trans-unit>
+      <trans-unit id="NSHumanReadableCopyright" xml:space="preserve">
+        <source/>
+        <note>Copyright (human-readable)</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

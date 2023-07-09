@@ -25,6 +25,7 @@
 		DE2AF1102A46800D0060CEAF /* MachineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2AF1072A46800D0060CEAF /* MachineView.swift */; };
 		DE9431342A5777DB0013600D /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE9431332A5777DB0013600D /* AppSettings.swift */; };
 		DEE74D412A531D860029615E /* Library.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE74D402A531D860029615E /* Library.swift */; };
+		DEEA7FA42A5B382100B72438 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = DEEA7FA22A5B382100B72438 /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -46,8 +47,11 @@
 		DE2AF1052A46800D0060CEAF /* SidebarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		DE2AF1062A46800D0060CEAF /* WelcomeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
 		DE2AF1072A46800D0060CEAF /* MachineView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MachineView.swift; sourceTree = "<group>"; };
+		DE6A2F4D2A5B4BEC00E8B10E /* ca */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ca; path = ca.lproj/Localizable.strings; sourceTree = "<group>"; };
+		DE6A2F4E2A5B4BF600E8B10E /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DE9431332A5777DB0013600D /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 		DEE74D402A531D860029615E /* Library.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Library.swift; sourceTree = "<group>"; };
+		DEEA7FA32A5B382100B72438 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,6 +84,7 @@
 		DE2AF0DC2A467E120060CEAF /* Swift86 */ = {
 			isa = PBXGroup;
 			children = (
+				DEEA7FA22A5B382100B72438 /* Localizable.strings */,
 				DE2AF0F02A467E5C0060CEAF /* Views */,
 				DE2AF0EE2A467E500060CEAF /* Models */,
 				DE2AF0ED2A467E490060CEAF /* Helpers */,
@@ -185,6 +190,8 @@
 			knownRegions = (
 				en,
 				"pt-BR",
+				es,
+				ca,
 			);
 			mainGroup = DE2AF0D12A467E120060CEAF;
 			productRefGroup = DE2AF0DB2A467E120060CEAF /* Products */;
@@ -202,6 +209,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				DE2AF0E52A467E120060CEAF /* Preview Assets.xcassets in Resources */,
+				DEEA7FA42A5B382100B72438 /* Localizable.strings in Resources */,
 				DE2AF0E22A467E120060CEAF /* Assets.xcassets in Resources */,
 				DE2AF0F42A467EAD0060CEAF /* Info.plist in Resources */,
 			);
@@ -234,11 +242,25 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXVariantGroup section */
+		DEEA7FA22A5B382100B72438 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				DEEA7FA32A5B382100B72438 /* pt-BR */,
+				DE6A2F4D2A5B4BEC00E8B10E /* ca */,
+				DE6A2F4E2A5B4BF600E8B10E /* es */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
 /* Begin XCBuildConfiguration section */
 		DE2AF0E72A467E120060CEAF /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_INCLUDE_INFOPLIST_LOCALIZATIONS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -287,6 +309,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Swift86;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -301,6 +325,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_INCLUDE_INFOPLIST_LOCALIZATIONS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
@@ -343,6 +368,8 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Swift86;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				MACOSX_DEPLOYMENT_TARGET = 13.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -361,7 +388,7 @@
 				CODE_SIGN_ENTITLEMENTS = Swift86/Swift86.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = "Beta 3";
+				CURRENT_PROJECT_VERSION = "Beta 4";
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"Swift86/Preview Content\"";
 				DEVELOPMENT_TEAM = 53AGWD6XKH;
@@ -393,7 +420,7 @@
 				CODE_SIGN_ENTITLEMENTS = Swift86/Swift86.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = "Beta 3";
+				CURRENT_PROJECT_VERSION = "Beta 4";
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"Swift86/Preview Content\"";
 				DEVELOPMENT_TEAM = 53AGWD6XKH;

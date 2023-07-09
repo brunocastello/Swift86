@@ -2,58 +2,58 @@
 "86Box Discord" = "86Box Discord";
 
 /* No comment provided by engineer. */
-"An error occurred" = "Um erro ocorreu";
+"An error occurred" = "S'ha produït un error";
 
 /* No comment provided by engineer. */
-"Appearance" = "Aparência";
+"Appearance" = "Aspecte";
 
 /* No comment provided by engineer. */
-"Appearance:" = "Aparência:";
+"Appearance:" = "Aspecte:";
 
 /* No comment provided by engineer. */
-"Are you sure you want to delete \"%@\" permanently?" = "Você tem certeza de que deseja excluir \"%@\" permanentemente?";
+"Are you sure you want to delete \"%@\" permanently?" = "Confirmes que vols eliminar \"%@\"?";
 
 /* No comment provided by engineer. */
-"Browse..." = "Procurar...";
+"Browse..." = "Buscar...";
 
 /* No comment provided by engineer. */
-"Cancel" = "Cancelar";
+"Cancel" = "Cancel-lar";
 
 /* No comment provided by engineer. */
-"Click here to add a note" = "Clique aqui para adicionar uma descrição";
+"Click here to add a note" = "Cliqueu aquí per afegir una descripció";
 
 /* No comment provided by engineer. */
 "Clone..." = "Clonar...";
 
 /* No comment provided by engineer. */
-"Configure..." = "Configurar...";
+"Configure..." = "Establir...";
 
 /* No comment provided by engineer. */
-"Configuring" = "Configurando";
+"Configuring" = "Configurant";
 
 /* No comment provided by engineer. */
-"Could not find machine \"%@\"" = "Não foi possível encontrar a máquina \"%@\"";
+"Could not find machine \"%@\"" = "No s'ha trobat la màquina \"%@\"";
 
 /* No comment provided by engineer. */
-"Could not save machine \"%@\"" = "Não foi possível salvar a máquina \"%@\"";
+"Could not save machine \"%@\"" = "No s'ha pogut desar la màquina \"%@\"";
 
 /* No comment provided by engineer. */
-"Custom icon" = "Ícone customizado";
+"Custom icon" = "Icona personalitzada";
 
 /* No comment provided by engineer. */
-"Customize Path" = "Customizar caminho";
+"Customize Path" = "Personalitza Ubicació";
 
 /* No comment provided by engineer. */
-"Dark" = "Escuro";
+"Dark" = "Fosc";
 
 /* No comment provided by engineer. */
-"Default icon" = "Ícone padrão";
+"Default icon" = "Icona per Defecte";
 
 /* No comment provided by engineer. */
-"Default Path" = "Caminho Padrão";
+"Default Path" = "Ubicació per Defecte";
 
 /* No comment provided by engineer. */
-"Documentation" = "Documentação";
+"Documentation" = "Documentació";
 
 /* No comment provided by engineer. */
 "Edit..." = "Editar...";
@@ -62,95 +62,95 @@
 "Emulator:" = "Emulador:";
 
 /* No comment provided by engineer. */
-"Error" = "Erro";
+"Error" = "Error";
 
 /* No comment provided by engineer. */
-"Error cloning machine \"%@\"" = "Erro ao clonar a máquina \"%@\"";
+"Error cloning machine \"%@\"" = "S'ha produït un error al clonar la màquina \"%@\"";
 
 /* No comment provided by engineer. */
-"Error deleting icon for machine \"%@\"" = "Erro ao excluir ícone da máquina \"%@\"";
+"Error deleting icon for machine \"%@\"" = "S'ha produït un error en esborrar la icona de la màquina \"%@\"";
 
 /* No comment provided by engineer. */
-"Error deleting machine \"%@\"" = "Erro ao excluir a máquina \"%@\"";
+"Error deleting machine \"%@\"" = "S'ha produït un error en esborrar la màquina \"%@\"";
 
 /* No comment provided by engineer. */
-"Error saving icon for machine \"%@\"" = "Erro ao salvar ícone da máquina \"%@\"";
+"Error saving icon for machine \"%@\"" = "S'ha produït un error en desar la icona de la màquina \"%@\"";
 
 /* No comment provided by engineer. */
-"Error saving machine \"%@\"" = "Erro ao salvar a máquina \"%@\"";
+"Error saving machine \"%@\"" = "S'ha produït un error en desar la màquina \"%@\"";
 
 /* No comment provided by engineer. */
-"General" = "Geral";
+"General" = "General";
 
 /* No comment provided by engineer. */
-"Icon:" = "Ícone";
+"Icon:" = "Icona:";
 
 /* No comment provided by engineer. */
-"Light" = "Claro";
+"Light" = "Clar";
 
 /* No comment provided by engineer. */
-"MACHINES" = "MÁQUINAS";
+"MACHINES" = "MÀQUINES";
 
 /* No comment provided by engineer. */
-"Machines:" = "Máquinas:";
+"Machines:" = "Màquines:";
 
 /* No comment provided by engineer. */
-"Name:" = "Nome:";
+"Name:" = "Nom:";
 
 /* No comment provided by engineer. */
-"New Machine" = "Nova Máquina";
+"New Machine" = "Nou Màquina";
 
 /* No comment provided by engineer. */
-"Notes:" = "Descrição:";
+"Notes:" = "Descripció:";
 
 /* No comment provided by engineer. */
-"OK" = "OK";
+"OK" = "D'acord";
 
 /* No comment provided by engineer. */
-"Please configure the application in Settings" = "Por favor configure o aplicativo em Ajustes";
+"Please configure the application in Settings" = "Si us plau, configureu l'aplicació a Configuració";
 
 /* No comment provided by engineer. */
-"Remove \"%@\"..." = "Remover \"%@\"...";
+"Remove \"%@\"..." = "Eliminar \"%@\"...";
 
 /* No comment provided by engineer. */
 "ROMs:" = "ROMs:";
 
 /* No comment provided by engineer. */
-"Running" = "Executando";
+"Running" = "En execució";
 
 /* No comment provided by engineer. */
-"Save" = "Salvar";
+"Save" = "Desar";
 
 /* No comment provided by engineer. */
-"Select or add a machine." = "Selecione ou adicione uma máquina.";
+"Select or add a machine." = "Selecciona o afegeix una màquina.";
 
 /* No comment provided by engineer. */
-"Settings" = "Ajustes";
+"Settings" = "Configuració";
 
 /* No comment provided by engineer. */
-"Show in Finder" = "Mostrar no Finder";
+"Show in Finder" = "Mostrar al Finder";
 
 /* No comment provided by engineer. */
-"Size" = "Tamanho";
+"Size" = "Emmagatzematge";
 
 /* No comment provided by engineer. */
-"Start" = "Iniciar";
+"Start" = "Inicialitza";
 
 /* No comment provided by engineer. */
-"Stopped" = "Parada";
+"Stopped" = "Aturada";
 
 /* No comment provided by engineer. */
 "System" = "Sistema";
 
 /* No comment provided by engineer. */
-"This machine must have a name." = "Esta máquina tem de ter um nome.";
+"This machine must have a name." = "Aquesta màquina ha de tenir un nom.";
 
 /* No comment provided by engineer. */
-"Welcome" = "Bem-vindo";
+"Welcome" = "Benvingut";
 
 /* No comment provided by engineer. */
-"Welcome to Swift86" = "Bem-vindo ao Swift86";
+"Welcome to Swift86" = "Benvingut a Swift86";
 
 /* No comment provided by engineer. */
-"You cannot undo this action." = "Você não pode desfazer esta ação.";
+"You cannot undo this action." = "Aquest ítem s'eliminarà immediatament. Aquesta acció no es pot desfer.";
 

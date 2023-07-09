@@ -2,25 +2,25 @@
 "86Box Discord" = "86Box Discord";
 
 /* No comment provided by engineer. */
-"An error occurred" = "Um erro ocorreu";
+"An error occurred" = "Ocurrió un error.";
 
 /* No comment provided by engineer. */
-"Appearance" = "Aparência";
+"Appearance" = "Apariencia";
 
 /* No comment provided by engineer. */
-"Appearance:" = "Aparência:";
+"Appearance:" = "Apariencia:";
 
 /* No comment provided by engineer. */
-"Are you sure you want to delete \"%@\" permanently?" = "Você tem certeza de que deseja excluir \"%@\" permanentemente?";
+"Are you sure you want to delete \"%@\" permanently?" = "¿Seguro que desea borrar permanentemente a máquina \"%@\"?";
 
 /* No comment provided by engineer. */
-"Browse..." = "Procurar...";
+"Browse..." = "Buscar...";
 
 /* No comment provided by engineer. */
 "Cancel" = "Cancelar";
 
 /* No comment provided by engineer. */
-"Click here to add a note" = "Clique aqui para adicionar uma descrição";
+"Click here to add a note" = "Haz clic aquí para añadir una descripción";
 
 /* No comment provided by engineer. */
 "Clone..." = "Clonar...";
@@ -32,28 +32,28 @@
 "Configuring" = "Configurando";
 
 /* No comment provided by engineer. */
-"Could not find machine \"%@\"" = "Não foi possível encontrar a máquina \"%@\"";
+"Could not find machine \"%@\"" = "No se pudo encontrar la máquina \"%@\"";
 
 /* No comment provided by engineer. */
-"Could not save machine \"%@\"" = "Não foi possível salvar a máquina \"%@\"";
+"Could not save machine \"%@\"" = "No se pudo grabar la máquina \"%@\"";
 
 /* No comment provided by engineer. */
-"Custom icon" = "Ícone customizado";
+"Custom icon" = "Icono personalizado";
 
 /* No comment provided by engineer. */
-"Customize Path" = "Customizar caminho";
+"Customize Path" = "Personalizar Ubicación";
 
 /* No comment provided by engineer. */
-"Dark" = "Escuro";
+"Dark" = "Oscuro";
 
 /* No comment provided by engineer. */
-"Default icon" = "Ícone padrão";
+"Default icon" = "Icono por Defecto";
 
 /* No comment provided by engineer. */
-"Default Path" = "Caminho Padrão";
+"Default Path" = "Ubicación por Defecto";
 
 /* No comment provided by engineer. */
-"Documentation" = "Documentação";
+"Documentation" = "Documentación";
 
 /* No comment provided by engineer. */
 "Edit..." = "Editar...";
@@ -62,28 +62,28 @@
 "Emulator:" = "Emulador:";
 
 /* No comment provided by engineer. */
-"Error" = "Erro";
+"Error" = "Error";
 
 /* No comment provided by engineer. */
-"Error cloning machine \"%@\"" = "Erro ao clonar a máquina \"%@\"";
+"Error cloning machine \"%@\"" = "Error al clonar máquina \"%@\"";
 
 /* No comment provided by engineer. */
-"Error deleting icon for machine \"%@\"" = "Erro ao excluir ícone da máquina \"%@\"";
+"Error deleting icon for machine \"%@\"" = "Error al borrar el icono de la máquina \"%@\"";
 
 /* No comment provided by engineer. */
-"Error deleting machine \"%@\"" = "Erro ao excluir a máquina \"%@\"";
+"Error deleting machine \"%@\"" = "Error al borrar la máquina \"%@\"";
 
 /* No comment provided by engineer. */
-"Error saving icon for machine \"%@\"" = "Erro ao salvar ícone da máquina \"%@\"";
+"Error saving icon for machine \"%@\"" = "Error al grabar el icono de la máquina \"%@\"";
 
 /* No comment provided by engineer. */
-"Error saving machine \"%@\"" = "Erro ao salvar a máquina \"%@\"";
+"Error saving machine \"%@\"" = "Error al grabar la máquina \"%@\"";
 
 /* No comment provided by engineer. */
-"General" = "Geral";
+"General" = "General";
 
 /* No comment provided by engineer. */
-"Icon:" = "Ícone";
+"Icon:" = "Icono:";
 
 /* No comment provided by engineer. */
 "Light" = "Claro";
@@ -95,46 +95,46 @@
 "Machines:" = "Máquinas:";
 
 /* No comment provided by engineer. */
-"Name:" = "Nome:";
+"Name:" = "Nombre:";
 
 /* No comment provided by engineer. */
-"New Machine" = "Nova Máquina";
+"New Machine" = "Nueva Máquina";
 
 /* No comment provided by engineer. */
-"Notes:" = "Descrição:";
+"Notes:" = "Descripción:";
 
 /* No comment provided by engineer. */
 "OK" = "OK";
 
 /* No comment provided by engineer. */
-"Please configure the application in Settings" = "Por favor configure o aplicativo em Ajustes";
+"Please configure the application in Settings" = "Por favor configure la aplicación en Ajustes";
 
 /* No comment provided by engineer. */
-"Remove \"%@\"..." = "Remover \"%@\"...";
+"Remove \"%@\"..." = "Eliminar \"%@\"...";
 
 /* No comment provided by engineer. */
 "ROMs:" = "ROMs:";
 
 /* No comment provided by engineer. */
-"Running" = "Executando";
+"Running" = "Ejecutando";
 
 /* No comment provided by engineer. */
-"Save" = "Salvar";
+"Save" = "Grabar";
 
 /* No comment provided by engineer. */
-"Select or add a machine." = "Selecione ou adicione uma máquina.";
+"Select or add a machine." = "Selecciona o añade una máquina.";
 
 /* No comment provided by engineer. */
 "Settings" = "Ajustes";
 
 /* No comment provided by engineer. */
-"Show in Finder" = "Mostrar no Finder";
+"Show in Finder" = "Mostrar en Finder";
 
 /* No comment provided by engineer. */
-"Size" = "Tamanho";
+"Size" = "Tamaño";
 
 /* No comment provided by engineer. */
-"Start" = "Iniciar";
+"Start" = "Inicializar";
 
 /* No comment provided by engineer. */
 "Stopped" = "Parada";
@@ -143,14 +143,14 @@
 "System" = "Sistema";
 
 /* No comment provided by engineer. */
-"This machine must have a name." = "Esta máquina tem de ter um nome.";
+"This machine must have a name." = "Esta máquina debe tener un nombre.";
 
 /* No comment provided by engineer. */
-"Welcome" = "Bem-vindo";
+"Welcome" = "Bienvenido";
 
 /* No comment provided by engineer. */
-"Welcome to Swift86" = "Bem-vindo ao Swift86";
+"Welcome to Swift86" = "Bienvenido a Swift86";
 
 /* No comment provided by engineer. */
-"You cannot undo this action." = "Você não pode desfazer esta ação.";
+"You cannot undo this action." = "Esta acción no se puede deshacer.";
 

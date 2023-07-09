@@ -181,7 +181,7 @@ class Library: ObservableObject, Identifiable {
         guard FileManager.default.fileExists(atPath: oldMachineURL.path) else {
             // Error saving machine
             alertTitle = NSLocalizedString("Error", comment: "")
-            alertMessage = String(format: NSLocalizedString("Could not find machine \"%@\" in library", comment: ""), machine.name)
+            alertMessage = String(format: NSLocalizedString("Could not find machine \"%@\"", comment: ""), machine.name)
             alertOK = { }
             showCancel = false
             showAlert = true
@@ -215,7 +215,7 @@ class Library: ObservableObject, Identifiable {
         // (Avoids losing entire library)
         if machine.name.isEmpty {
             alertTitle = NSLocalizedString("Error", comment: "")
-            alertMessage = NSLocalizedString("This machine must have a name", comment: "")
+            alertMessage = NSLocalizedString("This machine must have a name.", comment: "")
             alertOK = { }
             showCancel = false
             showAlert = true
