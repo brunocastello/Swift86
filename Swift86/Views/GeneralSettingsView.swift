@@ -31,27 +31,28 @@ struct GeneralSettingsView: View {
             // Emulator
             Group {
                 // Show location
-                LabeledContent(LocalizedStringKey("Emulator Location:")) {
+                LabeledContent("Emulator:") {
                     PathControl(path: $emulatorPath)
                         .frame(height: 22)
                 }
-                .accessibilityLabel(LocalizedStringKey("Emulator Location"))
+                .accessibilityLabel("Emulator:")
                 
                 HStack {
                     // Browse location
                     Button(action: {
                         appSettings.browsePath(path: emulatorPath, key: "EmulatorPath")
                     }) {
-                        Text(LocalizedStringKey("Browse..."))
+                        Text("Browse...")
                     }
-                    .accessibilityLabel(LocalizedStringKey("Browse..."))
+                    .accessibilityLabel("Browse...")
+                    
                     // Reset default location
                     Button(action: {
                         UserDefaults.standard.set(appSettings.emulatorPath, forKey: "EmulatorPath")
                     }) {
-                        Text(LocalizedStringKey("Default Location"))
+                        Text("Default Path")
                     }
-                    .accessibilityLabel(LocalizedStringKey("Default Location"))
+                    .accessibilityLabel("Default Path")
                 }
                 .padding(.bottom, 10)
             }
@@ -59,27 +60,28 @@ struct GeneralSettingsView: View {
             // Library
             Group {
                 // Show location
-                LabeledContent(LocalizedStringKey("Library Location:")) {
+                LabeledContent("Machines:") {
                     PathControl(path: $machinesPath)
                         .frame(height: 22)
                 }
-                .accessibilityLabel(LocalizedStringKey("Library Location"))
+                .accessibilityLabel("Machines:")
                 
                 HStack {
                     // Browse location
                     Button(action: {
                         appSettings.browsePath(path: machinesPath, key: "MachinesPath")
                     }) {
-                        Text(LocalizedStringKey("Browse..."))
+                        Text("Browse...")
                     }
-                    .accessibilityLabel(LocalizedStringKey("Browse..."))
+                    .accessibilityLabel("Browse...")
+                    
                     // Reset default location
                     Button(action: {
                         UserDefaults.standard.set(appSettings.machinesPath, forKey: "MachinesPath")
                     }) {
-                        Text(LocalizedStringKey("Default Location"))
+                        Text("Default Path")
                     }
-                    .accessibilityLabel(LocalizedStringKey("Default Location"))
+                    .accessibilityLabel("Default Path")
                 }
                 .padding(.bottom, 10)
             }
@@ -87,26 +89,26 @@ struct GeneralSettingsView: View {
             // ROMs
             Group {
                 // Show location
-                LabeledContent(LocalizedStringKey("ROMs Location:")) {
+                LabeledContent("ROMs:") {
                     if customROMs {
                         PathControl(path: $romsPath)
                             .frame(height: 22)
                     } else {
-                        Text(LocalizedStringKey("Default ROMs Location"))
+                        Text("Default Path")
                             .foregroundColor(.gray)
                             .frame(height: 22)
                     }
                 }
-                .accessibilityLabel(LocalizedStringKey("ROMs Location"))
+                .accessibilityLabel("ROMs:")
                 
                 HStack {
                     // Browse location
                     Button(action: {
                         appSettings.browsePath(path: romsPath, key: "RomsPath")
                     }) {
-                        Text(LocalizedStringKey("Browse..."))
+                        Text("Browse...")
                     }
-                    .accessibilityLabel(LocalizedStringKey("Browse..."))
+                    .accessibilityLabel("Browse...")
                     .disabled(!customROMs)
 
                     // Reset default location
@@ -114,17 +116,17 @@ struct GeneralSettingsView: View {
                         // Reset path and checkbox
                         UserDefaults.standard.set(appSettings.customROMs, forKey: "CustomROMs")
                     }) {
-                        Text(LocalizedStringKey("Default Location"))
+                        Text("Default Path")
                     }
-                    .accessibilityLabel(LocalizedStringKey("Default Location"))
+                    .accessibilityLabel("Default Path")
                     .disabled(!customROMs)
                 }
 
                 // Toggle visibility of this section
                 Toggle(isOn: $customROMs) {
-                    Text(LocalizedStringKey("Enable Custom ROMs"))
+                    Text("Customize Path")
                 }
-                .accessibilityLabel(LocalizedStringKey("Enable Custom ROMs"))
+                .accessibilityLabel("Customize Path")
                 .padding(.bottom, 10)
                 .onChange(of: customROMs) { customROMs in
                     if customROMs == false {

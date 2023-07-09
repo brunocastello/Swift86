@@ -37,13 +37,13 @@ struct SettingsView: View {
             GeneralSettingsView()
                 .environmentObject(appSettings)
                 .tabItem {
-                    Label(LocalizedStringKey("General"), systemImage: "gearshape")
+                    Label("General", systemImage: "gearshape")
                 }
                 .tag(Tabs.general)
             // Appearance tab
             AppearanceSettingsView()
                 .tabItem {
-                    Label(LocalizedStringKey("Appearance"), systemImage: "paintbrush")
+                    Label("Appearance", systemImage: "paintbrush")
                 }
                 .tag(Tabs.appearance)
         }

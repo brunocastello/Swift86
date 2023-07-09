@@ -37,7 +37,7 @@ import SwiftUI
                 Button(action: {
                     library.newMachine = Machine()
                 }) {
-                    Text(LocalizedStringKey("New Machine"))
+                    Text("New Machine")
                 }
                 .keyboardShortcut("N", modifiers: [.command])
             }
@@ -52,7 +52,7 @@ import SwiftUI
                     let url = URL(string: WebLinks.support.rawValue)!
                     NSWorkspace.shared.open(url)
                 }, label: {
-                    Text(LocalizedStringKey("Documentation"))
+                    Text("Documentation")
                 }).keyboardShortcut(KeyEquivalent("1"), modifiers: [.command, .control])
                 
                 // 86Box Discord
@@ -60,7 +60,7 @@ import SwiftUI
                     let url = URL(string: WebLinks.discord.rawValue)!
                     NSWorkspace.shared.open(url)
                 }, label: {
-                    Text(LocalizedStringKey("86Box Discord"))
+                    Text("86Box Discord")
                 }).keyboardShortcut(KeyEquivalent("2"), modifiers: [.command, .control])
             }
         }
@@ -70,7 +70,7 @@ import SwiftUI
         // Settings view
         Settings {
             SettingsView()
-                .navigationTitle(LocalizedStringKey("Settings"))
+                .navigationTitle("Settings")
         }
     }
 }

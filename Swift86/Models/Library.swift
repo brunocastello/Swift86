@@ -77,7 +77,7 @@ class Library: ObservableObject, Identifiable {
             
             // Perform any first launch setup or logic here
             alertTitle = NSLocalizedString("Welcome", comment: "")
-            alertMessage = NSLocalizedString("Please go to the settings to configure the application", comment: "")
+            alertMessage = NSLocalizedString("Please configure the application in Settings", comment: "")
             alertOK = { }
             showCancel = false
             showAlert = true
@@ -156,8 +156,8 @@ class Library: ObservableObject, Identifiable {
             save(machine: machine, url: machineURL)
         } catch {
             // Error saving machine
-            alertTitle = NSLocalizedString("Error saving machine '\(machine.name)'", comment: "")
-            alertMessage = NSLocalizedString("\(error.localizedDescription)", comment: "")
+            alertTitle = String(format: NSLocalizedString("Error saving machine \"%@\"", comment: ""), machine.name)
+            alertMessage = NSLocalizedString(error.localizedDescription, comment: "")
             alertOK = { }
             showCancel = false
             showAlert = true
@@ -181,7 +181,7 @@ class Library: ObservableObject, Identifiable {
         guard FileManager.default.fileExists(atPath: oldMachineURL.path) else {
             // Error saving machine
             alertTitle = NSLocalizedString("Error", comment: "")
-            alertMessage = NSLocalizedString("Could not find machine '\(oldMachine.name)' in library", comment: "")
+            alertMessage = String(format: NSLocalizedString("Could not find machine \"%@\" in library", comment: ""), machine.name)
             alertOK = { }
             showCancel = false
             showAlert = true
@@ -196,8 +196,8 @@ class Library: ObservableObject, Identifiable {
             save(machine: machine, url: machineURL)
         } catch let error {
             // Error editing machine
-            alertTitle = NSLocalizedString("Error saving machine '\(machine.name)'", comment: "")
-            alertMessage = NSLocalizedString("\(error.localizedDescription)", comment: "")
+            alertTitle = String(format: NSLocalizedString("Error saving machine \"%@\"", comment: ""), machine.name)
+            alertMessage = NSLocalizedString(error.localizedDescription, comment: "")
             alertOK = { }
             showCancel = false
             showAlert = true
@@ -248,7 +248,7 @@ class Library: ObservableObject, Identifiable {
         // Save machine property list
         guard NSDictionary(dictionary: ["Information": machineInfo]).write(to: plist, atomically: true) else {
             alertTitle = NSLocalizedString("Error", comment: "")
-            alertMessage = NSLocalizedString("Could not save machine '\(machine.name)'", comment: "")
+            alertMessage = String(format: NSLocalizedString("Could not save machine \"%@\"", comment: ""), machine.name)
             alertOK = { }
             showCancel = false
             showAlert = true
@@ -269,8 +269,8 @@ class Library: ObservableObject, Identifiable {
                 try FileManager.default.copyItem(at: newIcon, to: icon)
                 machine.icon = icon.path
             } catch {
-                alertTitle = NSLocalizedString("Error saving icon for machine '\(machine.name)'", comment: "")
-                alertMessage = NSLocalizedString("\(error.localizedDescription)", comment: "")
+                alertTitle = String(format: NSLocalizedString("Error saving icon for machine \"%@\"", comment: ""), machine.name)
+                alertMessage = NSLocalizedString(error.localizedDescription, comment: "")
                 alertOK = { }
                 showCancel = false
                 showAlert = true
@@ -285,8 +285,8 @@ class Library: ObservableObject, Identifiable {
                     machine.icon = ""
                 }
             } catch {
-                alertTitle = NSLocalizedString("Error deleting icon for machine '\(machine.name)'", comment: "")
-                alertMessage = NSLocalizedString("\(error.localizedDescription)", comment: "")
+                alertTitle = String(format: NSLocalizedString("Error deleting icon for machine \"%@\"", comment: ""), machine.name)
+                alertMessage = NSLocalizedString(error.localizedDescription, comment: "")
                 alertOK = { }
                 showCancel = false
                 showAlert = true
@@ -348,8 +348,8 @@ class Library: ObservableObject, Identifiable {
             save(machine: cloneMachine, url: cloneMachineURL)
         } catch let error {
             // Error cloning machine
-            alertTitle = NSLocalizedString("Error cloning machine '\(machine.name)'", comment: "")
-            alertMessage = NSLocalizedString("\(error.localizedDescription)", comment: "")
+            alertTitle = String(format: NSLocalizedString("Error cloning machine \"%@\"", comment: ""), machine.name)
+            alertMessage = NSLocalizedString(error.localizedDescription, comment: "")
             alertOK = { }
             showCancel = false
             showAlert = true
@@ -401,7 +401,7 @@ class Library: ObservableObject, Identifiable {
         } catch {
             // Error running machine
             self.alertTitle = NSLocalizedString("An error occurred", comment: "")
-            self.alertMessage = NSLocalizedString("\(error.localizedDescription)", comment: "")
+            self.alertMessage = NSLocalizedString(error.localizedDescription, comment: "")
             self.alertOK = { }
             self.showCancel = false
             self.showAlert = true
@@ -451,7 +451,7 @@ class Library: ObservableObject, Identifiable {
         } catch {
             // Error configuring machine
             self.alertTitle = NSLocalizedString("An error occurred", comment: "")
-            self.alertMessage = NSLocalizedString("\(error.localizedDescription)", comment: "")
+            self.alertMessage = NSLocalizedString(error.localizedDescription, comment: "")
             self.alertOK = { }
             self.showCancel = false
             self.showAlert = true
@@ -516,7 +516,7 @@ class Library: ObservableObject, Identifiable {
         }
         
         // Confirm machine removal
-        alertTitle = NSLocalizedString("Are you sure you want to delete '\(machine.name)' permanently?", comment: "")
+        alertTitle = String(format: NSLocalizedString("Are you sure you want to delete \"%@\" permanently?", comment: ""), machine.name)
         alertMessage = NSLocalizedString("You cannot undo this action.", comment: "")
         alertOK = {
             // Access machine folder
@@ -528,8 +528,8 @@ class Library: ObservableObject, Identifiable {
                 self.machines.removeAll(where: { $0.id == machine.id })
             } catch let error {
                 // Error deleting machine
-                self.alertTitle = NSLocalizedString("Error deleting machine '\(machine.name)'", comment: "")
-                self.alertMessage = NSLocalizedString("\(error.localizedDescription)", comment: "")
+                self.alertTitle = String(format: NSLocalizedString("Error deleting machine \"%@\"", comment: ""), machine.name)
+                self.alertMessage = NSLocalizedString(error.localizedDescription, comment: "")
                 self.alertOK = { }
                 self.showCancel = false
                 self.showAlert = true

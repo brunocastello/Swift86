@@ -1,0 +1,165 @@
+/* No comment provided by engineer. */
+"86Box Discord" = "86Box Discord";
+
+/* No comment provided by engineer. */
+"Add machine" = "Adicionar máquina";
+
+/* No comment provided by engineer. */
+"An error occurred" = "Um erro ocorreu";
+
+/* No comment provided by engineer. */
+"Appearance" = "Aparência";
+
+/* No comment provided by engineer. */
+"Appearance:" = "Aparência:";
+
+/* No comment provided by engineer. */
+"Are you sure you want to delete '(machine.name)' permanently?" = "Você tem certeza de que quer excluir '(machine.name)' permanentemente?";
+
+/* No comment provided by engineer. */
+"Browse..." = "Procurar...";
+
+/* No comment provided by engineer. */
+"Cancel" = "Cancelar";
+
+/* No comment provided by engineer. */
+"Click here to add a note" = "Clique aqui para adicionar uma nota";
+
+/* No comment provided by engineer. */
+"Clone..." = "Clonar...";
+
+/* No comment provided by engineer. */
+"Configure..." = "Configurar...";
+
+/* No comment provided by engineer. */
+"Configuring" = "Configurando";
+
+/* No comment provided by engineer. */
+"Could not find machine '(oldMachine.name)' in library" = "Não foi possível encontrar a máquina '(oldMachine.name)' na biblioteca";
+
+/* No comment provided by engineer. */
+"Could not save machine \"(machine.name)\"" = "Não foi possível salvar a máquina \"(machine.name)\"";
+
+/* No comment provided by engineer. */
+"Custom icon" = "Ícone customizado";
+
+/* No comment provided by engineer. */
+"Dark" = "Escuro";
+
+/* No comment provided by engineer. */
+"Default icon" = "Ícone padrão";
+
+/* No comment provided by engineer. */
+"Default Location" = "Caminho padrão";
+
+/* No comment provided by engineer. */
+"Default ROMs Location" = "Caminho Padrão das ROMs";
+
+/* No comment provided by engineer. */
+"Documentation" = "Documentação";
+
+/* No comment provided by engineer. */
+"Edit..." = "Editar...";
+
+/* No comment provided by engineer. */
+"Emulator Location:" = "Caminho do Emulador:";
+
+/* No comment provided by engineer. */
+"Enable Custom ROMs" = "Usar Caminho Alternativo";
+
+/* No comment provided by engineer. */
+"Error" = "Erro";
+
+/* No comment provided by engineer. */
+"Error cloning machine \"(machine.name)\"" = "Erro ao clonar a máquina \"(machine.name)\"";
+
+/* No comment provided by engineer. */
+"Error deleting icon for machine \"(machine.name)\"" = "Erro ao excluir a máquina \"(machine.name)\"";
+
+/* No comment provided by engineer. */
+"Error deleting machine '(machine.name)'" = "Erro ao excluir a máquina '(machine.name)'";
+
+/* No comment provided by engineer. */
+"Error saving icon for machine \"(machine.name)\"" = "Erro ao salvar o ícone para a máquina \"(machine.name)\"";
+
+/* No comment provided by engineer. */
+"Error saving machine \"(machine.name)\"" = "Erro ao salvar a máquina \"(machine.name)\"";
+
+/* No comment provided by engineer. */
+"General" = "Geral";
+
+/* No comment provided by engineer. */
+"Icon:" = "Ícone:";
+
+/* No comment provided by engineer. */
+"Library Location:" = "Caminho da Biblioteca:";
+
+/* No comment provided by engineer. */
+"Light" = "Claro";
+
+/* No comment provided by engineer. */
+"MACHINES" = "MÁQUINAS";
+
+/* No comment provided by engineer. */
+"Name:" = "Nome:";
+
+/* No comment provided by engineer. */
+"New Machine" = "Nova Máquina";
+
+/* No comment provided by engineer. */
+"Notes:" = "Notas:";
+
+/* No comment provided by engineer. */
+"OK" = "OK";
+
+/* Settings instruction for the user */
+"Please go to the settings to configure the application" = "Por favor acesse para preferências para configurar o aplicativo";
+
+/* No comment provided by engineer. */
+"Remove \"%@\"..." = "Remover \"%@\"...";
+
+/* No comment provided by engineer. */
+"ROMs Location:" = "Caminho das ROMs:";
+
+/* No comment provided by engineer. */
+"Running" = "Executando";
+
+/* No comment provided by engineer. */
+"Save" = "Salvar";
+
+/* No comment provided by engineer. */
+"Select or add a machine." = "Selecione ou adicione uma máquina.";
+
+/* No comment provided by engineer. */
+"Settings" = "Ajustes";
+
+/* No comment provided by engineer. */
+"Show in Finder" = "Mostrar no Finder";
+
+/* No comment provided by engineer. */
+"Size" = "Tamanho";
+
+/* No comment provided by engineer. */
+"Start" = "Iniciar";
+
+/* No comment provided by engineer. */
+"Stopped" = "Parada";
+
+/* No comment provided by engineer. */
+"System" = "Sistema";
+
+/* No comment provided by engineer. */
+"This machine must have a name" = "Esta máquina tem de ter um nome";
+
+/* No comment provided by engineer. */
+"This machine must have a name." = "Esta máquina tem de ter um nome.";
+
+/* Welcome greet for the user */
+"Welcome" = "Bem-vindo";
+
+/* No comment provided by engineer. */
+"Welcome to Swift86" = "Bem-vindo ao Swift86";
+
+/* No comment provided by engineer. */
+"You cannot undo this action." = "Você não pode desfazer esta ação.";
+

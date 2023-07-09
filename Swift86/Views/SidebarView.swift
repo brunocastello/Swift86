@@ -54,7 +54,7 @@ struct SidebarView: View {
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                     
                                     // Machine status
-                                    Text(machine.status == .running ? LocalizedStringKey("Running") : (machine.status == .stopped ? LocalizedStringKey("Stopped") : LocalizedStringKey("Configuring")))
+                                    Text(machine.status == .running ? "Running" : (machine.status == .stopped ? "Stopped" : "Configuring"))
                                         .font(.caption)
                                         .lineLimit(1)
                                 }
@@ -68,7 +68,7 @@ struct SidebarView: View {
                         Button(action: {
                             library.runMachine(machine: machine)
                         }) {
-                            Text(LocalizedStringKey("Start"))
+                            Text("Start")
                         }
                         .disabled(machine.status == .running)
                         Divider()
@@ -77,7 +77,7 @@ struct SidebarView: View {
                         Button(action: {
                             library.editMachine = machine
                         }) {
-                            Text(LocalizedStringKey("Edit..."))
+                            Text("Edit...")
                         }
                         .disabled(library.editMachine != nil)
                         
@@ -85,7 +85,7 @@ struct SidebarView: View {
                         Button(action: {
                             library.configureMachine(machine: machine)
                         }) {
-                            Text(LocalizedStringKey("Configure..."))
+                            Text("Configure...")
                         }
                         .disabled(machine.status == .configuring)
                         Divider()
@@ -94,14 +94,14 @@ struct SidebarView: View {
                         Button(action: {
                             library.clone(machine: machine)
                         }) {
-                            Text(LocalizedStringKey("Clone..."))
+                            Text("Clone...")
                         }
                         
                         // Delete machine
                         Button(action: {
                             library.delete(machine: machine)
                         }) {
-                            Text(LocalizedStringKey("Remove \"\(machine.name)\"..."))
+                            Text("Remove \"\(machine.name)\"...")
                         }
                         Divider()
                         
@@ -109,7 +109,7 @@ struct SidebarView: View {
                         Button(action: {
                             library.find(machine: machine)
                         }) {
-                            Text(LocalizedStringKey("Show in Finder"))
+                            Text("Show in Finder")
                         }
                     }
                 }
@@ -123,7 +123,7 @@ struct SidebarView: View {
                 }
             } header: {
                 // List header
-                Text(LocalizedStringKey("MACHINES"))
+                Text("MACHINES")
                     .padding(.vertical, 4)
             }
             .collapsible(false)

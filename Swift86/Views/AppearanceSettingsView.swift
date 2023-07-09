@@ -22,18 +22,18 @@ struct AppearanceSettingsView: View {
         Form {
             Group {
                 // Appearance selection
-                Picker(LocalizedStringKey("Appearance:"), selection: $appearance) {
-                    Text(LocalizedStringKey("System")).tag("")
+                Picker("Appearance:", selection: $appearance) {
+                    Text("System").tag("")
                     Divider()
-                    Text(LocalizedStringKey("Light")).tag("NSAppearanceNameAqua")
-                    Text(LocalizedStringKey("Dark")).tag("NSAppearanceNameDarkAqua")
+                    Text("Light").tag("NSAppearanceNameAqua")
+                    Text("Dark").tag("NSAppearanceNameDarkAqua")
                 }
                 .pickerStyle(.menu)
                 .frame(width: 200)
                 .padding(.bottom, 10)
-                .accessibilityLabel(LocalizedStringKey("Appearance"))
+                .accessibilityLabel("Appearance:")
             }
-            .frame(minWidth: 421)
+            .frame(minWidth: 387)
             .onChange(of: appearance) { theme in
                 // Theme changer
                 NSApp.appearance = NSAppearance(named: NSAppearance.Name(rawValue: theme))

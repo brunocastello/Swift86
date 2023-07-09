@@ -47,7 +47,7 @@ struct ContentView: View {
                 }) {
                     Label("New Machine", systemImage: "plus")
                 }
-                .help(LocalizedStringKey("New Machine"))
+                .help("New Machine")
             }
         }
         // Add new machine
@@ -60,9 +60,9 @@ struct ContentView: View {
         }
         // Reusable alerts for errors
         .alert(library.alertTitle, isPresented: $library.showAlert) {
-            Button(LocalizedStringKey("OK"), action: library.alertOK ?? { })
+            Button("OK", action: library.alertOK ?? { })
             if library.showCancel {
-                Button(LocalizedStringKey("Cancel"), role: .cancel, action: {})
+                Button("Cancel", role: .cancel, action: {})
             }
         } message: {
             Text(library.alertMessage)

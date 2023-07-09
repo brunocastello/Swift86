@@ -23,10 +23,10 @@ struct WelcomeView: View {
     var body: some View {
         VStack {
             // Welcome message
-            Text(LocalizedStringKey("Welcome to Swift86"))
+            Text("Welcome to Swift86")
                 .font(.system(size: 20, weight: .medium))
                 .padding(.bottom, 2)
-            Text(LocalizedStringKey("Select or add a machine."))
+            Text("Select or add a machine.")
                 .font(.title3)
                 .foregroundColor(.secondary)
 
@@ -39,7 +39,7 @@ struct WelcomeView: View {
                         Image(systemName: "plus.circle")
                             .font(.system(size: 48))
                             .padding(.bottom, 8)
-                        Text(LocalizedStringKey("Add machine"))
+                        Text("New Machine")
                     }
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 150, maxHeight: 150, alignment: .center)
@@ -55,7 +55,7 @@ struct WelcomeView: View {
                         Image(systemName: "questionmark.circle")
                             .font(.system(size: 48))
                             .padding(.bottom, 8)
-                        Text(LocalizedStringKey("Documentation"))
+                        Text("Documentation")
                     }
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 150, maxHeight: 150, alignment: .center)
@@ -71,7 +71,7 @@ struct WelcomeView: View {
                         Image(systemName: "ellipsis.message")
                             .font(.system(size: 48))
                             .padding(.bottom, 8)
-                        Text(LocalizedStringKey("86Box Discord"))
+                        Text("86Box Discord")
                     }
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 150, maxHeight: 150, alignment: .center)

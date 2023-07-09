@@ -38,7 +38,7 @@ struct EditMachineView: View {
         VStack(spacing: 0) {
             VStack(alignment: .leading) {
                 // Machine name input
-                Text(LocalizedStringKey("Name"))
+                Text("Name:")
                 HStack {
                     TextField("", text: $machine.name)
                         .textFieldStyle(.squareBorder)
@@ -49,7 +49,7 @@ struct EditMachineView: View {
                 .padding([.bottom], 8)
                 
                 // Machine notes input
-                Text(LocalizedStringKey("Notes"))
+                Text("Notes:")
                 HStack {
                     TextEditor(text: $machine.notes)
                         .textFieldStyle(.squareBorder)
@@ -62,7 +62,7 @@ struct EditMachineView: View {
                 .padding([.bottom], 8)
             
                 // Machine icon thumbnail
-                Text(LocalizedStringKey("Icon"))
+                Text("Icon:")
                 HStack {
                     // Thumbnail
                     VStack {
@@ -86,8 +86,8 @@ struct EditMachineView: View {
                     VStack {
                         // Radio Button toggle
                         Picker(selection: $machine.iconCustom, label: EmptyView()) {
-                            Text(LocalizedStringKey("Default icon")).tag(false)
-                            Text(LocalizedStringKey("Custom icon")).tag(true)
+                            Text("Default icon").tag(false)
+                            Text("Custom icon").tag(true)
                         }
                         .pickerStyle(RadioGroupPickerStyle())
                     }
@@ -107,7 +107,7 @@ struct EditMachineView: View {
                         // Dismiss view
                         presentationMode.wrappedValue.dismiss()
                     }) {
-                        Text(LocalizedStringKey("Cancel"))
+                        Text("Cancel")
                             .standardStyle()
                     }
                     .keyboardShortcut(.cancelAction)
@@ -124,7 +124,7 @@ struct EditMachineView: View {
                         }
                         presentationMode.wrappedValue.dismiss()
                     }) {
-                        Text(LocalizedStringKey("Save"))
+                        Text("Save")
                             .standardStyle()
                     }
                     .disabled(machine.name.isEmpty)

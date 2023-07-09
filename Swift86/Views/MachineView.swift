@@ -52,7 +52,7 @@ struct MachineView: View {
                             Text(machine.name)
                                 .font(.system(.title2, design: .rounded))
                                 .fontWeight(.semibold)
-                            Text(machine.status == .running ? LocalizedStringKey("Running") : (machine.status == .stopped ? LocalizedStringKey("Stopped") : LocalizedStringKey("Configuring")))
+                            Text(machine.status == .running ? "Running" : (machine.status == .stopped ? "Stopped" : "Configuring"))
                                 .font(.callout)
                                 .foregroundColor(.secondary)
                         }
@@ -98,7 +98,7 @@ struct MachineView: View {
                                 Text(machine.notes)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             } else {
-                                Text(LocalizedStringKey("Click here to add a note"))
+                                Text("Click here to add a note")
                                     .foregroundColor(.gray)
                                     .frame(maxWidth: .infinity, alignment: .leading)
                             }
@@ -111,7 +111,7 @@ struct MachineView: View {
                         
                         Section {
                             // Machine size
-                            LabeledContent(LocalizedStringKey("Size"), value: library.sizeOf(machine: machine.name) ?? "0 KB")
+                            LabeledContent("Size", value: library.sizeOf(machine: machine.name) ?? "0 KB")
                         }
                     }
                     .formStyle(.grouped)
