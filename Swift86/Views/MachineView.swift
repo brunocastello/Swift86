@@ -111,7 +111,7 @@ struct MachineView: View {
                         
                         Section {
                             // Machine size
-                            LabeledContent(LocalizedStringKey("Size"), value: machineSize ?? "0 KB")
+                            LabeledContent(LocalizedStringKey("Size"), value: library.sizeOf(machine: machine.name) ?? "0 KB")
                         }
                     }
                     .formStyle(.grouped)
@@ -119,14 +119,6 @@ struct MachineView: View {
                 }
             }
             .navigationSubtitle(machine.name)
-            .onAppear {
-                // Show machine size on view load
-                machineSize = library.sizeOf(machine: machine.name)
-            }
-            .onChange(of: machine.status) { _ in
-                // Update machine size on status changes
-                machineSize = library.sizeOf(machine: machine.name)
-            }
         } else {
             // Welcome view
             WelcomeView()
