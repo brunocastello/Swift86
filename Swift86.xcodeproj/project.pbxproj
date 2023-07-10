@@ -29,6 +29,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		DE1BCA4D2A5CB58000C57940 /* tr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = tr; path = tr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		DE2AF0DA2A467E120060CEAF /* Swift86.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Swift86.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DE2AF0DD2A467E120060CEAF /* Swift86App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Swift86App.swift; sourceTree = "<group>"; };
 		DE2AF0E12A467E120060CEAF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -194,6 +195,7 @@
 				es,
 				ca,
 				pl,
+				tr,
 			);
 			mainGroup = DE2AF0D12A467E120060CEAF;
 			productRefGroup = DE2AF0DB2A467E120060CEAF /* Products */;
@@ -252,6 +254,7 @@
 				DE6A2F4D2A5B4BEC00E8B10E /* ca */,
 				DE6A2F4E2A5B4BF600E8B10E /* es */,
 				DE66F78B2A5B5399009212D2 /* pl */,
+				DE1BCA4D2A5CB58000C57940 /* tr */,
 			);
 			name = Localizable.strings;
 			sourceTree = "<group>";
@@ -391,7 +394,7 @@
 				CODE_SIGN_ENTITLEMENTS = Swift86/Swift86.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = "Beta 4";
+				CURRENT_PROJECT_VERSION = "Beta 4.1";
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"Swift86/Preview Content\"";
 				DEVELOPMENT_TEAM = 53AGWD6XKH;
@@ -423,7 +426,7 @@
 				CODE_SIGN_ENTITLEMENTS = Swift86/Swift86.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = "Beta 4";
+				CURRENT_PROJECT_VERSION = "Beta 4.1";
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"Swift86/Preview Content\"";
 				DEVELOPMENT_TEAM = 53AGWD6XKH;

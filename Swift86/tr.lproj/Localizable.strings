@@ -1,0 +1,156 @@
+/* No comment provided by engineer. */
+"86Box Discord" = "86Box Discord";
+
+/* No comment provided by engineer. */
+"An error occurred" = "Bir hata oluştu";
+
+/* No comment provided by engineer. */
+"Appearance" = "Görünüm";
+
+/* No comment provided by engineer. */
+"Appearance:" = "Görünüm:";
+
+/* No comment provided by engineer. */
+"Are you sure you want to delete \"%@\" permanently?" = "\"%@\" makinesini kalıcı olarak silmek istediğinizden emin misiniz?";
+
+/* No comment provided by engineer. */
+"Browse..." = "Göz at...";
+
+/* No comment provided by engineer. */
+"Cancel" = "İptal et";
+
+/* No comment provided by engineer. */
+"Click here to add a note" = "Bir not eklemek için buraya tıklayın";
+
+/* No comment provided by engineer. */
+"Clone..." = "Klonla...";
+
+/* No comment provided by engineer. */
+"Configure..." = "Yapılandır...";
+
+/* No comment provided by engineer. */
+"Configuring" = "Yapılandırma";
+
+/* No comment provided by engineer. */
+"Could not find machine \"%@\"" = "\"%@\" makinesi bulunamadı";
+
+/* No comment provided by engineer. */
+"Could not save machine \"%@\"" = "\"%@\" makinesi kaydedilemedi";
+
+/* No comment provided by engineer. */
+"Custom icon" = "Özel imge";
+
+/* No comment provided by engineer. */
+"Customize Path" = "Dizini Yapılandır";
+
+/* No comment provided by engineer. */
+"Dark" = "Koyu";
+
+/* No comment provided by engineer. */
+"Default icon" = "Varsayılan simge";
+
+/* No comment provided by engineer. */
+"Default Path" = "Varsayılan Dizin";
+
+/* No comment provided by engineer. */
+"Documentation" = "Belgeler";
+
+/* No comment provided by engineer. */
+"Edit..." = "Düzenle...";
+
+/* No comment provided by engineer. */
+"Emulator:" = "Emülatör:";
+
+/* No comment provided by engineer. */
+"Error" = "Hata";
+
+/* No comment provided by engineer. */
+"Error cloning machine \"%@\"" = "\"%@\" makinesini klonlarken bir hata oluştu";
+
+/* No comment provided by engineer. */
+"Error deleting icon for machine \"%@\"" = "\"%@\" makinesinin simgesini silerken bir hata oluştu";
+
+/* No comment provided by engineer. */
+"Error deleting machine \"%@\"" = "\"%@\" makinesini silerken bir hata oluştu";
+
+/* No comment provided by engineer. */
+"Error saving icon for machine \"%@\"" = "\"%@\" makinesinin simgesini kaydederken bir hata oluştu";
+
+/* No comment provided by engineer. */
+"Error saving machine \"%@\"" = "\"%@\" makinesini kaydederken bir hata oluştu";
+
+/* No comment provided by engineer. */
+"General" = "Genel";
+
+/* No comment provided by engineer. */
+"Icon:" = "Simge:";
+
+/* No comment provided by engineer. */
+"Light" = "Açık";
+
+/* No comment provided by engineer. */
+"MACHINES" = "MAKİNELER";
+
+/* No comment provided by engineer. */
+"Machines:" = "Makineler:";
+
+/* No comment provided by engineer. */
+"Name:" = "İsim:";
+
+/* No comment provided by engineer. */
+"New Machine" = "Yeni Makine";
+
+/* No comment provided by engineer. */
+"Notes:" = "Notlar:";
+
+/* No comment provided by engineer. */
+"OK" = "Tamam";
+
+/* No comment provided by engineer. */
+"Please configure the application in Settings" = "Lütfen uygulamayı Ayarlar'dan yapılandırınız";
+
+/* No comment provided by engineer. */
+"Remove \"%@\"..." = "\"%@\" makinesini sil...";
+
+/* No comment provided by engineer. */
+"ROMs:" = "ROM dosyaları:";
+
+/* No comment provided by engineer. */
+"Running" = "Çalışıyor";
+
+/* No comment provided by engineer. */
+"Save" = "Kaydet";
+
+/* No comment provided by engineer. */
+"Select or add a machine." = "Bir makine seçin veya ekleyin.";
+
+/* No comment provided by engineer. */
+"Settings" = "Ayarlar";
+
+/* No comment provided by engineer. */
+"Show in Finder" = "Finder'da göster";
+
+/* No comment provided by engineer. */
+"Size" = "Boyut";
+
+/* No comment provided by engineer. */
+"Start" = "Başlat";
+
+/* No comment provided by engineer. */
+"Stopped" = "Durduruldu";
+
+/* No comment provided by engineer. */
+"System" = "Sistem";
+
+/* No comment provided by engineer. */
+"This machine must have a name." = "Bu makinenin bir ismi olmalıdır.";
+
+/* No comment provided by engineer. */
+"Welcome" = "Hoşgeldiniz";
+
+/* No comment provided by engineer. */
+"Welcome to Swift86" = "Swift86'ya hoşgeldiniz";
+
+/* No comment provided by engineer. */
+"You cannot undo this action." = "Bu eylemi geri alamazsınız.";
+
