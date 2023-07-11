@@ -10,6 +10,11 @@
         <target>86Box Discord</target>
         <note>No comment provided by engineer.</note>
       </trans-unit>
+      <trans-unit id="A machine with this name already exists." xml:space="preserve">
+        <source>A machine with this name already exists.</source>
+        <target>A machine with this name already exists.</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
       <trans-unit id="An error occurred" xml:space="preserve">
         <source>An error occurred</source>
         <target>An error occurred</target>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 http://docs.oasis-open.org/xliff/v1.2/os/xliff-core-1.2-strict.xsd">
-  <file original="Swift86/en.lproj/Localizable.strings" datatype="plaintext" source-language="en" target-language="pt-BR">
+  <file original="Swift86/en.lproj/Localizable.strings" source-language="en" target-language="pt-BR" datatype="plaintext">
     <header>
       <tool tool-id="com.apple.dt.xcode" tool-name="Xcode" tool-version="14.3" build-num="14E222b"/>
     </header>
@@ -8,6 +8,11 @@
       <trans-unit id="86Box Discord" xml:space="preserve">
         <source>86Box Discord</source>
         <target>86Box Discord</target>
+        <note>No comment provided by engineer.</note>
+      </trans-unit>
+      <trans-unit id="A machine with this name already exists." xml:space="preserve">
+        <source>A machine with this name already exists.</source>
+        <target>Uma máquina com este nome já existe.</target>
         <note>No comment provided by engineer.</note>
       </trans-unit>
       <trans-unit id="An error occurred" xml:space="preserve">

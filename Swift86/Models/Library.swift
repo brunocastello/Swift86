@@ -147,6 +147,19 @@ class Library: ObservableObject, Identifiable {
     func create(machine: Machine) {
         // Set machine folder path
         let machineURL = machinesURL.appendingPathComponent(machine.name)
+        
+        // Check for an existing machine with same name
+        for existingMachine in machines {
+            if existingMachine.name == machine.name {
+                // Error saving machine
+                alertTitle = String(format: NSLocalizedString("Error saving machine \"%@\"", comment: ""), machine.name)
+                alertMessage = NSLocalizedString("A machine with this name already exists.", comment: "")
+                alertOK = { }
+                showCancel = false
+                showAlert = true
+                return
+            }
+        }
 
         do {
             // Create machine folder
@@ -154,7 +167,7 @@ class Library: ObservableObject, Identifiable {
 
             // Save machine
             save(machine: machine, url: machineURL)
-        } catch {
+        } catch let error {
             // Error saving machine
             alertTitle = String(format: NSLocalizedString("Error saving machine \"%@\"", comment: ""), machine.name)
             alertMessage = NSLocalizedString(error.localizedDescription, comment: "")
@@ -189,11 +202,18 @@ class Library: ObservableObject, Identifiable {
         }
         
         do {
-            // Move the machine
-            try FileManager.default.moveItem(at: oldMachineURL, to: machineURL)
-            
+            // Move the machine if the name changed
+            if oldMachine.name != machine.name {
+                try FileManager.default.copyItem(at: oldMachineURL, to: machineURL)
+            }
+
             // Update existing machine
             save(machine: machine, url: machineURL)
+            
+            // Move the machine if the name changed
+            if oldMachine.name != machine.name {
+                try FileManager.default.removeItem(at: oldMachineURL)
+            }
         } catch let error {
             // Error editing machine
             alertTitle = String(format: NSLocalizedString("Error saving machine \"%@\"", comment: ""), machine.name)
@@ -212,7 +232,7 @@ class Library: ObservableObject, Identifiable {
         var machine = machine
         
         // Stop saving machine due to an error
-        // (Avoids losing entire library)
+        // (Avoids losing entire library!)
         if machine.name.isEmpty {
             alertTitle = NSLocalizedString("Error", comment: "")
             alertMessage = NSLocalizedString("This machine must have a name.", comment: "")
@@ -236,37 +256,20 @@ class Library: ObservableObject, Identifiable {
             machine.icon = ""
         }
         
-        // Create machine property list
-        let machineInfo: [String: Any] = [
-            "Id": machine.id.uuidString,
-            "Name": machine.name,
-            "IconCustom": machine.iconCustom,
-            "Icon": machine.icon,
-            "Notes": machine.notes
-        ]
-
-        // Save machine property list
-        guard NSDictionary(dictionary: ["Information": machineInfo]).write(to: plist, atomically: true) else {
-            alertTitle = NSLocalizedString("Error", comment: "")
-            alertMessage = String(format: NSLocalizedString("Could not save machine \"%@\"", comment: ""), machine.name)
-            alertOK = { }
-            showCancel = false
-            showAlert = true
-            return
-        }
-        
         // If user selected a custom icon
         if machine.iconCustom && !machine.icon.isEmpty {
             // Custom icon
             do {
                 // Delete old image
-                if FileManager.default.fileExists(atPath: icon.path) {
+                if FileManager.default.fileExists(atPath: icon.path) && newIcon.path != icon.path {
                     try FileManager.default.removeItem(atPath: icon.path)
                     machine.icon = ""
                 }
                 
                 // Save image if new icon
-                try FileManager.default.copyItem(at: newIcon, to: icon)
+                if newIcon.path != icon.path {
+                    try FileManager.default.copyItem(at: newIcon, to: icon)
+                }
                 machine.icon = icon.path
             } catch {
                 alertTitle = String(format: NSLocalizedString("Error saving icon for machine \"%@\"", comment: ""), machine.name)
@@ -292,6 +295,25 @@ class Library: ObservableObject, Identifiable {
                 showAlert = true
                 return
             }
+        }
+        
+        // Create machine property list
+        let machineInfo: [String: Any] = [
+            "Id": machine.id.uuidString,
+            "Name": machine.name,
+            "IconCustom": machine.iconCustom,
+            "Icon": machine.icon,
+            "Notes": machine.notes
+        ]
+
+        // Save machine property list
+        guard NSDictionary(dictionary: ["Information": machineInfo]).write(to: plist, atomically: true) else {
+            alertTitle = NSLocalizedString("Error", comment: "")
+            alertMessage = String(format: NSLocalizedString("Could not save machine \"%@\"", comment: ""), machine.name)
+            alertOK = { }
+            showCancel = false
+            showAlert = true
+            return
         }
         
         // Save machine into library
