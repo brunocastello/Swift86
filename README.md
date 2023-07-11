@@ -5,3 +5,11 @@
 
 If you want to translate Swift86 to other languages, I recommend you to watch this WWDC 2021 video to learn how to do it:
 https://developer.apple.com/videos/play/wwdc2021/10220/
+
+**Existing Translations**
+- English
+- Brazilian Portuguese
+- Spanish
+- Catalan
+- Polish
+- Turkish
