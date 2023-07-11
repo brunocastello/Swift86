@@ -12,7 +12,7 @@
       </trans-unit>
       <trans-unit id="A machine with this name already exists." xml:space="preserve">
         <source>A machine with this name already exists.</source>
-        <target>Maszyna o tej nazwie już istnieje.</target>
+        <target>Już istnieje maszyna o tej nazwie.</target>
         <note>No comment provided by engineer.</note>
       </trans-unit>
       <trans-unit id="An error occurred" xml:space="preserve">
