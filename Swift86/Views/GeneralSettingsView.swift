@@ -140,7 +140,7 @@ struct GeneralSettingsView: View {
         .onReceive(NotificationCenter.default.publisher(for: NSWindow.willCloseNotification)) { notification in
             // Reset ROMs path and checkbox if same as default after Settings window close
             if let window = notification.object as? NSWindow, window.identifier?.rawValue == "com_apple_SwiftUI_Settings_window",
-               romsPath == UserDefaults.standard.object(forKey: "RomsPath") as! String, customROMs == true {
+               romsPath == AppSettings.shared.romsPath, customROMs == true {
                 UserDefaults.standard.set(appSettings.customROMs, forKey: "CustomROMs")
            }
         }
