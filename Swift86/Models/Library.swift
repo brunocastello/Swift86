@@ -26,8 +26,12 @@ class Library: ObservableObject, Identifiable {
         let string = UserDefaults.standard.string(forKey: "EmulatorPath") ?? AppSettings.shared.emulatorPath
         let path = string
         
+        // Extract app name for binary execution
+        let appURL = URL(filePath: path)
+        let appName = appURL.deletingPathExtension().lastPathComponent
+        
         // Return the unwrapped URL
-        return URL(filePath: path).appendingPathComponent("/Contents/MacOS/86Box")
+        return URL(filePath: path).appendingPathComponent("/Contents/MacOS/\(appName)")
     }
     
     // Machines library location
