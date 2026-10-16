@@ -16,7 +16,7 @@ struct SettingsView: View {
     // MARK: - Environment Objects
     
     // Environment object application settings
-    @StateObject private var appSettings = AppSettings()
+    @EnvironmentObject var settings: SettingsStore
     
     // MARK: - Settings Tabs
     
@@ -35,7 +35,6 @@ struct SettingsView: View {
         TabView(selection: $selection) {
             // General tab
             GeneralSettingsView()
-                .environmentObject(appSettings)
                 .tabItem {
                     Label("General", systemImage: "gearshape")
                 }
@@ -47,6 +46,12 @@ struct SettingsView: View {
                 }
                 .tag(Tabs.appearance)
         }
+        .onDisappear {
+            // Reset ROMs path and checkbox if same as default after Settings window close
+            if settings.config.customROMs && settings.config.romsPath == AppConfig.defaults.romsPath {
+                settings.config.customROMs = false
+            }
+        }
     }
 }
 
@@ -55,5 +60,6 @@ struct SettingsView: View {
 struct SettingsView_Previews: PreviewProvider {
     static var previews: some View {
         SettingsView()
+            .environmentObject(SettingsStore.shared)
     }
 }

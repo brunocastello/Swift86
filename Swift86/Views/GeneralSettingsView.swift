@@ -7,6 +7,7 @@
 
 // Import necessary frameworks and libraries
 import SwiftUI
+import UniformTypeIdentifiers
 
 // MARK: - Settings View
 
@@ -16,13 +17,20 @@ struct GeneralSettingsView: View {
     // MARK: - Environment Objects
     
     // Environment object application settings
-    @EnvironmentObject var appSettings: AppSettings
+    @EnvironmentObject var settings: SettingsStore
     
     // MARK: - Properties
-    @AppStorage("EmulatorPath") private var emulatorPath: String = ""
-    @AppStorage("MachinesPath") private var machinesPath: String = ""
-    @AppStorage("RomsPath") private var romsPath: String = ""
-    @AppStorage("CustomROMs") private var customROMs: Bool = false
+    
+    // Path currently being chosen in the file importer
+    @State private var browseTarget: BrowseTarget?
+    
+    // Is the file importer showing?
+    @State private var isImporterPresented = false
+    
+    // Paths that can be browsed
+    private enum BrowseTarget {
+        case emulator, machines, roms
+    }
 
     // MARK: - Scene
     
@@ -32,7 +40,7 @@ struct GeneralSettingsView: View {
             Group {
                 // Show location
                 LabeledContent("Emulator:") {
-                    PathControl(path: $emulatorPath)
+                    PathControl(path: $settings.config.emulatorPath)
                         .frame(height: 22)
                 }
                 .accessibilityLabel("Emulator:")
@@ -40,7 +48,8 @@ struct GeneralSettingsView: View {
                 HStack {
                     // Browse location
                     Button(action: {
-                        appSettings.browsePath(path: emulatorPath, key: "EmulatorPath")
+                        browseTarget = .emulator
+                        isImporterPresented = true
                     }) {
                         Text("Browse...")
                     }
@@ -48,7 +57,7 @@ struct GeneralSettingsView: View {
                     
                     // Reset default location
                     Button(action: {
-                        UserDefaults.standard.set(appSettings.emulatorPath, forKey: "EmulatorPath")
+                        settings.config.emulatorPath = AppConfig.defaults.emulatorPath
                     }) {
                         Text("Default Path")
                     }
@@ -61,7 +70,7 @@ struct GeneralSettingsView: View {
             Group {
                 // Show location
                 LabeledContent("Machines:") {
-                    PathControl(path: $machinesPath)
+                    PathControl(path: $settings.config.machinesPath)
                         .frame(height: 22)
                 }
                 .accessibilityLabel("Machines:")
@@ -69,7 +78,8 @@ struct GeneralSettingsView: View {
                 HStack {
                     // Browse location
                     Button(action: {
-                        appSettings.browsePath(path: machinesPath, key: "MachinesPath")
+                        browseTarget = .machines
+                        isImporterPresented = true
                     }) {
                         Text("Browse...")
                     }
@@ -77,7 +87,7 @@ struct GeneralSettingsView: View {
                     
                     // Reset default location
                     Button(action: {
-                        UserDefaults.standard.set(appSettings.machinesPath, forKey: "MachinesPath")
+                        settings.config.machinesPath = AppConfig.defaults.machinesPath
                     }) {
                         Text("Default Path")
                     }
@@ -90,8 +100,8 @@ struct GeneralSettingsView: View {
             Group {
                 // Show location
                 LabeledContent("ROMs:") {
-                    if customROMs {
-                        PathControl(path: $romsPath)
+                    if settings.config.customROMs {
+                        PathControl(path: $settings.config.romsPath)
                             .frame(height: 22)
                     } else {
                         Text("Default Path")
@@ -104,45 +114,69 @@ struct GeneralSettingsView: View {
                 HStack {
                     // Browse location
                     Button(action: {
-                        appSettings.browsePath(path: romsPath, key: "RomsPath")
+                        browseTarget = .roms
+                        isImporterPresented = true
                     }) {
                         Text("Browse...")
                     }
                     .accessibilityLabel("Browse...")
-                    .disabled(!customROMs)
+                    .disabled(!settings.config.customROMs)
 
                     // Reset default location
                     Button(action: {
                         // Reset path and checkbox
-                        UserDefaults.standard.set(appSettings.customROMs, forKey: "CustomROMs")
+                        settings.config.customROMs = false
                     }) {
                         Text("Default Path")
                     }
                     .accessibilityLabel("Default Path")
-                    .disabled(!customROMs)
+                    .disabled(!settings.config.customROMs)
                 }
 
                 // Toggle visibility of this section
-                Toggle(isOn: $customROMs) {
+                Toggle(isOn: $settings.config.customROMs) {
                     Text("Customize Path")
                 }
                 .accessibilityLabel("Customize Path")
                 .padding(.bottom, 10)
-                .onChange(of: customROMs) { customROMs in
+                .onChange(of: settings.config.customROMs) { customROMs in
                     if customROMs == false {
-                        UserDefaults.standard.set(appSettings.romsPath, forKey: "RomsPath")
+                        settings.config.romsPath = AppConfig.defaults.romsPath
                     }
                 }
             }
         }
         .fixedSize()
         .padding(EdgeInsets(top: 16, leading: 32, bottom: 16, trailing: 32))
-        .onReceive(NotificationCenter.default.publisher(for: NSWindow.willCloseNotification)) { notification in
-            // Reset ROMs path and checkbox if same as default after Settings window close
-            if let window = notification.object as? NSWindow, window.identifier?.rawValue == "com_apple_SwiftUI_Settings_window",
-               romsPath == AppSettings.shared.romsPath, customROMs == true {
-                UserDefaults.standard.set(appSettings.customROMs, forKey: "CustomROMs")
-           }
+        // Browse for the selected path
+        .fileImporter(
+            isPresented: $isImporterPresented,
+            allowedContentTypes: browseTarget == .emulator ? [.applicationBundle] : [.folder],
+            allowsMultipleSelection: false
+        ) { result in
+            if case .success(let urls) = result, let url = urls.first {
+                // Update the matching path
+                switch browseTarget {
+                case .emulator: settings.config.emulatorPath = url.path
+                case .machines: settings.config.machinesPath = url.path
+                case .roms: settings.config.romsPath = url.path
+                case nil: break
+                }
+            }
+            browseTarget = nil
+        }
+        .fileDialogStartingDirectory(startingDirectory)
+    }
+    
+    // MARK: - Helpers
+    
+    // Folder the file importer opens in
+    private var startingDirectory: URL? {
+        switch browseTarget {
+        case .emulator: return URL(filePath: settings.config.emulatorPath).deletingLastPathComponent()
+        case .machines: return URL(filePath: settings.config.machinesPath)
+        case .roms: return URL(filePath: settings.config.romsPath)
+        case nil: return nil
         }
     }
 }
@@ -152,5 +186,20 @@ struct GeneralSettingsView: View {
 struct GeneralSettingsView_Previews: PreviewProvider {
     static var previews: some View {
         GeneralSettingsView()
+            .environmentObject(SettingsStore.shared)
+    }
+}
+
+// MARK: - File Dialog Helper
+
+extension View {
+    // Open the file importer in a given folder (macOS 14 and later)
+    @ViewBuilder
+    fileprivate func fileDialogStartingDirectory(_ url: URL?) -> some View {
+        if #available(macOS 14, *) {
+            self.fileDialogDefaultDirectory(url)
+        } else {
+            self
+        }
     }
 }

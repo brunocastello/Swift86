@@ -89,33 +89,31 @@ struct MachineView: View {
                         }
                         .buttonStyle(MachineButtonStyle(isDisabled: false))
                     }
-                    .padding(EdgeInsets(top: 20, leading: 20, bottom: 10, trailing: 20))
+                    .padding(EdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20))
                     
-                    Form {
-                        Section {
-                            // Machine description
+                    VStack(alignment: .leading, spacing: 10) {
+                        // Machine description
+                        Group {
                             if !machine.notes.isEmpty {
                                 Text(machine.notes)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
                             } else {
                                 Text("Click here to add a note")
                                     .foregroundColor(.gray)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
                             }
                         }
+                        .panelStyle()
+                        .contentShape(Rectangle())
                         .onTapGesture {
                             if machine.notes.isEmpty {
                                 library.editMachine = machine
                             }
                         }
-                        
-                        Section {
-                            // Machine size
-                            LabeledContent("Size", value: library.sizeOf(machine: machine.name) ?? "0 KB")
-                        }
+
+                        // Machine size
+                        LabeledContent("Size", value: library.sizeOf(machine: machine.name) ?? "0 KB")
+                            .panelStyle()
                     }
-                    .formStyle(.grouped)
-                    .padding(.top, -8)
+                    .padding(EdgeInsets(top: 0, leading: 20, bottom: 20, trailing: 20))
                 }
             }
             .navigationSubtitle(machine.name)

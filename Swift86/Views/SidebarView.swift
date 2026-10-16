@@ -20,8 +20,8 @@ struct SidebarView: View {
     
     // MARK: - Properties
     
-    // Default machines library path
-    @AppStorage("MachinesPath") private var machinesPath: String = ""
+    // Application settings
+    @EnvironmentObject var settings: SettingsStore
 
     // MARK: - Scene
     
@@ -117,16 +117,16 @@ struct SidebarView: View {
                 .onMove { indices, newOffset in
                     library.move(fromOffsets: indices, toOffset: newOffset)
                 }
-                // Update list on changes to path
-                .onChange(of: machinesPath) { _ in
-                    library.load()
-                }
             } header: {
                 // List header
                 Text("MACHINES")
                     .padding(.vertical, 4)
             }
             .collapsible(false)
+        }
+        // Update list on changes to path
+        .onChange(of: settings.config.machinesPath) { _ in
+            library.load()
         }
     }
 }
@@ -136,6 +136,7 @@ struct SidebarView: View {
 struct SidebarView_Previews: PreviewProvider {
     static var previews: some View {
         SidebarView()
+            .environmentObject(SettingsStore.shared)
             .environmentObject(Library())
     }
 }

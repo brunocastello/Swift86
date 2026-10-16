@@ -20,29 +20,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // Disables the automatic tabbing behavior for windows
         NSWindow.allowsAutomaticWindowTabbing = false
         
-        // Set default values for UserDefaults
-        let settings: [String: Any] = [
-            "EmulatorPath": AppSettings.shared.emulatorPath,
-            "MachinesPath": AppSettings.shared.machinesPath,
-            "RomsPath": AppSettings.shared.romsPath,
-            "CustomROMs": AppSettings.shared.customROMs,
-            "Appearance": AppSettings.shared.appearance
-        ]
-
-        // Check if any of the keys in the settings dictionary is empty and update its value if necessary
-        for (key, value) in settings {
-            if UserDefaults.standard.object(forKey: key) == nil {
-                UserDefaults.standard.set(value, forKey: key)
-            }
-        }
-        
-        // Register default values for UserDefaults
-        UserDefaults.standard.register(defaults: settings)
-        
         // Set application user appearance preference
-        if let theme = UserDefaults.standard.object(forKey: "Appearance") as? String {
-            NSApp.appearance = NSAppearance(named: NSAppearance.Name(rawValue: theme))
-        }
+        let theme = SettingsStore.shared.config.appearance
+        NSApp.appearance = NSAppearance(named: NSAppearance.Name(rawValue: theme))
     }
     
     // Function called when the application becomes active

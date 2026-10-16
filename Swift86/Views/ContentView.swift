@@ -50,6 +50,9 @@ struct ContentView: View {
                 .help("New Machine")
             }
         }
+        // Keep the classic opaque toolbar under the macOS 26+ design
+        .toolbarBackground(.visible, for: .windowToolbar)
+        .windowToolbarBackgroundVisible()
         // Add new machine
         .sheet(item: $library.newMachine) { machine in
             EditMachineView(machine: machine, isUpdating: false)
@@ -75,6 +78,21 @@ struct ContentView: View {
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
+            .environmentObject(SettingsStore.shared)
             .environmentObject(Library())
+    }
+}
+
+// MARK: - Helpers
+
+extension View {
+    // Force the window toolbar background to be visible (macOS 15 and later)
+    @ViewBuilder
+    fileprivate func windowToolbarBackgroundVisible() -> some View {
+        if #available(macOS 15, *) {
+            self.toolbarBackgroundVisibility(.visible, for: .windowToolbar)
+        } else {
+            self
+        }
     }
 }

@@ -13,8 +13,10 @@ import SwiftUI
 // Application settings view
 struct AppearanceSettingsView: View {
     
-    // MARK: - Properties
-    @AppStorage("Appearance") private var appearance: String = ""
+    // MARK: - Environment Objects
+    
+    // Environment object application settings
+    @EnvironmentObject var settings: SettingsStore
     
     // MARK: - Scene
     
@@ -22,7 +24,7 @@ struct AppearanceSettingsView: View {
         Form {
             Group {
                 // Appearance selection
-                Picker("Appearance:", selection: $appearance) {
+                Picker("Appearance:", selection: $settings.config.appearance) {
                     Text("System").tag("")
                     Divider()
                     Text("Light").tag("NSAppearanceNameAqua")
@@ -34,7 +36,7 @@ struct AppearanceSettingsView: View {
                 .accessibilityLabel("Appearance:")
             }
             .frame(minWidth: 387)
-            .onChange(of: appearance) { theme in
+            .onChange(of: settings.config.appearance) { theme in
                 // Theme changer
                 NSApp.appearance = NSAppearance(named: NSAppearance.Name(rawValue: theme))
             }
@@ -49,5 +51,6 @@ struct AppearanceSettingsView: View {
 struct AppearanceSettingsView_Previews: PreviewProvider {
     static var previews: some View {
         AppearanceSettingsView()
+            .environmentObject(SettingsStore.shared)
     }
 }

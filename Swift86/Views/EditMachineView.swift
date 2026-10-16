@@ -79,7 +79,7 @@ struct EditMachineView: View {
                                 }
                             }
                     }
-                    .background(Color(NSColor.windowBackgroundColor))
+                    .background(Color.tileBackground)
                     .cornerRadius(8)
                     
                     // Toggle default or custom icon

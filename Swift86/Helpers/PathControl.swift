@@ -11,73 +11,94 @@ import SwiftUI
 // MARK: - PathControl
 
 // Path bar like Finder
-struct PathControl: NSViewRepresentable {
+struct PathControl: View {
 
     // MARK: - Properties
 
     // Path
     @Binding var path: String
 
-    // MARK: - Methods
+    // One clickable component of the path
+    private struct Segment: Identifiable {
+        let id: Int
+        let name: String
+        let fullPath: String
+        let icon: NSImage
+    }
 
-    // Creates the NSPathControl and sets its properties
-    func makeNSView(context: Context) -> NSPathControl {
-        let pathControl = NSPathControl()
-        pathControl.pathStyle = .standard
-        pathControl.focusRingType = .none
+    // MARK: - Segments
+
+    // Split the path into components, from the root to the item
+    private var segments: [Segment] {
+        // Interpret user home folder paths
+        let url = URL(fileURLWithPath: (path as NSString).expandingTildeInPath).standardizedFileURL
+        var current = ""
+        return url.pathComponents.enumerated().map { index, component in
+            current = index == 0 ? component : (current as NSString).appendingPathComponent(component)
+            return Segment(id: index, name: FileManager.default.displayName(atPath: current), fullPath: current, icon: NSWorkspace.shared.icon(forFile: current))
+        }
+    }
+
+    // MARK: - Scene
+
+    var body: some View {
+        let all = segments
         
-        // Set the action for the NSPathControl
-        pathControl.action = #selector(Coordinator.pathControlClicked(_:))
-        pathControl.target = context.coordinator
-
-        return pathControl
-    }
-
-    // Updates the NSPathControl with the current path
-    func updateNSView(_ nsView: NSPathControl, context: Context) {
-        nsView.url = URL(fileURLWithPath: path)
-    }
-
-    // Interpret user home folder paths
-    private func expandPath(_ path: String?) -> String? {
-        if let path = path {
-            if path.hasPrefix("~") {
-                let homeDirectoryPath = (path as NSString).expandingTildeInPath
-                return homeDirectoryPath
+        // Show as many components as fit, replacing the leading ones with an ellipsis
+        ViewThatFits(in: .horizontal) {
+            ForEach(0..<max(all.count - 1, 1), id: \.self) { hidden in
+                row(all, hidden: hidden)
+                    .fixedSize()
             }
-            return path
+            
+            // Last component only, truncating its name if it still does not fit
+            row(all, hidden: max(all.count - 1, 0))
         }
-        return nil
+        // Stable width so the window does not grow with the path length
+        .frame(minWidth: 240, idealWidth: 320, maxWidth: 320, minHeight: 22, idealHeight: 22, maxHeight: 22, alignment: .leading)
+        .help(path)
     }
 
-    // Creates a Coordinator object to handle user interaction with the NSPathControl
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
+    // MARK: - Views
 
-    // MARK: - Coordinator
-
-    // Handles user interaction with the NSPathControl
-    class Coordinator: NSObject {
-
-        // MARK: - Properties
-
-        // Parent path
-        let parent: PathControl
-
-        // Initialize PathControl
-        init(_ parent: PathControl) {
-            self.parent = parent
-        }
-
-        // MARK: - Methods
-
-        // This function is called when the user clicks on the NSPathControl
-        @objc func pathControlClicked(_ sender: NSPathControl) {
-            if let clickedPathItem = sender.clickedPathItem,
-               let url = clickedPathItem.url {
-                parent.path = url.path
+    // A row of segments with the first `hidden` ones collapsed into an ellipsis
+    private func row(_ all: [Segment], hidden: Int) -> some View {
+        HStack(spacing: 4) {
+            if hidden > 0 {
+                Text("…")
+                    .font(.callout)
+                chevron
+            }
+            
+            let visible = Array(all.dropFirst(hidden))
+            ForEach(visible) { segment in
+                // Select this folder
+                Button(action: {
+                    path = segment.fullPath
+                }) {
+                    HStack(spacing: 3) {
+                        Image(nsImage: segment.icon)
+                            .resizable()
+                            .frame(width: 16, height: 16)
+                        Text(segment.name)
+                            .font(.callout)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                    }
+                }
+                .buttonStyle(.plain)
+                
+                if segment.id != all.last?.id {
+                    chevron
+                }
             }
         }
+    }
+
+    // Separator between segments
+    private var chevron: some View {
+        Image(systemName: "chevron.right")
+            .font(.system(size: 8, weight: .semibold))
+            .foregroundColor(.secondary)
     }
 }

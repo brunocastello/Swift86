@@ -20,6 +20,16 @@ import SwiftUI
     
     // Observed object machine library
     @StateObject var library = Library()
+    
+    // Application settings
+    @StateObject private var settings = SettingsStore.shared
+
+    // MARK: - Initialization
+    
+    // The legacy settings import must run before anything touches settings
+    init() {
+        _ = SettingsStore.shared
+    }
 
     // MARK: - Scene
     
@@ -28,6 +38,7 @@ import SwiftUI
         WindowGroup {
             ContentView()
                 .environmentObject(library)
+                .environmentObject(settings)
         }
         // Menu bar commands
         .commands {
@@ -70,6 +81,7 @@ import SwiftUI
         // Settings view
         Settings {
             SettingsView()
+                .environmentObject(settings)
                 .navigationTitle("Settings")
         }
     }

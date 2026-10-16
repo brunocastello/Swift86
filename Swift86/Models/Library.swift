@@ -11,7 +11,7 @@ import SwiftUI
 // MARK: - Machines Library Model
 
 // Machines library model
-class Library: ObservableObject, Identifiable {
+@MainActor class Library: ObservableObject, Identifiable {
     
     // MARK: - Properties
     
@@ -22,9 +22,8 @@ class Library: ObservableObject, Identifiable {
     
     // Emulator location
     var emulatorURL: URL {
-        // Unwrap the selected or default library location
-        let string = UserDefaults.standard.string(forKey: "EmulatorPath") ?? AppSettings.shared.emulatorPath
-        let path = string
+        // Selected or default emulator location
+        let path = SettingsStore.shared.config.emulatorPath
         
         // Extract app name for binary execution
         let appURL = URL(filePath: path)
@@ -36,9 +35,8 @@ class Library: ObservableObject, Identifiable {
     
     // Machines library location
     var machinesURL: URL {
-        // Unwrap the selected or default library location
-        let string = UserDefaults.standard.string(forKey: "MachinesPath") ?? AppSettings.shared.machinesPath
-        let path = string
+        // Selected or default library location
+        let path = SettingsStore.shared.config.machinesPath
         
         // Return the unwrapped URL
         return URL(filePath: path)
@@ -46,9 +44,8 @@ class Library: ObservableObject, Identifiable {
     
     // ROMs library location
     var romsURL: URL {
-        // Unwrap the selected or default library location
-        let string = UserDefaults.standard.string(forKey: "RomsPath") ?? AppSettings.shared.romsPath
-        let path = string
+        // Selected or default ROMs location
+        let path = SettingsStore.shared.config.romsPath
         
         // Return the unwrapped URL
         return URL(filePath: path)
@@ -66,18 +63,17 @@ class Library: ObservableObject, Identifiable {
     
     // MARK: - First Run App Actions
     
-    // Is it the first time running the app?
-    var FirstRun: Bool = UserDefaults.standard.bool(forKey: "First Run")
-    
     // First run actions
     func firstRun() {
-        // Reset UserDefaults FOR DEBUGGING ONLY!
-        // UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier!)
+        // Leave an unreadable settings file alone, it would be overwritten with defaults
+        guard SettingsStore.shared.loadError == nil else { return }
         
         // Check if it's the first launch
-        if FirstRun != true {
-            // Set the flag indicating that the app has launched before
-            UserDefaults.standard.setValue(true, forKey: "First Run")
+        if !SettingsStore.shared.config.hasCompletedFirstRun {
+            // Set the flag indicating that the app has launched before (deferred, we may be inside a view update)
+            DispatchQueue.main.async {
+                SettingsStore.shared.config.hasCompletedFirstRun = true
+            }
             
             // Perform any first launch setup or logic here
             alertTitle = NSLocalizedString("Welcome", comment: "")
@@ -134,6 +130,7 @@ class Library: ObservableObject, Identifiable {
         
         // Sort the machines based on custom order
         machines.sort { first, last in
+            // TODO(T3): machineOrder
             let order = UserDefaults.standard.object(forKey: "MachinesList") as? [String] ?? []
             return (order.firstIndex(of: first.id.uuidString) ?? -1) < (order.firstIndex(of: last.id.uuidString) ?? -1)
         }
@@ -339,6 +336,7 @@ class Library: ObservableObject, Identifiable {
         
         // Save the array of machine IDs to UserDefaults
         let machinesSort = machines.map { $0.id.uuidString }
+        // TODO(T3): machineOrder
         UserDefaults.standard.set(machinesSort, forKey: "MachinesList")
     }
     
