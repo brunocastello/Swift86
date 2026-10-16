@@ -16,7 +16,7 @@ struct ContentView: View {
     // MARK: - Environment Objects
     
     // Environment object machine library
-    @EnvironmentObject var library: Library
+    @Environment(Library.self) private var library
     
     // MARK: - Properties
     
@@ -102,17 +102,17 @@ struct ContentView: View {
         }
         // Keep the classic opaque toolbar under the macOS 26+ design
         .toolbarBackground(.visible, for: .windowToolbar)
-        .windowToolbarBackgroundVisible()
+        .toolbarBackgroundVisibility(.visible, for: .windowToolbar)
         // Add new machine
-        .sheet(item: $library.newMachine) { machine in
+        .sheet(item: Bindable(library).newMachine) { machine in
             EditMachineView(machine: machine, isUpdating: false)
         }
         // Edit machine
-        .sheet(item: $library.editMachine) { machine in
+        .sheet(item: Bindable(library).editMachine) { machine in
             EditMachineView(machine: machine, isUpdating: true)
         }
         // Clone machine
-        .sheet(item: $library.cloneSource) { machine in
+        .sheet(item: Bindable(library).cloneSource) { machine in
             CloneMachineView(source: machine, suggestedName: library.suggestedCloneName(for: machine))
         }
         // Confirm killing, wiping or removing a machine
@@ -138,7 +138,7 @@ struct ContentView: View {
         // Reusable alerts for errors, on their own view so they never compete with the confirmation
         .background {
             Color.clear
-                .alert(library.alertTitle, isPresented: $library.showAlert) {
+                .alert(library.alertTitle, isPresented: Bindable(library).showAlert) {
                     Button("OK", action: library.alertOK ?? { })
                     if library.showCancel {
                         Button("Cancel", role: .cancel, action: {})
@@ -152,24 +152,9 @@ struct ContentView: View {
 
 // MARK: - Preview
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-            .environmentObject(SettingsStore.shared)
-            .environmentObject(Library(loadsLibrary: false))
-    }
+#Preview {
+    ContentView()
+        .environment(SettingsStore.shared)
+        .environment(Library(loadsLibrary: false))
 }
 
-// MARK: - Helpers
-
-extension View {
-    // Force the window toolbar background to be visible (macOS 15 and later)
-    @ViewBuilder
-    fileprivate func windowToolbarBackgroundVisible() -> some View {
-        if #available(macOS 15, *) {
-            self.toolbarBackgroundVisibility(.visible, for: .windowToolbar)
-        } else {
-            self
-        }
-    }
-}

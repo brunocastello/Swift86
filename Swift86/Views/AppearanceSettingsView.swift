@@ -16,7 +16,7 @@ struct AppearanceSettingsView: View {
     // MARK: - Environment Objects
     
     // Environment object application settings
-    @EnvironmentObject var settings: SettingsStore
+    @Environment(SettingsStore.self) private var settings
     
     // MARK: - Scene
     
@@ -26,7 +26,7 @@ struct AppearanceSettingsView: View {
                 // Appearance selection
                 HStack(spacing: 6) {
                     Text("Appearance:")
-                    Picker("Appearance:", selection: $settings.config.appearance) {
+                    Picker("Appearance:", selection: Bindable(settings).config.appearance) {
                         Text("System").tag("")
                         Divider()
                         Text("Light").tag("NSAppearanceNameAqua")
@@ -39,10 +39,10 @@ struct AppearanceSettingsView: View {
                 }
                 
                 // Machine screenshot preview
-                Toggle("Show machine screenshots", isOn: $settings.config.showScreenshots)
+                Toggle("Show machine screenshots", isOn: Bindable(settings).config.showScreenshots)
             }
             .frame(minWidth: 387, alignment: .leading)
-            .onChange(of: settings.config.appearance) { theme in
+            .onChange(of: settings.config.appearance) { _, theme in
                 // Theme changer
                 NSApp.appearance = NSAppearance(named: NSAppearance.Name(rawValue: theme))
             }
@@ -54,9 +54,7 @@ struct AppearanceSettingsView: View {
 
 // MARK: - Preview
 
-struct AppearanceSettingsView_Previews: PreviewProvider {
-    static var previews: some View {
-        AppearanceSettingsView()
-            .environmentObject(SettingsStore.shared)
-    }
+#Preview {
+    AppearanceSettingsView()
+        .environment(SettingsStore.shared)
 }

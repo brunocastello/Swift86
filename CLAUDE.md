@@ -124,7 +124,7 @@ Implement / optimise the final menu defined above:
 - Store the screenshot inside the machine’s folder.
 - **Decisions (owner, 2026-10-17): VMware Fusion style.**
   - **Shown:** `<machine>/screenshots/Screenshot.png` if the user chose one. Otherwise the latest `Monitor_1*` screenshot 86Box took, newest by modification date.
-  - **Choosing:** click the preview, or right-click → "Choose Screenshot…", to open the standard macOS Open dialog (`.fileImporter`). Any image is allowed. It is converted and copied to `screenshots/Screenshot.png` (staged, then atomically swapped). Right-click → "Use Latest Screenshot" deletes it.
+  - **Choosing:** click the preview, or right-click → "Choose Screenshot…", to open the standard macOS Open dialog (`.fileImporter`). Any image is allowed. It is converted and copied to `screenshots/Screenshot.png` (staged, then atomically swapped). Right-click → "Remove Screenshot" deletes it (back to the latest 86Box screenshot, or the "No screenshot" box).
   - **Storage:** the choice lives only in that file, which follows rename and clone automatically. Nothing is written to `vmm.ini` or `Settings.json`.
   - **Look:** placed **above the machine header**, as in Fusion, centred. Square corners, no border, no arrows, and a subtle drop shadow below.
   - **Size (owner, 2026-10-17):**

@@ -16,7 +16,7 @@ struct SettingsView: View {
     // MARK: - Environment Objects
     
     // Environment object application settings
-    @EnvironmentObject var settings: SettingsStore
+    @Environment(SettingsStore.self) private var settings
     
     // MARK: - Settings Tabs
     
@@ -57,9 +57,7 @@ struct SettingsView: View {
 
 // MARK: - Preview
 
-struct SettingsView_Previews: PreviewProvider {
-    static var previews: some View {
-        SettingsView()
-            .environmentObject(SettingsStore.shared)
-    }
+#Preview {
+    SettingsView()
+        .environment(SettingsStore.shared)
 }

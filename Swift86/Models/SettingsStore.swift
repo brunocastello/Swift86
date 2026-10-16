@@ -7,7 +7,7 @@
 
 // Import necessary frameworks and libraries
 import Foundation
-import Combine
+import Observation
 
 // MARK: - Configuration Model
 
@@ -74,7 +74,7 @@ struct AppConfig: Codable, Equatable {
 // MARK: - Settings Store
 
 // Owns the configuration and persists every change to disk
-@MainActor final class SettingsStore: ObservableObject {
+@MainActor @Observable final class SettingsStore {
     
     // MARK: - Properties
     
@@ -82,24 +82,24 @@ struct AppConfig: Codable, Equatable {
     static let shared = SettingsStore()
     
     // Current configuration, saved on every change
-    @Published var config: AppConfig {
+    var config: AppConfig {
         didSet { if config != oldValue { save() } }
     }
     
     // True only in the launch where the legacy UserDefaults import ran
-    private(set) var didImportLegacySettings = false
+    @ObservationIgnored private(set) var didImportLegacySettings = false
     
     // Error found while decoding an existing file, if any
-    private(set) var loadError: Error?
+    @ObservationIgnored private(set) var loadError: Error?
     
     // Error from the last failed save, if any
-    private(set) var lastSaveError: Error?
+    @ObservationIgnored private(set) var lastSaveError: Error?
     
     // Whether the unreadable file has already been backed up
-    private var didBackUpCorruptFile = false
+    @ObservationIgnored private var didBackUpCorruptFile = false
     
     // Location of the settings file
-    private let fileURL: URL
+    @ObservationIgnored private let fileURL: URL
     
     // Default location: ~/Library/Application Support/Swift86/Settings.json
     nonisolated static var defaultFileURL: URL {

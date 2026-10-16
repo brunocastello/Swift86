@@ -16,7 +16,7 @@ struct WelcomeView: View {
     // MARK: - Environment Objects
     
     // Environment object machine library
-    @EnvironmentObject var library: Library
+    @Environment(Library.self) private var library
     
     // MARK: - Scene
     
@@ -85,8 +85,6 @@ struct WelcomeView: View {
 
 // MARK: - Preview
 
-struct WelcomeView_Previews: PreviewProvider {
-    static var previews: some View {
-        WelcomeView()
-    }
+#Preview {
+    WelcomeView()
 }

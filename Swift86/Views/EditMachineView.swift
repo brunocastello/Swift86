@@ -16,7 +16,7 @@ struct EditMachineView: View {
     // MARK: - Environment Objects
     
     // Environment object machine library
-    @EnvironmentObject var library: Library
+    @Environment(Library.self) private var library
     
     // Environment variable to dismiss the current view
     @Environment(\.dismiss) var dismiss
@@ -175,7 +175,7 @@ struct EditMachineView: View {
             }
         }
         .frame(minWidth: 480, maxWidth: .infinity, maxHeight: .infinity)
-        .onChange(of: editSnapshot) { snapshot in
+        .onChange(of: editSnapshot) { _, snapshot in
             // Any later edit clears the error
             if error?.snapshot != snapshot { error = nil }
         }
@@ -185,7 +185,7 @@ struct EditMachineView: View {
                 machine.iconCustom = true
             }
         }
-        .fileDialogStartingDirectory(iconStartingDirectory)
+        .fileDialogDefaultDirectory(iconStartingDirectory)
     }
     
     // MARK: - Helpers
@@ -243,25 +243,10 @@ struct EditMachineView: View {
     }
 }
 
-// MARK: - File Dialog Extension
-
-extension View {
-    // Open the file importer in a given folder (macOS 14 and later)
-    @ViewBuilder
-    fileprivate func fileDialogStartingDirectory(_ url: URL?) -> some View {
-        if #available(macOS 14, *) {
-            self.fileDialogDefaultDirectory(url)
-        } else {
-            self
-        }
-    }
-}
 
 // MARK: - Preview
 
-struct EditMachineView_Previews: PreviewProvider {
-    static var previews: some View {
-        EditMachineView(machine: Machine())
-            .environmentObject(Library(loadsLibrary: false))
-    }
+#Preview {
+    EditMachineView(machine: Machine())
+        .environment(Library(loadsLibrary: false))
 }

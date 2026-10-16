@@ -17,7 +17,7 @@ struct MachineView: View {
     // MARK: - Environment Objects
     
     // Environment object machine library
-    @EnvironmentObject var library: Library
+    @Environment(Library.self) private var library
     
     // MARK: - Properties
     
@@ -25,7 +25,7 @@ struct MachineView: View {
     let machine: Machine?
     
     // Environment object application settings
-    @EnvironmentObject var settings: SettingsStore
+    @Environment(SettingsStore.self) private var settings
     
     // Machine size
     @State private var machineSize: String?
@@ -193,7 +193,7 @@ struct MachineView: View {
                     library.chooseScreenshot(url, for: machine)
                 }
             }
-            .fileDialogStartingDirectory(screenshotStartingDirectory(for: machine))
+            .fileDialogDefaultDirectory(screenshotStartingDirectory(for: machine))
         } else {
             // Welcome view
             WelcomeView()
@@ -256,7 +256,7 @@ extension MachineView {
                 .help("Choose Screenshot…")
                 .contextMenu {
                     Button("Choose Screenshot…") { showScreenshotImporter = true }
-                    Button("Use Latest Screenshot") { library.useLatestScreenshot(for: machine) }
+                    Button("Remove Screenshot") { library.useLatestScreenshot(for: machine) }
                         .disabled(!hasChosenScreenshot)
                 }
                 .frame(maxWidth: .infinity)
@@ -274,7 +274,7 @@ extension MachineView {
                 .help("Choose Screenshot…")
                 .contextMenu {
                     Button("Choose Screenshot…") { showScreenshotImporter = true }
-                    Button("Use Latest Screenshot") { library.useLatestScreenshot(for: machine) }
+                    Button("Remove Screenshot") { library.useLatestScreenshot(for: machine) }
                         .disabled(!hasChosenScreenshot)
                 }
                 .frame(maxWidth: .infinity)
@@ -337,19 +337,6 @@ private struct InfoHeightKey: PreferenceKey {
     }
 }
 
-// MARK: - File Dialog Extension
-
-extension View {
-    // Open the file importer in a given folder (macOS 14 and later)
-    @ViewBuilder
-    fileprivate func fileDialogStartingDirectory(_ url: URL?) -> some View {
-        if #available(macOS 14, *) {
-            self.fileDialogDefaultDirectory(url)
-        } else {
-            self
-        }
-    }
-}
 
 // MARK: - Screenshot Image
 
@@ -371,9 +358,7 @@ enum ScreenshotImage {
 
 // MARK: - Preview
 
-struct MachineView_Previews: PreviewProvider {
-    static var previews: some View {
-        MachineView(machine: Machine())
-            .environmentObject(Library(loadsLibrary: false))
-    }
+#Preview {
+    MachineView(machine: Machine())
+        .environment(Library(loadsLibrary: false))
 }

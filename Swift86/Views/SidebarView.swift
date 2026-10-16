@@ -16,12 +16,12 @@ struct SidebarView: View {
     // MARK: - Environment Objects
     
     // Environment object machine library
-    @EnvironmentObject var library: Library
+    @Environment(Library.self) private var library
     
     // MARK: - Properties
     
     // Application settings
-    @EnvironmentObject var settings: SettingsStore
+    @Environment(SettingsStore.self) private var settings
 
     // MARK: - Scene
     
@@ -166,7 +166,7 @@ struct SidebarView: View {
             .collapsible(false)
         }
         // Update list on changes to path
-        .onChange(of: settings.config.machinesPath) { _ in
+        .onChange(of: settings.config.machinesPath) { _, _ in
             library.load()
         }
     }
@@ -174,10 +174,8 @@ struct SidebarView: View {
 
 // MARK: - Preview
 
-struct SidebarView_Previews: PreviewProvider {
-    static var previews: some View {
-        SidebarView()
-            .environmentObject(SettingsStore.shared)
-            .environmentObject(Library(loadsLibrary: false))
-    }
+#Preview {
+    SidebarView()
+        .environment(SettingsStore.shared)
+        .environment(Library(loadsLibrary: false))
 }

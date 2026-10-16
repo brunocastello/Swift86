@@ -47,12 +47,12 @@ enum PendingConfirmation: Identifiable {
 // MARK: - Machines Library Model
 
 // Machines library model
-@MainActor class Library: ObservableObject, Identifiable {
+@MainActor @Observable class Library: Identifiable {
     
     // MARK: - Properties
     
     // Machines library instance
-    @Published var machines: [Machine] = []
+    var machines: [Machine] = []
     
     // MARK: - Paths
     
@@ -131,7 +131,7 @@ enum PendingConfirmation: Identifiable {
     // MARK: - Load Machines
     
     // Machines folder of the last successful load
-    private var loadedMachinesURL: URL?
+    @ObservationIgnored private var loadedMachinesURL: URL?
     
     // 86Box's machine list, where display names, notes and icons live
     private var vmmIniURL: URL {
@@ -350,7 +350,7 @@ enum PendingConfirmation: Identifiable {
     // MARK: - New Machine
     
     // New machine
-    @Published var newMachine: Machine?
+    var newMachine: Machine?
     
     // PNG data of the chosen custom icon, nil for the default icon
     private func convertedIcon(_ machine: Machine) throws -> Data? {
@@ -435,7 +435,7 @@ enum PendingConfirmation: Identifiable {
     // MARK: - Edit Machine
     
     // Edited machine
-    @Published var editMachine: Machine?
+    var editMachine: Machine?
     
     // What to do with a machine's vmm.ini icon
     private enum IconPlan {
@@ -621,7 +621,7 @@ enum PendingConfirmation: Identifiable {
     // MARK: - Clone Machine
     
     // Machine being cloned, shown in the clone sheet
-    @Published var cloneSource: Machine?
+    var cloneSource: Machine?
     
     // Name suggested for a copy of a machine
     func suggestedCloneName(for machine: Machine) -> String {
@@ -718,13 +718,13 @@ enum PendingConfirmation: Identifiable {
     
     // Running machine sessions, keyed by the machine folder's canonical path
     // (a machine's UUID changes on reload, the folder does not)
-    private(set) var sessions: [String: MachineSession] = [:]
+    @ObservationIgnored private(set) var sessions: [String: MachineSession] = [:]
     
     // Destructive action waiting for the user's confirmation
-    @Published var pendingConfirmation: PendingConfirmation?
+    var pendingConfirmation: PendingConfirmation?
     
     // Folders that must not be started, edited or deleted right now (a clone is copying them), keyed like sessions
-    @Published private(set) var busyFolders: Set<String> = []
+    private(set) var busyFolders: Set<String> = []
     
     // Whether a machine's folder is busy
     func isBusy(_ machine: Machine) -> Bool {
@@ -1014,7 +1014,7 @@ enum PendingConfirmation: Identifiable {
     // MARK: - Screenshot
     
     // Bumped when a machine's Screenshot.png changes, so views look again
-    @Published var screenshotRevision = 0
+    var screenshotRevision = 0
     
     // Show this screenshot for the machine, as a copy in its folder
     func chooseScreenshot(_ source: URL, for machine: Machine) {
@@ -1088,7 +1088,7 @@ enum PendingConfirmation: Identifiable {
     }
     
     // Result of the last scan, nil when there is nothing to show
-    @Published var staleEntries: [StaleEntry]?
+    var staleEntries: [StaleEntry]?
     
     // Scan from the File menu
     func scan() {
@@ -1154,7 +1154,7 @@ enum PendingConfirmation: Identifiable {
     // MARK: - Alerts
     
     // Show alert
-    @Published var showAlert = false
+    var showAlert = false
     
     // Alert title
     var alertTitle = ""
@@ -1163,7 +1163,7 @@ enum PendingConfirmation: Identifiable {
     var alertMessage = ""
     
     // Alert action
-    var alertOK: (() -> Void)?
+    @ObservationIgnored var alertOK: (() -> Void)?
     
     // Show dismiss or not
     var showCancel = false

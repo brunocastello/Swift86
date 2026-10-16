@@ -17,6 +17,9 @@
 "Are you sure you want to delete \"%@\" permanently?" = "Czy na pewno chcesz na stałe usunąć maszynę \"%@\"?";
 
 /* No comment provided by engineer. */
+"Assets:" = "Zasoby:";
+
+/* No comment provided by engineer. */
 "Browse..." = "Przeglądaj...";
 
 /* No comment provided by engineer. */

@@ -19,14 +19,14 @@ import SwiftUI
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     // Observed object machine library
-    @StateObject var library = Library()
+    @State var library = Library()
     
     // Application settings
-    @StateObject private var settings = SettingsStore.shared
+    @State private var settings = SettingsStore.shared
 
     // MARK: - Initialization
     
-    // The legacy settings import must run before anything touches settings
+    // Create the settings store (and run the legacy import) up front; Library also reaches it first through SettingsStore.shared
     init() {
         _ = SettingsStore.shared
     }
@@ -37,8 +37,8 @@ import SwiftUI
         // Main view
         WindowGroup {
             ContentView()
-                .environmentObject(library)
-                .environmentObject(settings)
+                .environment(library)
+                .environment(settings)
         }
         // Menu bar commands
         .commands {
@@ -87,7 +87,7 @@ import SwiftUI
         // Settings view
         Settings {
             SettingsView()
-                .environmentObject(settings)
+                .environment(settings)
                 .navigationTitle("Settings")
         }
     }

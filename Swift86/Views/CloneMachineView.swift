@@ -16,7 +16,7 @@ struct CloneMachineView: View {
     // MARK: - Environment Objects
     
     // Environment object machine library
-    @EnvironmentObject var library: Library
+    @Environment(Library.self) private var library
     
     // Environment variable to dismiss the current view
     @Environment(\.dismiss) var dismiss
@@ -107,7 +107,7 @@ struct CloneMachineView: View {
         }
         .frame(minWidth: 480, maxWidth: .infinity, maxHeight: .infinity)
         .interactiveDismissDisabled(isCloning)
-        .onChange(of: name) { _ in
+        .onChange(of: name) { _, _ in
             // Any later edit clears the error
             error = nil
         }
@@ -133,9 +133,7 @@ struct CloneMachineView: View {
 
 // MARK: - Preview
 
-struct CloneMachineView_Previews: PreviewProvider {
-    static var previews: some View {
-        CloneMachineView(source: Machine(), suggestedName: "Machine copy")
-            .environmentObject(Library(loadsLibrary: false))
-    }
+#Preview {
+    CloneMachineView(source: Machine(), suggestedName: "Machine copy")
+        .environment(Library(loadsLibrary: false))
 }
