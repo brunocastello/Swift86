@@ -22,20 +22,26 @@ struct AppearanceSettingsView: View {
     
     var body: some View {
         Form {
-            Group {
+            VStack(alignment: .leading, spacing: 10) {
                 // Appearance selection
-                Picker("Appearance:", selection: $settings.config.appearance) {
-                    Text("System").tag("")
-                    Divider()
-                    Text("Light").tag("NSAppearanceNameAqua")
-                    Text("Dark").tag("NSAppearanceNameDarkAqua")
+                HStack(spacing: 6) {
+                    Text("Appearance:")
+                    Picker("Appearance:", selection: $settings.config.appearance) {
+                        Text("System").tag("")
+                        Divider()
+                        Text("Light").tag("NSAppearanceNameAqua")
+                        Text("Dark").tag("NSAppearanceNameDarkAqua")
+                    }
+                    .labelsHidden()
+                    .pickerStyle(.menu)
+                    .fixedSize()
+                    .accessibilityLabel("Appearance:")
                 }
-                .pickerStyle(.menu)
-                .frame(width: 200)
-                .padding(.bottom, 10)
-                .accessibilityLabel("Appearance:")
+                
+                // Machine screenshot preview
+                Toggle("Show machine screenshots", isOn: $settings.config.showScreenshots)
             }
-            .frame(minWidth: 387)
+            .frame(minWidth: 387, alignment: .leading)
             .onChange(of: settings.config.appearance) { theme in
                 // Theme changer
                 NSApp.appearance = NSAppearance(named: NSAppearance.Name(rawValue: theme))

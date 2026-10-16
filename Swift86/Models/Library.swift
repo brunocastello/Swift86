@@ -1011,6 +1011,31 @@ enum PendingConfirmation: Identifiable {
         }
     }
     
+    // MARK: - Screenshot
+    
+    // Bumped when a machine's Screenshot.png changes, so views look again
+    @Published var screenshotRevision = 0
+    
+    // Show this screenshot for the machine, as a copy in its folder
+    func chooseScreenshot(_ source: URL, for machine: Machine) {
+        do {
+            try MachineFiles.installScreenshot(from: source, into: folderURL(of: machine))
+            screenshotRevision += 1
+        } catch {
+            showError(NSLocalizedString("An error occurred", comment: ""), error)
+        }
+    }
+    
+    // Go back to showing the newest screenshot
+    func useLatestScreenshot(for machine: Machine) {
+        do {
+            try MachineFiles.removeChosenScreenshot(in: folderURL(of: machine))
+            screenshotRevision += 1
+        } catch {
+            showError(NSLocalizedString("An error occurred", comment: ""), error)
+        }
+    }
+    
     // MARK: - Wipe NVRAM
     
     // Empty the machine's nvr folder

@@ -8,6 +8,8 @@
 // Import necessary frameworks and libraries
 import Foundation
 import AppKit
+import ImageIO
+import UniformTypeIdentifiers
 
 // MARK: - Machine Name Error
 
@@ -504,6 +506,98 @@ enum MachineFiles {
         // A missing machine folder is an error, it is not recreated
         try FileManager.default.createDirectory(at: printer, withIntermediateDirectories: false)
         return printer
+    }
+    
+    // MARK: - Screenshots
+    
+    // Image types allowed in screenshots/ (86Box itself has no extension filter)
+    static let screenshotExtensions: Set<String> = ["png", "jpg", "jpeg", "bmp", "tif", "tiff", "gif"]
+    
+    // Regular Monitor_1* image files directly inside <folder>/screenshots, newest first
+    // (content modification date, ties by name descending)
+    static func screenshots(in machineFolder: URL) -> [URL] {
+        let folder = machineFolder.appendingPathComponent("screenshots", isDirectory: true)
+        guard let names = try? FileManager.default.contentsOfDirectory(atPath: folder.path) else { return [] }
+        
+        var found = [(name: String, date: Double)]()
+        for name in names where !name.hasPrefix(".") && name.lowercased().hasPrefix("monitor_1")
+            && screenshotExtensions.contains((name as NSString).pathExtension.lowercased()) {
+            // lstat, so symlinks and subfolders never count
+            var info = stat()
+            guard lstat(folder.appendingPathComponent(name).path, &info) == 0, (info.st_mode & S_IFMT) == S_IFREG else { continue }
+            found.append((name, Double(info.st_mtimespec.tv_sec) + Double(info.st_mtimespec.tv_nsec) / 1_000_000_000))
+        }
+        found.sort { $0.date != $1.date ? $0.date > $1.date : $0.name > $1.name }
+        return found.map { folder.appendingPathComponent($0.name) }
+    }
+    
+    // Reasons a screenshot is not installed
+    enum ScreenshotError: LocalizedError {
+        case notAFile
+        case notAFolder
+        case invalidImage
+        
+        var errorDescription: String? {
+            switch self {
+            case .notAFile: return "The “Screenshot.png” item in the screenshots folder is not a file."
+            case .notAFolder: return "The “screenshots” item in the machine folder is not a folder."
+            case .invalidImage: return "The screenshot could not be read."
+            }
+        }
+    }
+    
+    // <folder>/screenshots/Screenshot.png when it is a regular file
+    static func customScreenshot(in folder: URL) -> URL? {
+        let url = folder.appendingPathComponent("screenshots", isDirectory: true).appendingPathComponent("Screenshot.png")
+        var info = stat()
+        guard lstat(url.path, &info) == 0, (info.st_mode & S_IFMT) == S_IFREG else { return nil }
+        return url
+    }
+    
+    // The screenshot to show: the chosen Screenshot.png, else the most recently modified Monitor_1 one
+    static func displayedScreenshot(in folder: URL) -> URL? {
+        customScreenshot(in: folder) ?? screenshots(in: folder).first
+    }
+    
+    // Copy any image into <folder>/screenshots/Screenshot.png, converted to PNG at full resolution
+    static func installScreenshot(from source: URL, into folder: URL) throws {
+        let directory = folder.appendingPathComponent("screenshots", isDirectory: true)
+        let destination = directory.appendingPathComponent("Screenshot.png")
+        
+        // The folder must be a real folder, created when missing (a missing machine folder is an error)
+        var info = stat()
+        if lstat(directory.path, &info) == 0 {
+            guard (info.st_mode & S_IFMT) == S_IFDIR else { throw ScreenshotError.notAFolder }
+        }
+        // Only a regular file may be replaced
+        if lstat(destination.path, &info) == 0, (info.st_mode & S_IFMT) != S_IFREG { throw ScreenshotError.notAFile }
+        
+        guard let imageSource = CGImageSourceCreateWithURL(source as CFURL, nil),
+              let image = CGImageSourceCreateImageAtIndex(imageSource, 0, nil) else { throw ScreenshotError.invalidImage }
+        
+        if lstat(directory.path, &info) != 0 {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: false)
+        }
+        
+        // Hidden temporary file in the screenshots folder, then an atomic rename over the destination
+        let staged = directory.appendingPathComponent(".Screenshot.png.\(UUID().uuidString).tmp")
+        guard let output = CGImageDestinationCreateWithURL(staged as CFURL, UTType.png.identifier as CFString, 1, nil) else { throw ScreenshotError.invalidImage }
+        CGImageDestinationAddImage(output, image, nil)
+        guard CGImageDestinationFinalize(output) else {
+            try? FileManager.default.removeItem(at: staged)
+            throw ScreenshotError.invalidImage
+        }
+        guard rename(staged.path, destination.path) == 0 else {
+            let code = errno
+            try? FileManager.default.removeItem(at: staged)
+            throw NSError(domain: NSPOSIXErrorDomain, code: Int(code))
+        }
+    }
+    
+    // Delete the chosen Screenshot.png, only if it is a regular file
+    static func removeChosenScreenshot(in folder: URL) throws {
+        guard let url = customScreenshot(in: folder) else { return }
+        try FileManager.default.removeItem(at: url)
     }
     
     // MARK: - Size

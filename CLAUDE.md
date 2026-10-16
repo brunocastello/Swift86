@@ -8,7 +8,7 @@ Bring Swift86 to feature parity with the useful parts of 86Box Manager / 86Box�
 - Screenshots: optional (user toggle in Settings), maximum **one** screenshot per machine.
 - Stop using per-machine `86box.plist` files. They are only read once, read-only, by the legacy importer, and never written or deleted.
 - Machine discovery uses the folder-scanning model of 86Box v5+. A machine is any **immediate**, non-hidden, non-symlink subfolder of the user-chosen Virtual Machines folder that contains `86box.cfg` or has a section in `vmm.ini`. The `vmm.ini` case covers machines created in Swift86 but not yet configured.
-- **Per-machine metadata lives in 86Box's own `vmm.ini`** (`~/Library/Preferences/86Box/vmm.ini`; Qt INI format; one section per machine, keyed by UUIDv5 of the canonical folder path). That covers the display name, notes, icon and last-used timestamp. Swift86 edits only its machines' sections and only those keys. Everything else stays byte-for-byte, writes are atomic, and Qt's `vmm.ini.lock` is honoured. No sidecar files in machine folders. The details are in PLAN.md §4.2.
+- **Per-machine metadata lives in 86Box's own `vmm.ini`** (`~/Library/Preferences/86Box/vmm.ini`; Qt INI format; one section per machine, keyed by UUIDv5 of the canonical folder path). That covers the display name, notes, icon and last-used timestamp. These are 86Box's own keys only; Swift86 adds no keys of its own. Swift86 edits only its machines' sections and only those keys. Everything else stays byte-for-byte, writes are atomic, and Qt's `vmm.ini.lock` is honoured. No sidecar files in machine folders. The details are in PLAN.md §4.2.
 - **Icons follow 86Box's model:** the `vmm.ini` `icon` key, an image path, is the source. Swift86's own replacement UX stays: Default/Custom icon radio, plus a click on the thumbnail opens the picker, which accepts any image including `.icns`.
   - A picked image is converted and saved as **`<machine folder>/Icon.png`**, and `icon` points to it. Replacing the icon replaces that file (staged, then atomically swapped after `vmm.ini` is written). There is always exactly one `Icon.png`; there is no `Icon 2.png`.
   - "Default icon" removes the key and deletes `Icon.png`.
@@ -84,7 +84,8 @@ Every sub-agent task must be given:
 The detailed plan, schemas and task breakdown are in `PLAN.md`; keep it in sync with decisions.
 - Phase 0: done.
 - Phase 1: done (T1–T4, T3b).
-- Phase 2: T5 (manager protocol, menu groups 1–2) done on branch `phase-2-menu`. Next: T6 (rest of the menu: Edit/Configure/Clone, Show in Finder, Open Printer Tray, Wipe NVRAM, Remove).
+- Phase 2: done (T5, T6) on branch `phase-2-menu`.
+- Phase 3: T7 (single screenshot) is in progress on branch `phase-3-screenshot`.
 - Builds are verified locally from the terminal with `xcodebuild`.
 
 ## Priority Order (this iteration)
@@ -120,6 +121,14 @@ Implement / optimise the final menu defined above:
 - Add Settings toggle “Show machine screenshots”.
 - When enabled, display exactly one screenshot per machine (user-supplied or auto-captured).
 - Store the screenshot inside the machine’s folder.
+- **Decisions (owner, 2026-10-17): VMware Fusion style.**
+  - **Shown:** `<machine>/screenshots/Screenshot.png` if the user chose one. Otherwise the latest `Monitor_1*` screenshot 86Box took, newest by modification date.
+  - **Choosing:** click the preview, or right-click → "Choose Screenshot…", to open the standard macOS Open dialog (`.fileImporter`). Any image is allowed. It is converted and copied to `screenshots/Screenshot.png` (staged, then atomically swapped). Right-click → "Use Latest Screenshot" deletes it.
+  - **Storage:** the choice lives only in that file, which follows rename and clone automatically. Nothing is written to `vmm.ini` or `Settings.json`.
+  - **Look:** placed **above the machine header**, as in Fusion. Square corners, no border, no arrows, and a subtle drop shadow below. It spans the full panel width and scales proportionally with the window.
+  - **No screenshots:** a "No screenshot" box is shown when the toggle is on.
+  - **No "Open Screenshots Folder"** item (rejected earlier).
+- **Never store per-machine data in `Settings.json`** (owner). For machine features, match 86Box's built-in manager.
 
 ### Phase 4 – macOS 27 UI polish
 - Update SwiftUI views, materials, and controls for macOS 27.
