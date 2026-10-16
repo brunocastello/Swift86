@@ -44,6 +44,9 @@ struct MachineView: View {
     @State private var screenshotImage: NSImage?
     @State private var screenshotImageURL: URL?
     
+    // Height of the header and panels below the preview, so the preview takes the rest
+    @State private var infoHeight: CGFloat = 0
+    
     // Bumped when the app becomes active, to look for new screenshots
     @State private var screenshotRefresh = 0
     
@@ -63,14 +66,18 @@ struct MachineView: View {
     
     var body: some View {
         if let machine = library.machines.first(where: { $0.id == machine?.id }) {
+            // The visible size bounds the screenshot preview
+            GeometryReader { proxy in
             ScrollView {
                 VStack(spacing: 0) {
                     // Screenshot preview, above the header
                     if showsScreenshot(for: machine) {
-                        screenshotPreview(machine)
+                        screenshotPreview(machine, in: proxy.size)
                             .padding(EdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20))
                     }
                     
+                    // Header and panels, measured so the preview fills the height left over
+                    VStack(spacing: 0) {
                     // Machine header title
                     HStack {
                         // Start/Stop machine
@@ -157,7 +164,15 @@ struct MachineView: View {
                             }
                     }
                     .padding(EdgeInsets(top: 0, leading: 20, bottom: 20, trailing: 20))
+                    }
+                    .background(
+                        GeometryReader { info in
+                            Color.clear.preference(key: InfoHeightKey.self, value: info.size.height.rounded())
+                        }
+                    )
+                    .onPreferenceChange(InfoHeightKey.self) { infoHeight = $0 }
                 }
+            }
             }
             .navigationSubtitle(machine.name)
             // List the screenshots off the main thread, again when the status or app focus changes
@@ -217,14 +232,20 @@ extension MachineView {
         return FileManager.default.fileExists(atPath: screenshots.path, isDirectory: &isFolder) && isFolder.boolValue ? screenshots : folder
     }
     
-    // Preview that follows the window width, or a box when there is no screenshot
+    // Preview that fills the height left over above the header and panels, in its own aspect ratio
     @ViewBuilder
-    fileprivate func screenshotPreview(_ machine: Machine) -> some View {
+    fileprivate func screenshotPreview(_ machine: Machine, in size: CGSize) -> some View {
+        // 20 pt above the preview and 20 pt between it and the header; below 200 pt the view scrolls
+        // 3:2 box like 86Box's manager (240 × 160), scaled with the window:
+        // at most 55% of the visible height, details kept visible
+        let maxWidth = max(size.width - 40, 0)
+        let maxHeight = max(200, min(size.height - 40 - infoHeight, size.height * 0.55))
+        let wide = fittedSize(aspect: 3.0 / 2.0, maxWidth: maxWidth, maxHeight: maxHeight)
+        // Every preview is as tall as a 1280 × 700 screenshot (Windows 3.11) shown at that width; width follows
+        let previewHeight = (wide.width * 700.0 / 1280.0).rounded()
         if screenshotURL == nil {
-            // 4:3 like a typical 86Box screen, scaling with the window width
             Color.black
-                .aspectRatio(4.0 / 3.0, contentMode: .fit)
-                .frame(maxWidth: .infinity)
+                .frame(width: wide.width, height: previewHeight)
                 .overlay(
                     Text("No screenshot")
                         .foregroundColor(Color.white.opacity(0.6))
@@ -238,11 +259,15 @@ extension MachineView {
                     Button("Use Latest Screenshot") { library.useLatestScreenshot(for: machine) }
                         .disabled(!hasChosenScreenshot)
                 }
+                .frame(maxWidth: .infinity)
         } else if let screenshotImage, screenshotImageURL == screenshotURL {
+            // Same height, own proportions, no black bars; only the panel width limits it
+            let imageSize = screenshotImage.size
+            let aspect = imageSize.height > 0 ? imageSize.width / imageSize.height : 3.0 / 2.0
+            let fitted = fittedSize(aspect: aspect, maxWidth: maxWidth, maxHeight: previewHeight)
             Image(nsImage: screenshotImage)
                 .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(maxWidth: .infinity)
+                .frame(width: fitted.width, height: fitted.height)
                 .shadow(color: .black.opacity(0.35), radius: 5, x: 0, y: 3)
                 .contentShape(Rectangle())
                 .onTapGesture { showScreenshotImporter = true }
@@ -252,9 +277,17 @@ extension MachineView {
                     Button("Use Latest Screenshot") { library.useLatestScreenshot(for: machine) }
                         .disabled(!hasChosenScreenshot)
                 }
+                .frame(maxWidth: .infinity)
         }
     }
     
+    // Largest size with the given aspect ratio that fits both limits
+    // (explicit, because a ScrollView proposes no height for aspect-fit to use)
+    fileprivate func fittedSize(aspect: CGFloat, maxWidth: CGFloat, maxHeight: CGFloat) -> CGSize {
+        let width = min(maxWidth, maxHeight * aspect)
+        return CGSize(width: width.rounded(), height: (width / aspect).rounded())
+    }
+
     // Find the screenshot to show: the chosen Screenshot.png, else the most recently modified one
     @MainActor
     fileprivate func listScreenshots(for machine: Machine) async {
@@ -291,6 +324,16 @@ extension MachineView {
         guard !Task.isCancelled else { return }
         screenshotImage = image
         screenshotImageURL = url
+    }
+}
+
+// MARK: - Info Height
+
+// Height of the header and panels below the screenshot preview
+private struct InfoHeightKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
     }
 }
 

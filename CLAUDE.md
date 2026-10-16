@@ -126,7 +126,12 @@ Implement / optimise the final menu defined above:
   - **Shown:** `<machine>/screenshots/Screenshot.png` if the user chose one. Otherwise the latest `Monitor_1*` screenshot 86Box took, newest by modification date.
   - **Choosing:** click the preview, or right-click → "Choose Screenshot…", to open the standard macOS Open dialog (`.fileImporter`). Any image is allowed. It is converted and copied to `screenshots/Screenshot.png` (staged, then atomically swapped). Right-click → "Use Latest Screenshot" deletes it.
   - **Storage:** the choice lives only in that file, which follows rename and clone automatically. Nothing is written to `vmm.ini` or `Settings.json`.
-  - **Look:** placed **above the machine header**, as in Fusion. Square corners, no border, no arrows, and a subtle drop shadow below. It spans the full panel width and scales proportionally with the window.
+  - **Look:** placed **above the machine header**, as in Fusion, centred. Square corners, no border, no arrows, and a subtle drop shadow below.
+  - **Size (owner, 2026-10-17):**
+    - Start from a 3:2 box (86Box's 240 × 160 shape), scaled to at most 55% of the visible height. The header, notes and size panel must stay visible. The minimum is 200 pt.
+    - **Every preview has one height:** the height a 1280 × 700 (Windows 3.11) screenshot gets at that box's width.
+    - The width follows each image's own proportions, with no black bars, limited only by the panel width.
+    - The "No screenshot" box is the 3:2 width × that height.
   - **No screenshots:** a "No screenshot" box is shown when the toggle is on.
   - **No "Open Screenshots Folder"** item (rejected earlier).
 - **Never store per-machine data in `Settings.json`** (owner). For machine features, match 86Box's built-in manager.
