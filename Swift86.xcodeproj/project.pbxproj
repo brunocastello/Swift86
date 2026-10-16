@@ -27,6 +27,8 @@
 		DE5E7A012C0A11110099AAAA /* SettingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE5E7A022C0A11110099AAAA /* SettingsStore.swift */; };
 		DEE74D412A531D860029615E /* Library.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEE74D402A531D860029615E /* Library.swift */; };
 		DEEA7FA42A5B382100B72438 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = DEEA7FA22A5B382100B72438 /* Localizable.strings */; };
+		DE5E7A0C2C0B22220099AAAA /* MachineMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE5E7A0A2C0B22220099AAAA /* MachineMetadata.swift */; };
+		DE5E7A0D2C0B22220099AAAA /* LegacyImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE5E7A0B2C0B22220099AAAA /* LegacyImport.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -56,6 +58,8 @@
 		DE5E7A022C0A11110099AAAA /* SettingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStore.swift; sourceTree = "<group>"; };
 		DEE74D402A531D860029615E /* Library.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Library.swift; sourceTree = "<group>"; };
 		DEEA7FA32A5B382100B72438 /* pt-BR */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "pt-BR"; path = "pt-BR.lproj/Localizable.strings"; sourceTree = "<group>"; };
+		DE5E7A0A2C0B22220099AAAA /* MachineMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MachineMetadata.swift; sourceTree = "<group>"; };
+		DE5E7A0B2C0B22220099AAAA /* LegacyImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyImport.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -134,6 +138,8 @@
 				DEE74D402A531D860029615E /* Library.swift */,
 				DE2AF0F92A467F980060CEAF /* Machine.swift */,
 				DE5E7A022C0A11110099AAAA /* SettingsStore.swift */,
+				DE5E7A0A2C0B22220099AAAA /* MachineMetadata.swift */,
+				DE5E7A0B2C0B22220099AAAA /* LegacyImport.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -232,6 +238,8 @@
 			files = (
 				DEE74D412A531D860029615E /* Library.swift in Sources */,
 				DE5E7A012C0A11110099AAAA /* SettingsStore.swift in Sources */,
+				DE5E7A0D2C0B22220099AAAA /* LegacyImport.swift in Sources */,
+				DE5E7A0C2C0B22220099AAAA /* MachineMetadata.swift in Sources */,
 				DE2AF0F22A467E8B0060CEAF /* AppDelegate.swift in Sources */,
 				DE2AF0F62A467F130060CEAF /* ButtonStyles.swift in Sources */,
 				DE2AF10C2A46800D0060CEAF /* EditMachineView.swift in Sources */,

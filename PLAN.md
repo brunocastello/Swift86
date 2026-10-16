@@ -111,19 +111,19 @@ Runs when `Settings.json` does not exist:
 | **Identity (persistent)** | Folder name (`URL.lastPathComponent`) — unique within `machinesPath` |
 | **Identity (in-memory)** | `id: UUID`, transient. `load()` **reuses the existing UUID for a folder already in memory**, so running processes, selection and open sheets survive a rescan |
 | **Display name** | Folder name (unchanged from today; it's also what `-V` receives). Rename = `FileManager.moveItem` of the folder |
-| **Description / notes** | Sidecar `<machine>/.swift86.json` → `{ "schemaVersion": 1, "notes": "…" }`. Hidden, so the folder looks clean in Finder; travels with Clone, Finder copy and backups. Empty notes → sidecar **deleted**, not written |
+| **Description / notes** | Sidecar `<machine>/.swift86.json` → `{ "schemaVersion": 1, "notes": "…" }`. Hidden, so the folder looks clean in Finder; travels with Clone, Finder copy and backups. **Always written on save, even when notes are empty.** Its existence marks the machine as created by or imported into Swift86, which stops the legacy import from bringing back notes the user has cleared |
 | **Icon** | `<machine>/Icon.png` (existing files keep working). `hasCustomIcon` is **derived** from file existence; no stored flag. New custom icons are converted to real PNG data on save |
 | **Screenshot (Phase 3)** | `<machine>/Screenshot.png` — exactly one |
 | **Status** | Runtime only: `.stopped`, `.running`, `.paused`, `.configuring` |
 
-**Discovery rule:** a machine is any **immediate** subfolder of `machinesPath` that contains a regular file named `86box.cfg` (case-sensitive match on name), skipping hidden folders and symlinks that resolve outside `machinesPath`. One level deep, not recursive (see §8 D3). This matches CLAUDE.md's wording and today's launch model (`-P <machinesPath>/<folder>`).
+**Discovery rule:** a machine is any **immediate** subfolder of `machinesPath` that contains a regular file named `86box.cfg` **or** `.swift86.json`. Hidden folders and symlinked folders are skipped. (`.swift86.json` covers machines created in Swift86 but not yet configured in 86Box. Revised 2026-10-16.) One level deep, not recursive (see §8 D3). This matches CLAUDE.md's wording and today's launch model (`-P <machinesPath>/<folder>`).
 
-**New machine:** create the folder, then write a minimal `86box.cfg` (`"[General]\n"`) so the scanner finds it before the user ever opens Configure. *Implementer must verify 86Box starts normally from this cfg and opens/defaults correctly.*
+**New machine:** create the folder and write `.swift86.json`. **Never write a stub `86box.cfg`.** In 86Box's `config_load()`, a *missing* cfg takes the new-machine defaults path (`config == NULL`), while an empty or stub cfg takes the normal parse path. Leaving the cfg to 86Box keeps first-start behaviour identical to today.
 
 ### 4.1 Per-machine legacy import (lazy, inside the scanner)
 For each **immediate** subfolder that contains `86box.plist`:
-- If `86box.cfg` is missing (a machine created in Swift86 but never configured), create the minimal cfg above, so the user doesn't lose machines that are still empty.
-- If `.swift86.json` is missing and the plist has non-empty `Information.Notes`, write the sidecar.
+- If `.swift86.json` is missing, write it with the plist's `Information.Notes`, or `""` if there are none. This also makes never-configured legacy machines (no `86box.cfg`) discoverable.
+- Legacy `MachinesList` (UUIDs in UserDefaults) → `machineOrder`: done once, while `machineOrder` is empty. UUIDs map to folder names through each plist's `Information.Id`; stale UUIDs are dropped.
 - `Icon.png` needs no action. If the plist said `IconCustom=false` but `Icon.png` exists, leave the file; it will now show (accepted edge case — the old `save()` deleted `Icon.png` whenever custom was off, so this is rare).
 - **Never modify or delete `86box.plist`** (see §8 D2). The importer lives in a single file, `Models/LegacyImport.swift`, and is the **only** code that reads plists. Nothing writes them.
 

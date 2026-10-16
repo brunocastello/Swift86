@@ -86,57 +86,83 @@ import SwiftUI
     
     // MARK: - Load Machines
     
+    // Machines folder of the last successful load
+    private var loadedMachinesURL: URL?
+    
     // Load machines
     func load() {
         // Machines library
         var machines = [Machine]()
         
-        // List the machines
-        guard let directory = try? FileManager.default.contentsOfDirectory(atPath: machinesURL.path) else { return }
+        // Identities only carry over while the machines folder is the same one
+        let sameFolder = loadedMachinesURL?.standardizedFileURL == machinesURL.standardizedFileURL
         
-        for folder in directory {
-            // Paths to machine folder, properties and icon
-            let machineURL = machinesURL.appendingPathComponent(folder)
-            let machineInfo = machineURL.appendingPathComponent("86box.plist")
-            let machineIcon = machineURL.appendingPathComponent("Icon.png")
+        // List the machine folders
+        guard let folders = MachineMetadata.candidateFolders(in: machinesURL) else { return }
+        
+        for machineURL in folders {
+            // Bring notes over from a legacy plist, if any
+            LegacyImport.importMachineIfNeeded(at: machineURL)
             
-            // Check if machine exists
-            if FileManager.default.fileExists(atPath: machineInfo.path) {
-                // Read machine properties from file
-                guard let properties = NSDictionary(contentsOf: machineInfo) as? [String: Any],
-                      var info = properties["Information"] as? [String: Any] else {
-                    continue
+            // Only folders with an 86Box config or a Swift86 sidecar are machines
+            guard MachineMetadata.isMachineFolder(machineURL) else { continue }
+            
+            // Machine name, notes and icon come from the folder
+            let name = machineURL.lastPathComponent
+            let machineIcon = machineURL.appendingPathComponent("Icon.png")
+            let hasIcon = FileManager.default.fileExists(atPath: machineIcon.path)
+            
+            // Keep the identity and status of a machine that is already loaded
+            let existing = sameFolder ? self.machines.first { $0.name == name } : nil
+            
+            // Create the loaded machines list
+            var machine = Machine(
+                id: existing?.id ?? UUID(),
+                name: name,
+                iconCustom: hasIcon,
+                icon: hasIcon ? machineIcon.path : "",
+                notes: MachineMetadata.load(from: machineURL)?.notes ?? ""
+            )
+            machine.status = existing?.status ?? .stopped
+            
+            // Append machine instance
+            machines.append(machine)
+        }
+        
+        // Take the sidebar order over from an old install, once (never over an unreadable settings file)
+        var order = SettingsStore.shared.config.machineOrder
+        if order.isEmpty && SettingsStore.shared.loadError == nil {
+            let legacyOrder = LegacyImport.legacyMachineOrder(machinesURL: machinesURL)
+            if !legacyOrder.isEmpty {
+                order = legacyOrder
+                
+                // Store it (deferred, we may be inside a view update)
+                DispatchQueue.main.async {
+                    let store = SettingsStore.shared
+                    if store.config.machineOrder.isEmpty && store.loadError == nil {
+                        store.config.machineOrder = legacyOrder
+                    }
                 }
-                
-                // Get the machine icon
-                if info["IconCustom"] as? Bool ?? false && FileManager.default.fileExists(atPath: machineIcon.path) {
-                    // Custom icon
-                    info["Icon"] = machineIcon.path
-                }
-                
-                // Create the loaded machines list
-                let machine = Machine(
-                    id: UUID(uuidString: info["Id"] as! String)!,
-                    name: info["Name"] as? String ?? "",
-                    iconCustom: info["IconCustom"] as? Bool ?? false,
-                    icon: info["Icon"] as? String ?? "",
-                    notes: info["Notes"] as? String ?? ""
-                )
-                
-                // Append machine instance
-                machines.append(machine)
             }
         }
         
-        // Sort the machines based on custom order
+        // Sort the machines: custom order first, then the rest alphabetically
+        var orderIndex = [String: Int]()
+        for (index, name) in order.enumerated() where orderIndex[name] == nil {
+            orderIndex[name] = index
+        }
         machines.sort { first, last in
-            // TODO(T3): machineOrder
-            let order = UserDefaults.standard.object(forKey: "MachinesList") as? [String] ?? []
-            return (order.firstIndex(of: first.id.uuidString) ?? -1) < (order.firstIndex(of: last.id.uuidString) ?? -1)
+            switch (orderIndex[first.name], orderIndex[last.name]) {
+            case let (a?, b?): return a < b
+            case (.some, nil): return true
+            case (nil, .some): return false
+            case (nil, nil): return first.name.localizedStandardCompare(last.name) == .orderedAscending
+            }
         }
         
         // Return machines
         self.machines = machines
+        loadedMachinesURL = machinesURL
     }
     
     // MARK: - New Machine
@@ -168,6 +194,11 @@ import SwiftUI
 
             // Save machine
             save(machine: machine, url: machineURL)
+            
+            // Keep the new machine at the end of the sidebar order
+            if machines.contains(where: { $0.name == machine.name }) {
+                SettingsStore.shared.config.machineOrder = machines.map(\.name)
+            }
         } catch let error {
             // Error saving machine
             alertTitle = String(format: NSLocalizedString("Error saving machine \"%@\"", comment: ""), machine.name)
@@ -214,6 +245,11 @@ import SwiftUI
             // Move the machine if the name changed
             if oldMachine.name != machine.name {
                 try FileManager.default.removeItem(at: oldMachineURL)
+                
+                // Keep the machine's place in the sidebar order
+                if let index = SettingsStore.shared.config.machineOrder.firstIndex(of: oldMachine.name) {
+                    SettingsStore.shared.config.machineOrder[index] = machine.name
+                }
             }
         } catch let error {
             // Error editing machine
@@ -243,10 +279,9 @@ import SwiftUI
             return
         }
         
-        // Set paths for icons and property list file
+        // Set paths for icons
         let icon = url.appendingPathComponent("Icon.png")
         let newIcon = URL(filePath: machine.icon)
-        let plist = url.appendingPathComponent("86box.plist")
         
         // Check if an icon was selected or not
         if machine.iconCustom && machine.icon.isEmpty {
@@ -298,17 +333,10 @@ import SwiftUI
             }
         }
         
-        // Create machine property list
-        let machineInfo: [String: Any] = [
-            "Id": machine.id.uuidString,
-            "Name": machine.name,
-            "IconCustom": machine.iconCustom,
-            "Icon": machine.icon,
-            "Notes": machine.notes
-        ]
-
-        // Save machine property list
-        guard NSDictionary(dictionary: ["Information": machineInfo]).write(to: plist, atomically: true) else {
+        // Save machine sidecar
+        do {
+            try MachineMetadata(notes: machine.notes).save(to: url)
+        } catch {
             alertTitle = NSLocalizedString("Error", comment: "")
             alertMessage = String(format: NSLocalizedString("Could not save machine \"%@\"", comment: ""), machine.name)
             alertOK = { }
@@ -334,10 +362,8 @@ import SwiftUI
         // Move machine around in sidebar list
         machines.move(fromOffsets: indices, toOffset: newOffset)
         
-        // Save the array of machine IDs to UserDefaults
-        let machinesSort = machines.map { $0.id.uuidString }
-        // TODO(T3): machineOrder
-        UserDefaults.standard.set(machinesSort, forKey: "MachinesList")
+        // Save the folder names as the sidebar order
+        SettingsStore.shared.config.machineOrder = machines.map(\.name)
     }
     
     // MARK: - Clone machine
@@ -368,8 +394,13 @@ import SwiftUI
             let cloneMachineURL = machinesURL.appendingPathComponent(cloneMachine.name)
             try FileManager.default.copyItem(at: machineURL, to: cloneMachineURL)
 
-            // Save clone information to plist
+            // Save clone information
             save(machine: cloneMachine, url: cloneMachineURL)
+            
+            // Keep the clone at the end of the sidebar order
+            if machines.contains(where: { $0.name == cloneMachine.name }) {
+                SettingsStore.shared.config.machineOrder = machines.map(\.name)
+            }
         } catch let error {
             // Error cloning machine
             alertTitle = String(format: NSLocalizedString("Error cloning machine \"%@\"", comment: ""), machine.name)
@@ -550,6 +581,7 @@ import SwiftUI
                 // Delete the machine
                 try FileManager.default.removeItem(at: machineURL)
                 self.machines.removeAll(where: { $0.id == machine.id })
+                SettingsStore.shared.config.machineOrder.removeAll { $0 == machine.name }
             } catch let error {
                 // Error deleting machine
                 self.alertTitle = String(format: NSLocalizedString("Error deleting machine \"%@\"", comment: ""), machine.name)

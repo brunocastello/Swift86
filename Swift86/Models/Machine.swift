@@ -16,8 +16,10 @@ struct Machine: Identifiable {
     // MARK: - Single Machine Properties
     
     // Machine properties
+    // In-memory only, never persisted: the folder name is the persistent identity
     var id = UUID()
     var name: String = ""
+    // Derived from the presence of Icon.png when the machine is loaded
     var iconCustom: Bool = false
     var icon: String = ""
     var notes: String = ""
