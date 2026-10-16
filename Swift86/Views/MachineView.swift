@@ -221,10 +221,14 @@ extension MachineView {
     @ViewBuilder
     fileprivate func screenshotPreview(_ machine: Machine) -> some View {
         if screenshotURL == nil {
-            Text("No screenshot")
-                .foregroundColor(Color.white.opacity(0.6))
-                .frame(maxWidth: .infinity, minHeight: 160, maxHeight: 160)
-                .background(Color.black)
+            // 4:3 like a typical 86Box screen, scaling with the window width
+            Color.black
+                .aspectRatio(4.0 / 3.0, contentMode: .fit)
+                .frame(maxWidth: .infinity)
+                .overlay(
+                    Text("No screenshot")
+                        .foregroundColor(Color.white.opacity(0.6))
+                )
                 .shadow(color: .black.opacity(0.35), radius: 5, x: 0, y: 3)
                 .contentShape(Rectangle())
                 .onTapGesture { showScreenshotImporter = true }

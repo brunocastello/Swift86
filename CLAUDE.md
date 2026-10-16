@@ -19,7 +19,7 @@ Bring Swift86 to feature parity with the useful parts of 86Box Manager / 86Box�
 - Never write a stub `86box.cfg`. 86Box creates it on first configure.
 - Settings live in `~/Library/Application Support/Swift86/Settings.json`. It is a single JSON file holding the 86Box app path, VMs folder, ROMs, appearance, screenshot toggle, `vmm.ini` path and sidebar order (folder names). Unknown or missing keys are tolerated. No `UserDefaults`/`@AppStorage` except the one-shot legacy importer.
 - **UI layer is 100% SwiftUI.** No `NSViewRepresentable`, `NSOpenPanel` (use `.fileImporter`), `NSColor`, or AppKit subclass hacks. AppKit *services* are allowed: `NSWorkspace`, `NSApp.appearance`, `NSImage` for image data, `Process`, and BSD sockets.
-- SwiftUI code must be updated for macOS 27 UI conventions. The deployment target stays macOS 13 until Phase 4 decides otherwise.
+- SwiftUI code must be updated for macOS 27 UI conventions. The deployment target is **macOS 26.0** from Phase 4 on (owner decision).
 - User-facing workflow must feel unchanged; only internal representation and persistence change.
 - Do not add localization work in this pass. Keep existing localized string keys **byte-identical**, e.g. `"Edit..."`, `"Clone..."`, `"Remove \"%@\"..."` with three ASCII dots, so translations keep working. New strings are English only.
 
@@ -85,7 +85,8 @@ The detailed plan, schemas and task breakdown are in `PLAN.md`; keep it in sync 
 - Phase 0: done.
 - Phase 1: done (T1–T4, T3b).
 - Phase 2: done (T5, T6) on branch `phase-2-menu`.
-- Phase 3: T7 (single screenshot) is in progress on branch `phase-3-screenshot`.
+- Phase 3: done (T7) on branch `phase-3-screenshot`.
+- Phase 4: next. T8 raises the target to macOS 26 and modernises the APIs; T9 adds the Liquid Glass styling and the classic toggle.
 - Builds are verified locally from the terminal with `xcodebuild`.
 
 ## Priority Order (this iteration)
@@ -134,6 +135,15 @@ Implement / optimise the final menu defined above:
 - Update SwiftUI views, materials, and controls for macOS 27.
 - Ensure the Fusion-inspired layout still feels native.
 - Add Settings → Appearance → "Use classic styling for machine views". It switches only Swift86-drawn surfaces between the classic look and Liquid Glass, because system chrome follows the OS. See PLAN.md §7.1.
+- **Decisions (owner, 2026-10-17):**
+  - **Deployment target:** raise it to **macOS 26.0**. Built with Xcode 27.
+  - **Default look:** Liquid Glass. The **live** Settings checkbox switches to classic, with no relaunch.
+  - **What classic covers:**
+    - every Swift86-drawn surface, in the look of the current pre-Phase-4 build;
+    - a solid toolbar background;
+    - no scroll-edge effects;
+    - bordered or plain control styles instead of glass.
+  - **What always follows macOS 27:** the system sidebar container, window corners, menus and alerts. Apple ignores `UIDesignRequiresCompatibility` in Xcode 27 builds (confirmed 2026-10-17). A fully classic frame would need an Xcode 26 build, which was rejected.
 
 ### Phase 5 – Final Review
 - Strong model reviews the entire diff.
