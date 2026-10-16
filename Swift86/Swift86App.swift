@@ -24,6 +24,9 @@ import SwiftUI
     // Application settings
     @State private var settings = SettingsStore.shared
 
+    // Sparkle updater
+    @State private var updater = Updater()
+
     // MARK: - Initialization
     
     // Create the settings store (and run the legacy import) up front; Library also reaches it first through SettingsStore.shared
@@ -39,10 +42,19 @@ import SwiftUI
             ContentView()
                 .environment(library)
                 .environment(settings)
+                .environment(updater)
                 .environment(\.interfaceStyle, settings.config.useClassicStyling ? .classic : .glass)
         }
         // Menu bar commands
         .commands {
+            // Check for updates, after About
+            CommandGroup(after: .appInfo) {
+                Button("Check for Updates…") {
+                    updater.checkForUpdates()
+                }
+                .disabled(!updater.canCheckForUpdates)
+            }
+            
             // Add new machine command
             CommandGroup(replacing: CommandGroupPlacement.newItem) {
                 // Create new machine
@@ -89,6 +101,7 @@ import SwiftUI
         Settings {
             SettingsView()
                 .environment(settings)
+                .environment(updater)
                 .environment(\.interfaceStyle, settings.config.useClassicStyling ? .classic : .glass)
                 .navigationTitle("Settings")
         }

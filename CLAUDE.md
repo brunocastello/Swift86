@@ -150,6 +150,14 @@ Implement / optimise the final menu defined above:
     - bordered or plain control styles instead of glass.
   - **What always follows macOS 27:** the system sidebar container, window corners, menus and alerts. Apple ignores `UIDesignRequiresCompatibility` in Xcode 27 builds (confirmed 2026-10-17). A fully classic frame would need an Xcode 26 build, which was rejected.
 
+### Updates (T10, owner decisions 2026-10-17)
+- **Sparkle 2** via Swift Package Manager. Its standard update windows (AppKit) are the one accepted exception to the SwiftUI-only rule.
+- **Menu:** "Check for Updates…" in the app menu. **Settings → General → "Check for Updates"** (default on) enables a daily automatic check. The setting lives in `Settings.json`.
+- **Feed:** `https://github.com/brunocastello/Swift86/releases/latest/download/appcast.xml`, so only the release marked **Latest** is offered and pre-releases never are.
+- **Versions:** plain `1.0`, `1.1`, … (`MARKETING_VERSION`), with an integer build number (`CURRENT_PROJECT_VERSION`). The first Sparkle release is 1.0, build 1.
+- **Release flow:** `scripts/release.sh <version> <build>` builds, zips (`Swift86.zip`) and signs the appcast. The owner publishes with the printed `gh release create` command. Setup is in `docs/UPDATES.md`.
+- **Keys:** the EdDSA private key stays in the owner's Keychain. Claude never generates or handles it.
+
 ### Phase 5 – Final Review
 - Strong model reviews the entire diff.
 - Verify no user-visible regression in how machines are started, stopped, or configured.

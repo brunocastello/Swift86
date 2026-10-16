@@ -11,7 +11,6 @@
 		DE2AF0E22A467E120060CEAF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DE2AF0E12A467E120060CEAF /* Assets.xcassets */; };
 		DE2AF0E52A467E120060CEAF /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = DE2AF0E42A467E120060CEAF /* Preview Assets.xcassets */; };
 		DE2AF0F22A467E8B0060CEAF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2AF0F12A467E8B0060CEAF /* AppDelegate.swift */; };
-		DE2AF0F42A467EAD0060CEAF /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = DE2AF0F32A467EAD0060CEAF /* Info.plist */; };
 		DE2AF0F62A467F130060CEAF /* ButtonStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2AF0F52A467F130060CEAF /* ButtonStyles.swift */; };
 		DE2AF0F82A467F5F0060CEAF /* PathControl.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2AF0F72A467F5E0060CEAF /* PathControl.swift */; };
 		DE2AF0FA2A467F980060CEAF /* Machine.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2AF0F92A467F980060CEAF /* Machine.swift */; };
@@ -32,6 +31,8 @@
 		DE5E7A1A2C0C33330099AAAA /* VMMIni.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE5E7A1B2C0C33330099AAAA /* VMMIni.swift */; };
 		DE5E7A2A2C0C33330099AAAA /* ManagerSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE5E7A2B2C0C33330099AAAA /* ManagerSocket.swift */; };
 		DE5E7A0D2C0B22220099AAAA /* LegacyImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE5E7A0B2C0B22220099AAAA /* LegacyImport.swift */; };
+		DE5E7A3A2C0D44440099AAAA /* Updater.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE5E7A3B2C0D44440099AAAA /* Updater.swift */; };
+		DE5E7A3C2C0D44440099AAAA /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = DE5E7A3D2C0D44440099AAAA /* Sparkle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -66,6 +67,7 @@
 		DE5E7A1B2C0C33330099AAAA /* VMMIni.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VMMIni.swift; sourceTree = "<group>"; };
 		DE5E7A2B2C0C33330099AAAA /* ManagerSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagerSocket.swift; sourceTree = "<group>"; };
 		DE5E7A0B2C0B22220099AAAA /* LegacyImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyImport.swift; sourceTree = "<group>"; };
+		DE5E7A3B2C0D44440099AAAA /* Updater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Updater.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +75,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DE5E7A3C2C0D44440099AAAA /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -144,6 +147,7 @@
 				DEE74D402A531D860029615E /* Library.swift */,
 				DE2AF0F92A467F980060CEAF /* Machine.swift */,
 				DE5E7A022C0A11110099AAAA /* SettingsStore.swift */,
+				DE5E7A3B2C0D44440099AAAA /* Updater.swift */,
 				DE5E7A1B2C0C33330099AAAA /* VMMIni.swift */,
 				DE5E7A2B2C0C33330099AAAA /* ManagerSocket.swift */,
 				DE5E7A102C0B22220099AAAA /* MachineFiles.swift */,
@@ -184,6 +188,9 @@
 			dependencies = (
 			);
 			name = Swift86;
+			packageProductDependencies = (
+				DE5E7A3D2C0D44440099AAAA /* Sparkle */,
+			);
 			productName = Swift86;
 			productReference = DE2AF0DA2A467E120060CEAF /* Swift86.app */;
 			productType = "com.apple.product-type.application";
@@ -217,6 +224,9 @@
 				Base,
 			);
 			mainGroup = DE2AF0D12A467E120060CEAF;
+			packageReferences = (
+				DE5E7A3E2C0D44440099AAAA /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
 			productRefGroup = DE2AF0DB2A467E120060CEAF /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -234,7 +244,6 @@
 				DE2AF0E52A467E120060CEAF /* Preview Assets.xcassets in Resources */,
 				DEEA7FA42A5B382100B72438 /* Localizable.strings in Resources */,
 				DE2AF0E22A467E120060CEAF /* Assets.xcassets in Resources */,
-				DE2AF0F42A467EAD0060CEAF /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -247,6 +256,7 @@
 			files = (
 				DEE74D412A531D860029615E /* Library.swift in Sources */,
 				DE5E7A012C0A11110099AAAA /* SettingsStore.swift in Sources */,
+				DE5E7A3A2C0D44440099AAAA /* Updater.swift in Sources */,
 				DE5E7A0D2C0B22220099AAAA /* LegacyImport.swift in Sources */,
 				DE5E7A1A2C0C33330099AAAA /* VMMIni.swift in Sources */,
 				DE5E7A2A2C0C33330099AAAA /* ManagerSocket.swift in Sources */,
@@ -425,12 +435,13 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = "Beta 4.3";
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"Swift86/Preview Content\"";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Swift86/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Swift86;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -458,12 +469,13 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = "Beta 4.3";
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"Swift86/Preview Content\"";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Swift86/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Swift86;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -503,6 +515,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		DE5E7A3E2C0D44440099AAAA /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.10.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DE5E7A3D2C0D44440099AAAA /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = DE5E7A3E2C0D44440099AAAA /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = DE2AF0D22A467E120060CEAF /* Project object */;
 }

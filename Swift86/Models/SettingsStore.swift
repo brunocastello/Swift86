@@ -28,6 +28,7 @@ struct AppConfig: Codable, Equatable {
     var useClassicStyling: Bool = false
     var machineOrder: [String] = []
     var hasCompletedFirstRun: Bool = false
+    var checkForUpdates: Bool = true
     
     // Default configuration, the single source of the default values
     static let defaults = AppConfig()
@@ -63,6 +64,7 @@ struct AppConfig: Codable, Equatable {
         useClassicStyling = value(.useClassicStyling, d.useClassicStyling)
         machineOrder = value(.machineOrder, d.machineOrder)
         hasCompletedFirstRun = value(.hasCompletedFirstRun, d.hasCompletedFirstRun)
+        checkForUpdates = value(.checkForUpdates, d.checkForUpdates)
     }
     
     // MARK: - Methods

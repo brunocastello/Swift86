@@ -19,6 +19,9 @@ struct GeneralSettingsView: View {
     // Environment object application settings
     @Environment(SettingsStore.self) private var settings
     
+    // Environment object software updater
+    @Environment(Updater.self) private var updater
+    
     // MARK: - Properties
     
     // Path currently being chosen in the file importer
@@ -145,6 +148,16 @@ struct GeneralSettingsView: View {
                     }
                 }
             }
+            
+            // Updates
+            Toggle(isOn: Bindable(settings).config.checkForUpdates) {
+                Text("Check for Updates")
+            }
+            .accessibilityLabel("Check for Updates")
+            .padding(.bottom, 10)
+            .onChange(of: settings.config.checkForUpdates) { _, checks in
+                updater.automaticallyChecks = checks
+            }
         }
         .fixedSize()
         .padding(EdgeInsets(top: 16, leading: 32, bottom: 16, trailing: 32))
@@ -186,5 +199,6 @@ struct GeneralSettingsView: View {
 #Preview {
     GeneralSettingsView()
         .environment(SettingsStore.shared)
+        .environment(Updater())
 }
 
