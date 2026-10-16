@@ -25,6 +25,7 @@ struct AppConfig: Codable, Equatable {
     var vmmIniPath: String = ("~/Library/Preferences/86Box/vmm.ini" as NSString).expandingTildeInPath
     var appearance: String = ""
     var showScreenshots: Bool = false
+    var useClassicStyling: Bool = false
     var machineOrder: [String] = []
     var hasCompletedFirstRun: Bool = false
     
@@ -59,6 +60,7 @@ struct AppConfig: Codable, Equatable {
         vmmIniPath = path(.vmmIniPath, d.vmmIniPath)
         appearance = value(.appearance, d.appearance)
         showScreenshots = value(.showScreenshots, d.showScreenshots)
+        useClassicStyling = value(.useClassicStyling, d.useClassicStyling)
         machineOrder = value(.machineOrder, d.machineOrder)
         hasCompletedFirstRun = value(.hasCompletedFirstRun, d.hasCompletedFirstRun)
     }

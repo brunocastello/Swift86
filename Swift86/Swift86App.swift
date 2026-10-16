@@ -39,6 +39,7 @@ import SwiftUI
             ContentView()
                 .environment(library)
                 .environment(settings)
+                .environment(\.interfaceStyle, settings.config.useClassicStyling ? .classic : .glass)
         }
         // Menu bar commands
         .commands {
@@ -88,6 +89,7 @@ import SwiftUI
         Settings {
             SettingsView()
                 .environment(settings)
+                .environment(\.interfaceStyle, settings.config.useClassicStyling ? .classic : .glass)
                 .navigationTitle("Settings")
         }
     }

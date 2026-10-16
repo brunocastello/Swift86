@@ -173,6 +173,8 @@ struct MachineView: View {
                     .onPreferenceChange(InfoHeightKey.self) { infoHeight = $0 }
                 }
             }
+            // Scroll-edge effect for the chosen interface style
+            .scrollChrome()
             }
             .navigationSubtitle(machine.name)
             // List the screenshots off the main thread, again when the status or app focus changes

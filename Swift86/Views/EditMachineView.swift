@@ -95,8 +95,7 @@ struct EditMachineView: View {
                                 if machine.iconCustom { showIconImporter = true }
                             }
                     }
-                    .background(Color.tileBackground)
-                    .cornerRadius(8)
+                    .tileSurface()
                     
                     // Toggle default or custom icon
                     VStack {

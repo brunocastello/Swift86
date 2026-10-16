@@ -100,9 +100,8 @@ struct ContentView: View {
                 .help("New Machine")
             }
         }
-        // Keep the classic opaque toolbar under the macOS 26+ design
-        .toolbarBackground(.visible, for: .windowToolbar)
-        .toolbarBackgroundVisibility(.visible, for: .windowToolbar)
+        // Toolbar background for the chosen interface style
+        .toolbarChrome()
         // Add new machine
         .sheet(item: Bindable(library).newMachine) { machine in
             EditMachineView(machine: machine, isUpdating: false)
