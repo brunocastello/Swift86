@@ -137,6 +137,6 @@ struct SidebarView_Previews: PreviewProvider {
     static var previews: some View {
         SidebarView()
             .environmentObject(SettingsStore.shared)
-            .environmentObject(Library())
+            .environmentObject(Library(loadsLibrary: false))
     }
 }

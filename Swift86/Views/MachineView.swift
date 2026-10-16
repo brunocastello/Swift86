@@ -18,9 +18,6 @@ struct MachineView: View {
     // Environment object machine library
     @EnvironmentObject var library: Library
     
-    // Environment variable to dismiss the current view
-    @Environment(\.presentationMode) var presentationMode
-    
     // MARK: - Properties
     
     // Machine instance
@@ -110,8 +107,14 @@ struct MachineView: View {
                         }
 
                         // Machine size
-                        LabeledContent("Size", value: library.sizeOf(machine: machine.name) ?? "0 KB")
+                        LabeledContent("Size", value: machineSize ?? "…")
                             .panelStyle()
+                            .task(id: "\(machine.name)|\(machine.status)") {
+                                machineSize = nil
+                                let size = await sizeOf(machine.name)
+                                guard !Task.isCancelled else { return }
+                                machineSize = size
+                            }
                     }
                     .padding(EdgeInsets(top: 0, leading: 20, bottom: 20, trailing: 20))
                 }
@@ -124,11 +127,26 @@ struct MachineView: View {
     }
 }
 
+// MARK: - Machine Size
+
+extension MachineView {
+    // Human readable folder size, calculated off the main actor
+    @MainActor
+    fileprivate func sizeOf(_ name: String) async -> String {
+        let url = library.machinesURL.appendingPathComponent(name)
+        let bytes = await Task.detached(priority: .utility) { MachineFiles.folderSize(at: url) }.value
+        let formatter = ByteCountFormatter()
+        formatter.allowedUnits = [.useKB, .useMB, .useGB, .useTB]
+        formatter.countStyle = .file
+        return formatter.string(fromByteCount: bytes)
+    }
+}
+
 // MARK: - Preview
 
 struct MachineView_Previews: PreviewProvider {
     static var previews: some View {
         MachineView(machine: Machine())
-            .environmentObject(Library())
+            .environmentObject(Library(loadsLibrary: false))
     }
 }

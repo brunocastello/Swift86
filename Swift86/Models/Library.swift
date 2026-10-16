@@ -53,7 +53,10 @@ import SwiftUI
     
     // MARK: - Initialization
     
-    init() {
+    init(loadsLibrary: Bool = true) {
+        // Previews skip the real library
+        guard loadsLibrary else { return }
+        
         // First run actions
         firstRun()
         
@@ -165,48 +168,71 @@ import SwiftUI
         loadedMachinesURL = machinesURL
     }
     
+    // MARK: - Machine Errors
+    
+    // Errors raised when creating or editing machines
+    enum MachineError: LocalizedError {
+        case invalidName(MachineNameError)
+        case machineRunning
+        case invalidIcon
+        case notFound(String)
+        case io(Error)
+        
+        var errorDescription: String? {
+            switch self {
+            case .invalidName(let error): return error.message
+            case .machineRunning: return "Stop the machine before renaming it."
+            case .invalidIcon: return "The selected file is not a valid image."
+            case .notFound(let name): return String(format: NSLocalizedString("Could not find machine \"%@\"", comment: ""), name)
+            case .io(let error): return error.localizedDescription
+            }
+        }
+    }
+    
     // MARK: - New Machine
     
     // New machine
     @Published var newMachine: Machine?
     
     // Create new machine
-    func create(machine: Machine) {
-        // Set machine folder path
-        let machineURL = machinesURL.appendingPathComponent(machine.name)
-        
-        // Check for an existing machine with same name
-        for existingMachine in machines {
-            if existingMachine.name == machine.name {
-                // Error saving machine
-                alertTitle = String(format: NSLocalizedString("Error saving machine \"%@\"", comment: ""), machine.name)
-                alertMessage = NSLocalizedString("A machine with this name already exists.", comment: "")
-                alertOK = { }
-                showCancel = false
-                showAlert = true
-                return
-            }
+    @discardableResult
+    func create(_ draft: Machine) throws -> Machine {
+        // Validate the name
+        let name: String
+        switch MachineFiles.validateName(draft.name, in: machinesURL) {
+        case .success(let valid): name = valid
+        case .failure(let error): throw MachineError.invalidName(error)
         }
-
+        
+        // Decode the icon before touching the file system
+        let folderURL = machinesURL.appendingPathComponent(name)
+        let iconPlan = try prepareIcon(draft, ownIcons: [folderURL])
+        
+        // Create the machine folder (never a 86box.cfg, 86Box makes its own)
         do {
-            // Create machine folder
-            try FileManager.default.createDirectory(at: machineURL, withIntermediateDirectories: true, attributes: nil)
-
-            // Save machine
-            save(machine: machine, url: machineURL)
+            try FileManager.default.createDirectory(at: folderURL, withIntermediateDirectories: false)
+        } catch {
+            throw MachineError.io(error)
+        }
+        
+        do {
+            // Write the sidecar and the icon
+            try MachineMetadata(notes: draft.notes).save(to: folderURL)
+            try commitIcon(iconPlan, in: folderURL)
+            var machine = draft
+            machine.name = name
+            machine.status = .stopped
+            machine.icon = iconPath(in: folderURL)
+            machine.iconCustom = !machine.icon.isEmpty
             
             // Keep the new machine at the end of the sidebar order
-            if machines.contains(where: { $0.name == machine.name }) {
-                SettingsStore.shared.config.machineOrder = machines.map(\.name)
-            }
-        } catch let error {
-            // Error saving machine
-            alertTitle = String(format: NSLocalizedString("Error saving machine \"%@\"", comment: ""), machine.name)
-            alertMessage = NSLocalizedString(error.localizedDescription, comment: "")
-            alertOK = { }
-            showCancel = false
-            showAlert = true
-            return
+            machines.append(machine)
+            SettingsStore.shared.config.machineOrder = machines.map(\.name)
+            return machine
+        } catch {
+            // Remove only the folder just created
+            try? FileManager.default.removeItem(at: folderURL)
+            throw (error as? MachineError) ?? MachineError.io(error)
         }
     }
     
@@ -215,144 +241,128 @@ import SwiftUI
     // Edited machine
     @Published var editMachine: Machine?
     
-    // Edit machine
-    func edit(machine: Machine) {
-        // Find old and new machine paths
-        guard let oldMachine = (machines.first { $0.id == machine.id }) else { return }
-        let oldMachineURL = machinesURL.appendingPathComponent(oldMachine.name)
-        let machineURL = machinesURL.appendingPathComponent(machine.name)
-        
-        // First check if machine exists
-        guard FileManager.default.fileExists(atPath: oldMachineURL.path) else {
-            // Error saving machine
-            alertTitle = NSLocalizedString("Error", comment: "")
-            alertMessage = String(format: NSLocalizedString("Could not find machine \"%@\"", comment: ""), machine.name)
-            alertOK = { }
-            showCancel = false
-            showAlert = true
-            return
+    // Update an edited machine
+    func update(_ edited: Machine) throws {
+        // Find the machine being edited
+        guard let index = machines.firstIndex(where: { $0.id == edited.id }) else {
+            throw MachineError.notFound(edited.name)
+        }
+        let old = machines[index]
+        let oldURL = machinesURL.appendingPathComponent(old.name)
+        guard FileManager.default.fileExists(atPath: oldURL.path) else {
+            throw MachineError.notFound(old.name)
         }
         
-        do {
-            // Move the machine if the name changed
-            if oldMachine.name != machine.name {
-                try FileManager.default.copyItem(at: oldMachineURL, to: machineURL)
+        // Validate the name
+        let name: String
+        switch MachineFiles.validateName(edited.name, in: machinesURL, renaming: old.name) {
+        case .success(let valid): name = valid
+        case .failure(let error): throw MachineError.invalidName(error)
+        }
+        let renamed = name != old.name
+        if renamed && old.status != .stopped { throw MachineError.machineRunning }
+        
+        // Decode the icon before touching the file system
+        let newURL = machinesURL.appendingPathComponent(name)
+        var iconPlan = try prepareIcon(edited, ownIcons: [oldURL, newURL])
+        if edited.iconCustom && edited.icon == old.icon { iconPlan = .keep }
+        
+        // Rename the folder if the name changed
+        var folderURL = oldURL
+        if renamed {
+            do {
+                try MachineFiles.renameFolder(from: oldURL, to: newURL)
+            } catch {
+                throw MachineError.io(error)
             }
-
-            // Update existing machine
-            save(machine: machine, url: machineURL)
+            folderURL = newURL
             
-            // Move the machine if the name changed
-            if oldMachine.name != machine.name {
-                try FileManager.default.removeItem(at: oldMachineURL)
-                
-                // Keep the machine's place in the sidebar order
-                if let index = SettingsStore.shared.config.machineOrder.firstIndex(of: oldMachine.name) {
-                    SettingsStore.shared.config.machineOrder[index] = machine.name
-                }
+            // Keep the machine's place in the sidebar order
+            if let orderIndex = SettingsStore.shared.config.machineOrder.firstIndex(of: old.name) {
+                SettingsStore.shared.config.machineOrder[orderIndex] = name
             }
-        } catch let error {
-            // Error editing machine
-            alertTitle = String(format: NSLocalizedString("Error saving machine \"%@\"", comment: ""), machine.name)
-            alertMessage = NSLocalizedString(error.localizedDescription, comment: "")
-            alertOK = { }
-            showCancel = false
-            showAlert = true
+            machines[index].name = name
+        }
+        
+        // Write the sidecar and the icon in the (possibly new) folder
+        do {
+            try MachineMetadata(notes: edited.notes).save(to: folderURL)
+            try commitIcon(iconPlan, in: folderURL)
+            machines[index].notes = edited.notes
+        } catch {
+            // The rename stays, show the current state
+            machines[index].icon = iconPath(in: folderURL)
+            machines[index].iconCustom = !machines[index].icon.isEmpty
+            throw (error as? MachineError) ?? MachineError.io(error)
+        }
+        machines[index].icon = iconPath(in: folderURL)
+        machines[index].iconCustom = !machines[index].icon.isEmpty
+    }
+    
+    // MARK: - Machine Icon
+    
+    // What to do with a machine's Icon.png
+    private enum IconPlan {
+        case keep
+        case remove
+        case write(Data)
+    }
+    
+    // Path of the machine's Icon.png, or empty if it has none
+    private func iconPath(in folder: URL) -> String {
+        let icon = folder.appendingPathComponent("Icon.png")
+        return FileManager.default.fileExists(atPath: icon.path) ? icon.path : ""
+    }
+    
+    // Decide the icon change and decode the chosen image, without touching any machine file
+    private func prepareIcon(_ machine: Machine, ownIcons folders: [URL]) throws -> IconPlan {
+        // Default icon, no file
+        if !machine.iconCustom || machine.icon.isEmpty { return .remove }
+        
+        // The machine's own icon needs no work
+        let chosen = URL(filePath: machine.icon).standardizedFileURL.resolvingSymlinksInPath()
+        let own = folders.map { $0.appendingPathComponent("Icon.png").standardizedFileURL.resolvingSymlinksInPath() }
+        if own.contains(chosen) { return .keep }
+        
+        // Convert the chosen image to a real PNG
+        guard let image = NSImage(contentsOf: URL(filePath: machine.icon)),
+              let tiff = image.tiffRepresentation,
+              let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) else {
+            throw MachineError.invalidIcon
+        }
+        return .write(png)
+    }
+    
+    // Make the folder's Icon.png match the plan
+    private func commitIcon(_ plan: IconPlan, in folder: URL) throws {
+        let icon = folder.appendingPathComponent("Icon.png")
+        do {
+            switch plan {
+            case .keep:
+                break
+            case .remove:
+                // Only ever remove a file or a symlink, never a folder
+                let values = try? icon.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey])
+                if values?.isRegularFile == true || values?.isSymbolicLink == true {
+                    try FileManager.default.removeItem(at: icon)
+                }
+            case .write(let data):
+                try data.write(to: icon, options: .atomic)
+            }
+        } catch {
+            throw MachineError.io(error)
         }
     }
     
-    // MARK: - Save Machine
-    
-    // Save machine
-    func save(machine: Machine, url: URL) {
-        // No longer a constant
+    // Save a cloned machine's sidecar and icon (T6 rewrites clone)
+    private func saveClone(_ machine: Machine, in folder: URL) throws {
         var machine = machine
-        
-        // Stop saving machine due to an error
-        // (Avoids losing entire library!)
-        if machine.name.isEmpty {
-            alertTitle = NSLocalizedString("Error", comment: "")
-            alertMessage = NSLocalizedString("This machine must have a name.", comment: "")
-            alertOK = { }
-            showCancel = false
-            showAlert = true
-            return
-        }
-        
-        // Set paths for icons
-        let icon = url.appendingPathComponent("Icon.png")
-        let newIcon = URL(filePath: machine.icon)
-        
-        // Check if an icon was selected or not
-        if machine.iconCustom && machine.icon.isEmpty {
-            machine.iconCustom = false
-        } else if machine.iconCustom && !machine.icon.isEmpty {
-            machine.icon = "Icon.png"
-        } else {
-            machine.icon = ""
-        }
-        
-        // If user selected a custom icon
-        if machine.iconCustom && !machine.icon.isEmpty {
-            // Custom icon
-            do {
-                // Delete old image
-                if FileManager.default.fileExists(atPath: icon.path) && newIcon.path != icon.path {
-                    try FileManager.default.removeItem(atPath: icon.path)
-                    machine.icon = ""
-                }
-                
-                // Save image if new icon
-                if newIcon.path != icon.path {
-                    try FileManager.default.copyItem(at: newIcon, to: icon)
-                }
-                machine.icon = icon.path
-            } catch {
-                alertTitle = String(format: NSLocalizedString("Error saving icon for machine \"%@\"", comment: ""), machine.name)
-                alertMessage = NSLocalizedString(error.localizedDescription, comment: "")
-                alertOK = { }
-                showCancel = false
-                showAlert = true
-                return
-            }
-        } else {
-            // Default icon
-            do {
-                // Delete old image if no icon
-                if FileManager.default.fileExists(atPath: icon.path) {
-                    try FileManager.default.removeItem(atPath: icon.path)
-                    machine.icon = ""
-                }
-            } catch {
-                alertTitle = String(format: NSLocalizedString("Error deleting icon for machine \"%@\"", comment: ""), machine.name)
-                alertMessage = NSLocalizedString(error.localizedDescription, comment: "")
-                alertOK = { }
-                showCancel = false
-                showAlert = true
-                return
-            }
-        }
-        
-        // Save machine sidecar
-        do {
-            try MachineMetadata(notes: machine.notes).save(to: url)
-        } catch {
-            alertTitle = NSLocalizedString("Error", comment: "")
-            alertMessage = String(format: NSLocalizedString("Could not save machine \"%@\"", comment: ""), machine.name)
-            alertOK = { }
-            showCancel = false
-            showAlert = true
-            return
-        }
-        
-        // Save machine into library
-        if let index = machines.firstIndex(where: { $0.id == machine.id }) {
-            // Update existing machine
-            machines[index] = machine
-        } else {
-            // Save new machine
-            machines.append(machine)
-        }
+        let plan = try prepareIcon(machine, ownIcons: [folder])
+        try MachineMetadata(notes: machine.notes).save(to: folder)
+        try commitIcon(plan, in: folder)
+        machine.icon = iconPath(in: folder)
+        machine.iconCustom = !machine.icon.isEmpty
+        machines.append(machine)
     }
     
     // MARK: - Move Machine
@@ -395,7 +405,7 @@ import SwiftUI
             try FileManager.default.copyItem(at: machineURL, to: cloneMachineURL)
 
             // Save clone information
-            save(machine: cloneMachine, url: cloneMachineURL)
+            try saveClone(cloneMachine, in: cloneMachineURL)
             
             // Keep the clone at the end of the sidebar order
             if machines.contains(where: { $0.name == cloneMachine.name }) {
@@ -513,40 +523,6 @@ import SwiftUI
         }
     }
     
-    // MARK: - Show Machine Size
-    
-    // Calculate and return machine size
-    func sizeOf(machine: String) -> String? {
-        // Declare size variable
-        var size: String?
-
-        // Set machine path
-        let path = machinesURL.appendingPathComponent(machine).path
-        
-        // Total machine size
-        var totalSize: UInt64 = 0
-        
-        // Enumerate machine folder contents
-        if let enumerator = FileManager.default.enumerator(atPath: path) {
-            while let subpath = enumerator.nextObject() as? String {
-                let fullSubpath = path + "/" + subpath
-                if let attributes = try? FileManager.default.attributesOfItem(atPath: fullSubpath),
-                   let fileSize = attributes[.size] as? UInt64 {
-                    totalSize += fileSize
-                }
-            }
-        }
-        
-        // Get human readable folder size
-        let byteCountFormatter = ByteCountFormatter()
-        byteCountFormatter.allowedUnits = [.useKB, .useMB, .useGB, .useTB]
-        byteCountFormatter.countStyle = .file
-        size = byteCountFormatter.string(fromByteCount: Int64(totalSize))
-        
-        // Return size
-        return size
-    }
-    
     // MARK: - Find Machine
     
     // Show machine in Finder
@@ -593,40 +569,6 @@ import SwiftUI
         }
         showCancel = true
         showAlert = true
-    }
-    
-    // MARK: - Machine Icon Picker
-    
-    // Browse for machine icon
-    func iconPicker(machine: Machine, completion: @escaping (URL?) -> Void) {
-        // Set path to save icon
-        let machineURL = machinesURL.appendingPathComponent(machine.name)
-        
-        // Only for custom icon
-        if machine.iconCustom {
-            // Create an instance of NSOpenPanel
-            let openPanel = NSOpenPanel()
-            openPanel.canChooseFiles = true
-            openPanel.canChooseDirectories = false
-            openPanel.allowsMultipleSelection = false
-            openPanel.allowedContentTypes = [.image]
-            
-            // Set the default path for the NSOpenPanel
-            if !machineURL.path.isEmpty {
-                // Open in current machine folder if editing machine
-                openPanel.directoryURL = machineURL
-            } else {
-                // Open in default user home folder if new machine
-                openPanel.directoryURL = FileManager.default.homeDirectoryForCurrentUser
-            }
-            
-            // Show the dialog and return changes
-            if openPanel.runModal() == NSApplication.ModalResponse.OK,
-               let iconURL = openPanel.url {
-                // return the icon URL
-                completion(iconURL)
-            }
-        }
     }
     
     // MARK: - Alerts

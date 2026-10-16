@@ -79,7 +79,7 @@ struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
         ContentView()
             .environmentObject(SettingsStore.shared)
-            .environmentObject(Library())
+            .environmentObject(Library(loadsLibrary: false))
     }
 }
 
