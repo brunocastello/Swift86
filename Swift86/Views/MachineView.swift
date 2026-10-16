@@ -50,8 +50,8 @@ struct MachineView: View {
                             Image(systemName: "power")
                                 .imageScale(.large)
                         }
-                        .disabled(machine.status != .stopped)
-                        .buttonStyle(MachineButtonStyle(isDisabled: machine.status != .stopped))
+                        .disabled(machine.status != .stopped || library.isBusy(machine))
+                        .buttonStyle(MachineButtonStyle(isDisabled: machine.status != .stopped || library.isBusy(machine)))
                         
                         // Machine name and status
                         VStack(alignment: .leading, spacing: 0) {
@@ -88,12 +88,13 @@ struct MachineView: View {
                         
                         // Delete machine
                         Button(action: {
-                            library.delete(machine: machine)
+                            library.pendingConfirmation = .remove(machine)
                         }) {
                             Image(systemName: "trash")
                                 .imageScale(.large)
                         }
-                        .buttonStyle(MachineButtonStyle(isDisabled: false))
+                        .disabled(machine.status != .stopped || library.isBusy(machine))
+                        .buttonStyle(MachineButtonStyle(isDisabled: machine.status != .stopped || library.isBusy(machine)))
                     }
                     .padding(EdgeInsets(top: 20, leading: 20, bottom: 20, trailing: 20))
                     

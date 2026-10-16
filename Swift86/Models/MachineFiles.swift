@@ -286,6 +286,226 @@ enum MachineFiles {
         }
     }
     
+    // MARK: - Remove
+    
+    // Reasons a machine folder is not removed
+    enum RemovalError: LocalizedError, Equatable {
+        case notAFolder
+        case isSymlink
+        case outsideLibrary
+        case isLibrary
+        case notAMachine
+        
+        var errorDescription: String? {
+            switch self {
+            case .notAFolder: return "The machine folder no longer exists."
+            case .isSymlink: return "The machine folder is a symbolic link, so it was left alone."
+            case .outsideLibrary: return "The machine folder is not directly inside the Virtual Machines folder, so it was left alone."
+            case .isLibrary: return "The machine folder is the Virtual Machines folder itself, so it was left alone."
+            case .notAMachine: return "The folder is not an 86Box machine (no 86box.cfg), so it was left alone."
+            }
+        }
+    }
+    
+    // Real path of a URL (all symlinks resolved), nil if it can't be resolved
+    private static func realPath(_ url: URL) -> String? {
+        guard let resolved = realpath(url.path, nil) else { return nil }
+        defer { free(resolved) }
+        return RegisteredFolders.normalized(String(cString: resolved))
+    }
+    
+    // Whether a machine folder may be deleted: a real folder, directly inside the machines folder, that is a machine
+    static func removalCheck(folder: URL, machinesURL: URL, registered: RegisteredFolders) -> Result<Void, RemovalError> {
+        var info = stat()
+        guard lstat(folder.path, &info) == 0 else { return .failure(.notAFolder) }
+        if (info.st_mode & S_IFMT) == S_IFLNK { return .failure(.isSymlink) }
+        guard (info.st_mode & S_IFMT) == S_IFDIR else { return .failure(.notAFolder) }
+        
+        guard let folderPath = realPath(folder), let libraryPath = realPath(machinesURL) else { return .failure(.outsideLibrary) }
+        if folderPath == libraryPath { return .failure(.isLibrary) }
+        let parent = RegisteredFolders.normalized((folderPath as NSString).deletingLastPathComponent)
+        guard parent == libraryPath else { return .failure(.outsideLibrary) }
+        
+        guard isMachineFolder(folder, registered: registered) else { return .failure(.notAMachine) }
+        return .success(())
+    }
+    
+    // MARK: - Clone
+    
+    // Reasons a clone fails
+    enum CloneError: LocalizedError {
+        case destinationExists
+        
+        var errorDescription: String? {
+            switch self {
+            case .destinationExists: return NSLocalizedString("A machine with this name already exists.", comment: "")
+            }
+        }
+    }
+    
+    // A name for a copy of a machine: "<name> copy", "<name> copy 2", ... not used by any folder (case-insensitive)
+    // A name that already ends in " copy" or " copy <n>" is copied from its base, so "X copy" gives "X copy 2"
+    static func uniqueCloneName(for name: String, in machinesURL: URL) -> String {
+        var base = name
+        if let range = name.range(of: " copy( [0-9]+)?$", options: .regularExpression), range.lowerBound != name.startIndex {
+            base = String(name[..<range.lowerBound])
+        }
+        let entries = (try? FileManager.default.contentsOfDirectory(atPath: machinesURL.path)) ?? []
+        func taken(_ candidate: String) -> Bool {
+            entries.contains { $0.compare(candidate, options: [.caseInsensitive]) == .orderedSame }
+        }
+        var candidate = "\(base) copy"
+        var number = 2
+        while taken(candidate) {
+            candidate = "\(base) copy \(number)"
+            number += 1
+        }
+        return candidate
+    }
+    
+    // Name of the hidden folder a clone is copied into first, fixed length whatever the machine is called
+    static let cloneTemporaryPrefix = ".swift86-cloning-"
+    static func cloneTemporaryName() -> String {
+        cloneTemporaryPrefix + UUID().uuidString
+    }
+    
+    // Whether a name is exactly a clone temporary folder name
+    static func isCloneTemporaryName(_ name: String) -> Bool {
+        let pattern = "^\\.swift86-cloning-[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}"
+        guard let range = name.range(of: pattern, options: .regularExpression) else { return false }
+        return range == name.startIndex..<name.endIndex
+    }
+    
+    // Leftovers of interrupted clones: direct, non-symlink folders with a temporary name, minus those in progress
+    static func leftoverCloneFolders(in machinesURL: URL, inProgress: Set<String> = []) -> [URL] {
+        let folder = machinesURL.resolvingSymlinksInPath()
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []
+        return names.compactMap { name in
+            guard isCloneTemporaryName(name), !inProgress.contains(name) else { return nil }
+            let url = folder.appendingPathComponent(name)
+            var info = stat()
+            guard lstat(url.path, &info) == 0, (info.st_mode & S_IFMT) == S_IFDIR else { return nil }
+            return url
+        }
+    }
+    
+    // Copy a machine folder to a new one through a hidden temporary sibling, so a failed copy never shows up as a machine
+    // Everything is copied, item by item at the top level. `prepare` edits the copy before it is moved into place.
+    static func cloneFolder(from source: URL, to destination: URL, temporaryName: String = cloneTemporaryName(),
+                            prepare: ((URL) throws -> Void)? = nil) throws {
+        let fileManager = FileManager.default
+        
+        // Never overwrite or merge into anything (a dangling symlink counts too)
+        var info = stat()
+        if lstat(destination.path, &info) == 0 { throw CloneError.destinationExists }
+        
+        let temporary = destination.deletingLastPathComponent().appendingPathComponent(temporaryName)
+        do {
+            try fileManager.createDirectory(at: temporary, withIntermediateDirectories: false)
+            for name in try fileManager.contentsOfDirectory(atPath: source.path) {
+                try fileManager.copyItem(at: source.appendingPathComponent(name), to: temporary.appendingPathComponent(name))
+            }
+            try prepare?(temporary)
+            try fileManager.moveItem(at: temporary, to: destination)
+        } catch {
+            // Only the temporary folder is ours to remove
+            try? fileManager.removeItem(at: temporary)
+            // A folder that appeared under the new name meanwhile
+            if (error as? CocoaError)?.code == .fileWriteFileExists { throw CloneError.destinationExists }
+            throw error
+        }
+    }
+    
+    // Point absolute paths into the source folder at the new folder, in the values of a 86box.cfg
+    // Only a value that starts with one of the folders followed by "/" changes, everything else keeps its bytes
+    static func rewriteConfigPaths(_ text: String, from folders: [String], to folder: String) -> String {
+        let prefixes = folders.map { RegisteredFolders.normalized($0) + "/" }
+        let target = RegisteredFolders.normalized(folder)
+        
+        // Split on "\n" only, a "\r" stays at the end of its line
+        let lines = text.components(separatedBy: "\n")
+        let rewritten = lines.map { line -> String in
+            guard let equals = line.firstIndex(of: "=") else { return line }
+            let afterEquals = line.index(after: equals)
+            let value = line[afterEquals...].drop { $0 == " " }
+            guard let prefix = prefixes.first(where: { value.hasPrefix($0) }) else { return line }
+            let valueStart = value.startIndex
+            return String(line[..<valueStart]) + target + "/" + String(value.dropFirst(prefix.count))
+        }
+        return rewritten.joined(separator: "\n")
+    }
+    
+    // Apply the path rewrite to a folder's 86box.cfg, if it has a readable one
+    static func rewriteConfig(in folder: URL, from folders: [String], to newFolder: String) throws {
+        let config = folder.appendingPathComponent("86box.cfg")
+        var info = stat()
+        guard lstat(config.path, &info) == 0, (info.st_mode & S_IFMT) == S_IFREG else { return }
+        let data = try Data(contentsOf: config)
+        // A UTF-8 byte order mark is kept as it is
+        let bom = Data([0xEF, 0xBB, 0xBF])
+        let hasBOM = data.starts(with: bom)
+        let body = hasBOM ? data.dropFirst(3) : data[...]
+        // Not UTF-8: leave the file alone rather than risk changing bytes
+        guard let text = String(data: Data(body), encoding: .utf8) else { return }
+        let rewritten = rewriteConfigPaths(text, from: folders, to: newFolder)
+        if rewritten != text { try ((hasBOM ? bom : Data()) + Data(rewritten.utf8)).write(to: config) }
+    }
+    
+    // MARK: - NVRAM
+    
+    // Reasons the NVRAM can't be wiped
+    enum NVRAMError: LocalizedError {
+        case notAFolder
+        
+        var errorDescription: String? {
+            switch self {
+            case .notAFolder: return "The “nvr” item in the machine folder is not a regular folder, so it was left alone."
+            }
+        }
+    }
+    
+    // Delete everything inside <folder>/nvr and keep the folder, symlinks are removed and never followed
+    static func wipeNVRAM(in folder: URL) throws {
+        let nvr = folder.appendingPathComponent("nvr")
+        var info = stat()
+        if lstat(nvr.path, &info) != 0 {
+            if errno == ENOENT { return }
+            throw NSError(domain: NSPOSIXErrorDomain, code: Int(errno))
+        }
+        guard (info.st_mode & S_IFMT) == S_IFDIR else { throw NVRAMError.notAFolder }
+        
+        let fileManager = FileManager.default
+        for name in try fileManager.contentsOfDirectory(atPath: nvr.path) {
+            try fileManager.removeItem(at: nvr.appendingPathComponent(name))
+        }
+    }
+    
+    // MARK: - Printer Tray
+    
+    // Reasons the printer folder can't be used
+    enum PrinterError: LocalizedError {
+        case notAFolder
+        
+        var errorDescription: String? {
+            switch self {
+            case .notAFolder: return "The “printer” item in the machine folder is not a folder."
+            }
+        }
+    }
+    
+    // <folder>/printer, created when missing
+    static func printerFolder(in folder: URL) throws -> URL {
+        let printer = folder.appendingPathComponent("printer")
+        var isFolder: ObjCBool = false
+        if FileManager.default.fileExists(atPath: printer.path, isDirectory: &isFolder) {
+            guard isFolder.boolValue else { throw PrinterError.notAFolder }
+            return printer
+        }
+        // A missing machine folder is an error, it is not recreated
+        try FileManager.default.createDirectory(at: printer, withIntermediateDirectories: false)
+        return printer
+    }
+    
     // MARK: - Size
     
     // Total size of the regular files in a folder

@@ -74,7 +74,7 @@ struct SidebarView: View {
                             Button("Start") {
                                 library.runMachine(machine: machine)
                             }
-                            .disabled(machine.status == .configuring)
+                            .disabled(machine.status == .configuring || library.isBusy(machine))
                         }
                         Divider()
                         
@@ -96,7 +96,7 @@ struct SidebarView: View {
                         .disabled(!(isLive && machine.status == .running))
                         
                         Button("Kill") {
-                            library.pendingKill = machine
+                            library.pendingConfirmation = .kill(machine)
                         }
                         .disabled(machine.status == .stopped)
                         Divider()
@@ -116,21 +116,14 @@ struct SidebarView: View {
                             Text("Configure...")
                         }
                         .disabled(machine.status == .configuring || ((machine.status == .running || machine.status == .paused) && !machine.isControllable))
-                        Divider()
                         
                         // Clone machine
                         Button(action: {
-                            library.clone(machine: machine)
+                            library.cloneSource = machine
                         }) {
                             Text("Clone...")
                         }
-                        
-                        // Delete machine
-                        Button(action: {
-                            library.delete(machine: machine)
-                        }) {
-                            Text("Remove \"\(machine.name)\"...")
-                        }
+                        .disabled(machine.status != .stopped || library.isBusy(machine) || library.cloneSource != nil)
                         Divider()
                         
                         // Show in Finder
@@ -139,6 +132,26 @@ struct SidebarView: View {
                         }) {
                             Text("Show in Finder")
                         }
+                        
+                        // Open the printer tray folder
+                        Button("Open Printer Tray") {
+                            library.openPrinterTray(machine)
+                        }
+                        Divider()
+                        
+                        // Wipe NVRAM
+                        Button("Wipe NVRAM") {
+                            library.pendingConfirmation = .wipeNVRAM(machine)
+                        }
+                        .disabled(machine.status != .stopped || library.isBusy(machine))
+                        
+                        // Remove machine
+                        Button(action: {
+                            library.pendingConfirmation = .remove(machine)
+                        }) {
+                            Text("Remove \"\(machine.name)\"...")
+                        }
+                        .disabled(machine.status != .stopped || library.isBusy(machine))
                     }
                 }
                 // Alow user sorting of the machines list

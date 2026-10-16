@@ -57,13 +57,16 @@ Remove “Machine Name”…
   **Kill** = last-resort process termination (SIGKILL), matching the old 86Box Manager "Kill" behaviour. Keep both; they are different. **Kill** requires a confirmation sheet.
 - **Edit…** already opens the existing modal for name + icon + description. No separate "Change display name" or "Set icon" items.
 - **Configure…** stays (owner decision). It opens 86Box settings; if the machine is already running, it sends `showsettings`.
-- **Clone…** exists but the current implementation is cumbersome and must be rewritten cleanly. The clone gets its own `vmm.ini` section.
+- **Clone…** exists but the current implementation is cumbersome and must be rewritten cleanly.
+  - It copies the **whole** machine folder, including `printer/` and `screenshots/`, as both 86Box managers do.
+  - The clone gets its own `vmm.ini` section, with notes and icon carried over.
+  - Absolute cfg paths that point into the source are redirected to the clone.
 - **Remove "Machine Name"…** keeps the original Swift86 string style. The underlying delete method must be rewritten (cleaner, safer). It **deletes permanently** (owner decision) behind strict guards, and also removes the `vmm.ini` section. **Wipe NVRAM**, **Kill**, and **Remove…** all require a confirmation sheet.
 - **File → Scan for Machines** (⌘⇧R) rescans the VMs folder, registers new machines in `vmm.ini`, and offers, with confirmation, to remove `vmm.ini` entries whose folders no longer exist.
 - **Open Printer Tray**: if the `printer` subfolder does not exist inside the machine directory, create it and then open it.
 - **Open Screenshots Folder** was explicitly removed.
 - **Show config file** was explicitly rejected (no end-user value).
-- **Wipe NVRAM** has no ellipsis.
+- **Wipe NVRAM** has no ellipsis. It deletes only the contents of `<machine>/nvr` (unlike 86Box Manager's "Wipe", which also deletes `86box.cfg`). The confirmation uses 86Box Manager's style: "Wiping a virtual machine's NVRAM deletes its nvr files. You'll have to reconfigure the BIOS if applicable.\n\nAre you sure you wish to wipe the NVRAM of the virtual machine "<name>"?". The buttons are No (default) and Yes. No success message is shown.
 
 ## Sub-agent Workflow (mandatory)
 1. **Strong model** writes / updates the detailed plan and success criteria.

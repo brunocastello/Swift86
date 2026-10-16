@@ -27,6 +27,23 @@ final class MachineSession {
     }
 }
 
+// MARK: - Pending Confirmation
+
+// A destructive action waiting for the user's confirmation, only one at a time
+enum PendingConfirmation: Identifiable {
+    case kill(Machine)
+    case wipeNVRAM(Machine)
+    case remove(Machine)
+    
+    var id: String {
+        switch self {
+        case .kill(let machine): return "kill-\(machine.id)"
+        case .wipeNVRAM(let machine): return "wipe-\(machine.id)"
+        case .remove(let machine): return "remove-\(machine.id)"
+        }
+    }
+}
+
 // MARK: - Machines Library Model
 
 // Machines library model
@@ -159,6 +176,24 @@ final class MachineSession {
         return machine
     }
     
+    // Delete the hidden folders interrupted clones left behind, except those of a clone in progress
+    private func removeCloneLeftovers() {
+        let prefix = MachineFiles.canonicalPath(machinesURL) + "/"
+        let inProgress = Set(busyFolders.filter { $0.hasPrefix(prefix) }.map { String($0.dropFirst(prefix.count)) })
+        // Listed here, so a clone that starts later can't be caught by it
+        let leftovers = MachineFiles.leftoverCloneFolders(in: machinesURL, inProgress: inProgress)
+        guard !leftovers.isEmpty else { return }
+        Task.detached(priority: .utility) {
+            for url in leftovers {
+                do {
+                    try FileManager.default.removeItem(at: url)
+                } catch {
+                    NSLog("Swift86: could not remove the leftover \(url.path): \(error)")
+                }
+            }
+        }
+    }
+    
     // Load machines
     func load() {
         // Machines library
@@ -169,6 +204,7 @@ final class MachineSession {
         
         // List the machine folders
         guard let folders = MachineFiles.candidateFolders(in: machinesURL) else { return }
+        removeCloneLeftovers()
         
         // Read 86Box's machine list once
         let ini = (try? VMMIni(contentsOf: vmmIniURL)) ?? VMMIni()
@@ -292,6 +328,8 @@ final class MachineSession {
     enum MachineError: LocalizedError {
         case invalidName(MachineNameError)
         case machineRunning
+        case notStopped
+        case busy
         case invalidIcon
         case notFound(String)
         case io(Error)
@@ -300,6 +338,8 @@ final class MachineSession {
             switch self {
             case .invalidName(let error): return error.message
             case .machineRunning: return "Stop the machine before renaming it."
+            case .notStopped: return "Stop the machine first."
+            case .busy: return "This machine is being cloned."
             case .invalidIcon: return "The selected file is not a valid image."
             case .notFound(let name): return String(format: NSLocalizedString("Could not find machine \"%@\"", comment: ""), name)
             case .io(let error): return error.localizedDescription
@@ -411,6 +451,7 @@ final class MachineSession {
             throw MachineError.notFound(edited.name)
         }
         let old = machines[index]
+        guard !isBusy(old) else { throw MachineError.busy }
         let oldURL = machinesURL.appendingPathComponent(old.folderName)
         guard FileManager.default.fileExists(atPath: oldURL.path) else {
             throw MachineError.notFound(old.name)
@@ -577,70 +618,100 @@ final class MachineSession {
         SettingsStore.shared.config.machineOrder = machines.map(\.folderName)
     }
     
-    // MARK: - Clone machine
+    // MARK: - Clone Machine
     
-    // Clone machine
-    func clone(machine: Machine) {
-        // Set base for clone machine name
-        let baseTitle = machine.folderName.replacingOccurrences(of: #"\scopy\s\d+$"#, with: "", options: .regularExpression)
+    // Machine being cloned, shown in the clone sheet
+    @Published var cloneSource: Machine?
+    
+    // Name suggested for a copy of a machine
+    func suggestedCloneName(for machine: Machine) -> String {
+        MachineFiles.uniqueCloneName(for: machine.folderName, in: machinesURL)
+    }
+    
+    // Clone a stopped machine into a new folder
+    func clone(_ source: Machine, as rawName: String) async throws {
+        // Find the machine and make sure nothing is running it
+        guard let current = machines.first(where: { $0.id == source.id }) else { throw MachineError.notFound(source.name) }
+        guard current.status == .stopped, session(for: current) == nil else { throw MachineError.notStopped }
+        let sourceKey = sessionKey(current)
+        guard !busyFolders.contains(sourceKey) else { throw MachineError.busy }
         
-        // Count for existing clones
-        let copyCount = machines.filter { $0.folderName.hasPrefix(baseTitle) }.count
-        
-        // Set clone machine name
-        let cloneTitle = copyCount > 0 ? "\(baseTitle) copy \(copyCount)" : baseTitle
-        
-        let sourceFolderURL = machinesURL.appendingPathComponent(machine.folderName)
-        let cloneFolderURL = machinesURL.appendingPathComponent(cloneTitle)
-        // The icon file is copied with the folder, so the clone points at its own copy
-        let sourceSpellings = MachineFiles.folderSpellings(sourceFolderURL)
-        
-        do {
-            // Clone the machine contents
-            let machineURL = machinesURL.appendingPathComponent(machine.folderName)
-            let cloneMachineURL = cloneFolderURL
-            try FileManager.default.copyItem(at: machineURL, to: cloneMachineURL)
-            
-            // Create the clone machine
-            let cloneMachine = Machine(
-                id: UUID(),
-                name: cloneTitle,
-                folderName: cloneTitle,
-                iconCustom: machine.iconCustom,
-                icon: machine.iconCustom ? MachineFiles.relocatedIcon(machine.icon, fromFolderPaths: sourceSpellings, to: cloneMachineURL) : "",
-                notes: machine.notes
-            )
-
-            // List the clone, with the notes and icon of the original
-            do {
-                try VMMIni.update(at: vmmIniURL) { ini in
-                    let source = VMMIni.uuid(forMachineFolder: machineURL)
-                    let section = VMMIni.uuid(forMachineFolder: cloneMachineURL)
-                    ini.removeSection(section)
-                    Self.register(&ini, section: section, folder: cloneMachineURL)
-                    if let value = ini.string("notes", in: source) { ini.set(value, for: "notes", in: section) }
-                    if let value = ini.string("icon", in: source) {
-                        ini.set(MachineFiles.relocatedIcon(value, fromFolderPaths: sourceSpellings, to: cloneMachineURL), for: "icon", in: section)
-                    }
-                }
-            } catch {
-                try? FileManager.default.removeItem(at: cloneMachineURL)
-                throw error
-            }
-            machines.append(cloneMachine)
-            
-            // Keep the clone at the end of the sidebar order
-            if machines.contains(where: { $0.folderName == cloneMachine.folderName }) {
-                SettingsStore.shared.config.machineOrder = machines.map(\.folderName)
-            }
-        } catch let error {
-            // Error cloning machine
-            alertTitle = String(format: NSLocalizedString("Error cloning machine \"%@\"", comment: ""), machine.name)
-            alertMessage = NSLocalizedString(error.localizedDescription, comment: "")
-            alertOK = { }
-            showCancel = false
-            showAlert = true
+        // Validate the name
+        let name: String
+        switch MachineFiles.validateName(rawName, in: machinesURL) {
+        case .success(let valid): name = valid
+        case .failure(let error): throw MachineError.invalidName(error)
         }
+        
+        // The library may change while the copy runs, remember where it started
+        let machinesPath = machinesURL.standardizedFileURL.path
+        let iniURL = vmmIniURL
+        let sourceURL = machinesURL.appendingPathComponent(current.folderName)
+        let cloneURL = machinesURL.appendingPathComponent(name)
+        guard FileManager.default.fileExists(atPath: sourceURL.path) else { throw MachineError.notFound(current.name) }
+        
+        // The source and the temporary folder are busy until this returns
+        let temporaryName = MachineFiles.cloneTemporaryName()
+        let temporaryKey = MachineFiles.canonicalPath(machinesURL) + "/" + temporaryName
+        busyFolders.insert(sourceKey)
+        busyFolders.insert(temporaryKey)
+        defer {
+            busyFolders.remove(sourceKey)
+            busyFolders.remove(temporaryKey)
+        }
+        
+        // Absolute paths into the source become paths into the clone, so the two never share disks
+        let sourceSpellings = MachineFiles.folderSpellings(sourceURL)
+        let clonePath = MachineFiles.canonicalPath(machinesURL) + "/" + name.precomposedStringWithCanonicalMapping
+        
+        // Copy off the main thread, a disk image can be large
+        do {
+            try await Task.detached(priority: .userInitiated) {
+                try MachineFiles.cloneFolder(from: sourceURL, to: cloneURL, temporaryName: temporaryName) { copy in
+                    try MachineFiles.rewriteConfig(in: copy, from: sourceSpellings, to: clonePath)
+                }
+            }.value
+        } catch {
+            throw MachineError.io(error)
+        }
+        
+        // List the clone in 86Box's machine list, with the notes and icon of the original
+        let sourceSection = VMMIni.uuid(forMachineFolder: sourceURL)
+        let section = VMMIni.uuid(forMachineFolder: cloneURL)
+        var result = VMMIni()
+        do {
+            try VMMIni.update(at: iniURL) { ini in
+                // Whatever was listed under this folder before is stale
+                ini.removeSection(section)
+                Self.register(&ini, section: section, folder: cloneURL)
+                if let notes = ini.string("notes", in: sourceSection) { ini.set(notes, for: "notes", in: section) }
+                if let icon = ini.string("icon", in: sourceSection) {
+                    ini.set(MachineFiles.relocatedIcon(icon, fromFolderPaths: sourceSpellings, to: cloneURL), for: "icon", in: section)
+                }
+                result = ini
+            }
+        } catch {
+            // The copy is complete, so it stays: load it as a plain machine and say what is missing
+            load()
+            showError("The machine was cloned, but its notes and icon could not be copied.", error)
+            return
+        }
+        
+        // Another machines folder is showing now, the clone belongs to the old one
+        guard machinesURL.standardizedFileURL.path == machinesPath else {
+            load()
+            return
+        }
+        
+        // A reload meanwhile (Scan for Machines) may have found the clone already
+        if let index = machines.firstIndex(where: { $0.folderName == name }) {
+            machines[index] = makeMachine(folder: cloneURL, ini: result, existing: machines[index])
+        } else {
+            machines.append(makeMachine(folder: cloneURL, ini: result, existing: nil))
+        }
+        
+        // Keep the clone at the end of the sidebar order
+        SettingsStore.shared.config.machineOrder = machines.map(\.folderName)
     }
     
     // MARK: - Run Machine
@@ -649,8 +720,16 @@ final class MachineSession {
     // (a machine's UUID changes on reload, the folder does not)
     private(set) var sessions: [String: MachineSession] = [:]
     
-    // Machine waiting for the Kill confirmation
-    @Published var pendingKill: Machine?
+    // Destructive action waiting for the user's confirmation
+    @Published var pendingConfirmation: PendingConfirmation?
+    
+    // Folders that must not be started, edited or deleted right now (a clone is copying them), keyed like sessions
+    @Published private(set) var busyFolders: Set<String> = []
+    
+    // Whether a machine's folder is busy
+    func isBusy(_ machine: Machine) -> Bool {
+        busyFolders.contains(sessionKey(machine))
+    }
     
     // Session key of a machine
     private func sessionKey(_ machine: Machine) -> String {
@@ -735,6 +814,10 @@ final class MachineSession {
         // One process per machine: a session means it is already running or being configured
         let key = sessionKey(machine)
         guard sessions[key] == nil else { return }
+        guard !busyFolders.contains(key) else {
+            showError(NSLocalizedString("An error occurred", comment: ""), MachineError.busy)
+            return
+        }
         
         // Prepare process to run machine
         let process = Process()
@@ -850,6 +933,10 @@ final class MachineSession {
             if existing.isControllable && !existing.isSettingsOnly { send(.showSettings, to: machine) }
             return
         }
+        guard !busyFolders.contains(key) else {
+            showError(NSLocalizedString("An error occurred", comment: ""), MachineError.busy)
+            return
+        }
         
         // Prepare process to configure machine
         let process = Process()
@@ -884,60 +971,87 @@ final class MachineSession {
         }
     }
     
-    // MARK: - Find Machine
+    // MARK: - Machine Folder Actions
+    
+    // Folder of a machine
+    private func folderURL(of machine: Machine) -> URL {
+        machinesURL.appendingPathComponent(machine.folderName)
+    }
+    
+    // Show an error in the shared alert (deferred, a confirmation alert may still be closing)
+    private func showError(_ title: String, _ error: Error) {
+        DispatchQueue.main.async {
+            self.alertTitle = title
+            self.alertMessage = error.localizedDescription
+            self.alertOK = { }
+            self.showCancel = false
+            self.showAlert = true
+        }
+    }
+    
+    // The machine as the library knows it now, when it is stopped and nothing runs it
+    private func stoppedMachine(_ machine: Machine) throws -> Machine {
+        guard let current = machines.first(where: { $0.id == machine.id }) else { throw MachineError.notFound(machine.name) }
+        guard current.status == .stopped, session(for: current) == nil else { throw MachineError.notStopped }
+        guard !isBusy(current) else { throw MachineError.busy }
+        return current
+    }
     
     // Show machine in Finder
     func find(machine: Machine) {
-        // Show machine
-        NSWorkspace.shared.selectFile(machinesURL.appendingPathComponent(machine.folderName).path, inFileViewerRootedAtPath: "")
+        NSWorkspace.shared.activateFileViewerSelecting([folderURL(of: machine)])
     }
     
-    // MARK: - Delete Machine
+    // Open the machine's printer tray folder, creating it first
+    func openPrinterTray(_ machine: Machine) {
+        do {
+            NSWorkspace.shared.open(try MachineFiles.printerFolder(in: folderURL(of: machine)))
+        } catch {
+            showError(NSLocalizedString("An error occurred", comment: ""), error)
+        }
+    }
     
-    // Delete machine
-    func delete(machine: Machine) {
-        // Stop saving machine due to an error
-        // (Avoids losing entire library)
-        if machine.name.isEmpty {
-            alertTitle = NSLocalizedString("Error", comment: "")
-            alertMessage = NSLocalizedString("This machine must have a name.", comment: "")
-            alertOK = { }
-            showCancel = false
-            showAlert = true
-            return
+    // MARK: - Wipe NVRAM
+    
+    // Empty the machine's nvr folder
+    func wipeNVRAM(_ machine: Machine) {
+        do {
+            let current = try stoppedMachine(machine)
+            try MachineFiles.wipeNVRAM(in: folderURL(of: current))
+        } catch {
+            showError("An error occurred trying to wipe the NVRAM of the virtual machine \"\(machine.name)\".", error)
         }
-        
-        // Confirm machine removal
-        alertTitle = String(format: NSLocalizedString("Are you sure you want to delete \"%@\" permanently?", comment: ""), machine.name)
-        alertMessage = NSLocalizedString("You cannot undo this action.", comment: "")
-        alertOK = {
-            // Access machine folder
-            let machineURL = self.machinesURL.appendingPathComponent(machine.folderName)
-            let section = VMMIni.uuid(forMachineFolder: machineURL)
+    }
+    
+    // MARK: - Remove Machine
+    
+    // Delete a stopped machine's folder permanently and take it off every list
+    func remove(_ machine: Machine) {
+        do {
+            let current = try stoppedMachine(machine)
+            let folder = folderURL(of: current)
             
+            // Refuse anything that is not a machine folder directly inside the machines folder
+            let ini = (try? VMMIni(contentsOf: vmmIniURL)) ?? VMMIni()
+            try MachineFiles.removalCheck(folder: folder, machinesURL: machinesURL, registered: MachineFiles.registeredFolders(in: ini)).get()
+            
+            // The section name comes from the folder, so work it out before the folder is gone
+            let section = VMMIni.uuid(forMachineFolder: folder)
+            
+            try FileManager.default.removeItem(at: folder)
+            
+            // Take it off 86Box's machine list, a failure here only leaves a stale entry that Scan for Machines finds
             do {
-                // Delete the machine
-                try FileManager.default.removeItem(at: machineURL)
-                self.machines.removeAll(where: { $0.id == machine.id })
-                SettingsStore.shared.config.machineOrder.removeAll { $0 == machine.folderName }
-                
-                // Take it off 86Box's machine list too
-                do {
-                    try VMMIni.update(at: self.vmmIniURL) { $0.removeSection(section) }
-                } catch {
-                    NSLog("Swift86: could not remove the machine from \(self.vmmIniURL.path): \(error)")
-                }
-            } catch let error {
-                // Error deleting machine
-                self.alertTitle = String(format: NSLocalizedString("Error deleting machine \"%@\"", comment: ""), machine.name)
-                self.alertMessage = NSLocalizedString(error.localizedDescription, comment: "")
-                self.alertOK = { }
-                self.showCancel = false
-                self.showAlert = true
+                try VMMIni.update(at: vmmIniURL) { $0.removeSection(section) }
+            } catch {
+                NSLog("Swift86: could not remove the machine from \(vmmIniURL.path): \(error)")
             }
+            
+            SettingsStore.shared.config.machineOrder.removeAll { $0 == current.folderName }
+            machines.removeAll { $0.id == current.id }
+        } catch {
+            showError(String(format: NSLocalizedString("Error deleting machine \"%@\"", comment: ""), machine.name), error)
         }
-        showCancel = true
-        showAlert = true
     }
     
     // MARK: - Scan for Machines

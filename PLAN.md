@@ -213,6 +213,12 @@ Order and dividers exactly as in CLAUDE.md. Additional rules:
 - **Edit…**: unchanged sheet. Rename disabled while not `.stopped`.
 - **Configure…**: kept directly under Edit… (§8 D4), same behaviour as today. If the VM is already running, send `showsettings` instead of launching a second process.
 
+### 6.0 Implementation notes from the T6 review (2026-10-16)
+- **Remove guard:** a folder counts as a machine if it has `86box.cfg` **or** a matching `vmm.ini` section. The second case is needed because Swift86 never writes a cfg, so a never-configured machine must still be removable.
+- **Remove:** runs `removeItem` synchronously. A partial failure (e.g. a locked file) can leave a half-deleted folder; the error is shown and the state stays consistent with disk. Possible hardening: rename to a hidden sibling, then delete off the main thread.
+- **Clone:** copies symlinks inside the machine folder as they are, the same as Finder's Duplicate. A symlink pointing into the source's disks would be shared. 86Box itself never creates such links.
+- **Kill / Wipe NVRAM confirmation buttons:** "Yes" is a plain button, matching 86Box Manager. "No" is the default.
+
 ### 6.1 Name validation (create / edit / clone)
 Trim whitespace; non-empty; no `/` or `:`; must not start with `.`; ≤ 255 UTF-8 bytes; no existing folder with the same name **case-insensitively** (APFS default is case-insensitive). Show errors inline in the sheet. The sheet stays open on failure.
 

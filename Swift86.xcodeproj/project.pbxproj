@@ -19,6 +19,7 @@
 		DE2AF10A2A46800D0060CEAF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2AF1012A46800C0060CEAF /* ContentView.swift */; };
 		DE2AF10B2A46800D0060CEAF /* GeneralSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2AF1022A46800C0060CEAF /* GeneralSettingsView.swift */; };
 		DE2AF10C2A46800D0060CEAF /* EditMachineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2AF1032A46800D0060CEAF /* EditMachineView.swift */; };
+		A1C0DE06B1000000000000A2 /* CloneMachineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0DE06B1000000000000A1 /* CloneMachineView.swift */; };
 		DE2AF10D2A46800D0060CEAF /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2AF1042A46800D0060CEAF /* SettingsView.swift */; };
 		DE2AF10E2A46800D0060CEAF /* SidebarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2AF1052A46800D0060CEAF /* SidebarView.swift */; };
 		DE2AF10F2A46800D0060CEAF /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE2AF1062A46800D0060CEAF /* WelcomeView.swift */; };
@@ -49,6 +50,7 @@
 		DE2AF1012A46800C0060CEAF /* ContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		DE2AF1022A46800C0060CEAF /* GeneralSettingsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GeneralSettingsView.swift; sourceTree = "<group>"; };
 		DE2AF1032A46800D0060CEAF /* EditMachineView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EditMachineView.swift; sourceTree = "<group>"; };
+		A1C0DE06B1000000000000A1 /* CloneMachineView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CloneMachineView.swift; sourceTree = "<group>"; };
 		DE2AF1042A46800D0060CEAF /* SettingsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		DE2AF1052A46800D0060CEAF /* SidebarView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SidebarView.swift; sourceTree = "<group>"; };
 		DE2AF1062A46800D0060CEAF /* WelcomeView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
@@ -161,6 +163,7 @@
 				DE2AF1062A46800D0060CEAF /* WelcomeView.swift */,
 				DE2AF1072A46800D0060CEAF /* MachineView.swift */,
 				DE2AF1032A46800D0060CEAF /* EditMachineView.swift */,
+				A1C0DE06B1000000000000A1 /* CloneMachineView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -251,6 +254,7 @@
 				DE2AF0F22A467E8B0060CEAF /* AppDelegate.swift in Sources */,
 				DE2AF0F62A467F130060CEAF /* ButtonStyles.swift in Sources */,
 				DE2AF10C2A46800D0060CEAF /* EditMachineView.swift in Sources */,
+				A1C0DE06B1000000000000A2 /* CloneMachineView.swift in Sources */,
 				DE2AF1082A46800D0060CEAF /* AppearanceSettingsView.swift in Sources */,
 				DE2AF10B2A46800D0060CEAF /* GeneralSettingsView.swift in Sources */,
 				DE2AF0F82A467F5F0060CEAF /* PathControl.swift in Sources */,

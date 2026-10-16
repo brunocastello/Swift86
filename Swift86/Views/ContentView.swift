@@ -38,12 +38,26 @@ struct ContentView: View {
         )
     }
     
-    // The kill confirmation is shown while a machine is pending
-    private var killAlertShown: Binding<Bool> {
+    // The confirmation is shown while an action is pending
+    private var confirmationShown: Binding<Bool> {
         Binding(
-            get: { library.pendingKill != nil },
-            set: { if !$0 { library.pendingKill = nil } }
+            get: { library.pendingConfirmation != nil },
+            set: { if !$0 { library.pendingConfirmation = nil } }
         )
+    }
+    
+    // Title of the pending confirmation
+    private var confirmationTitle: String {
+        switch library.pendingConfirmation {
+        case .kill(let machine):
+            return "Killing a virtual machine can cause data loss. Only do this if the 86Box process gets stuck.\n\nDo you really wish to kill the virtual machine \"\(machine.name)\"?"
+        case .wipeNVRAM(let machine):
+            return "Wiping a virtual machine's NVRAM deletes its nvr files. You'll have to reconfigure the BIOS if applicable.\n\nAre you sure you wish to wipe the NVRAM of the virtual machine \"\(machine.name)\"?"
+        case .remove(let machine):
+            return String(format: NSLocalizedString("Are you sure you want to delete \"%@\" permanently?", comment: ""), machine.name)
+        case nil:
+            return ""
+        }
     }
     
     // MARK: - Scene
@@ -97,20 +111,41 @@ struct ContentView: View {
         .sheet(item: $library.editMachine) { machine in
             EditMachineView(machine: machine, isUpdating: true)
         }
-        // Confirm killing a machine
-        .alert("Killing a virtual machine can cause data loss. Only do this if the 86Box process gets stuck.\n\nDo you really wish to kill the virtual machine \"\(library.pendingKill?.name ?? "")\"?", isPresented: killAlertShown, presenting: library.pendingKill) { machine in
-            Button("No", role: .cancel) { }
-                .keyboardShortcut(.defaultAction)
-            Button("Yes") { library.kill(machine) }
+        // Clone machine
+        .sheet(item: $library.cloneSource) { machine in
+            CloneMachineView(source: machine, suggestedName: library.suggestedCloneName(for: machine))
         }
-        // Reusable alerts for errors
-        .alert(library.alertTitle, isPresented: $library.showAlert) {
-            Button("OK", action: library.alertOK ?? { })
-            if library.showCancel {
-                Button("Cancel", role: .cancel, action: {})
+        // Confirm killing, wiping or removing a machine
+        .alert(confirmationTitle, isPresented: confirmationShown, presenting: library.pendingConfirmation) { confirmation in
+            switch confirmation {
+            case .kill(let machine):
+                Button("No", role: .cancel) { }
+                    .keyboardShortcut(.defaultAction)
+                Button("Yes") { library.kill(machine) }
+            case .wipeNVRAM(let machine):
+                Button("No", role: .cancel) { }
+                    .keyboardShortcut(.defaultAction)
+                Button("Yes") { library.wipeNVRAM(machine) }
+            case .remove(let machine):
+                Button("OK", role: .destructive) { library.remove(machine) }
+                Button("Cancel", role: .cancel) { }
             }
-        } message: {
-            Text(library.alertMessage)
+        } message: { confirmation in
+            if case .remove = confirmation {
+                Text(NSLocalizedString("You cannot undo this action.", comment: ""))
+            }
+        }
+        // Reusable alerts for errors, on their own view so they never compete with the confirmation
+        .background {
+            Color.clear
+                .alert(library.alertTitle, isPresented: $library.showAlert) {
+                    Button("OK", action: library.alertOK ?? { })
+                    if library.showCancel {
+                        Button("Cancel", role: .cancel, action: {})
+                    }
+                } message: {
+                    Text(library.alertMessage)
+                }
         }
     }
 }
