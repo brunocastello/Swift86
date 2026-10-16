@@ -120,6 +120,51 @@ Runs when `Settings.json` does not exist:
 
 **New machine:** create the folder and write `.swift86.json`. **Never write a stub `86box.cfg`.** In 86Box's `config_load()`, a *missing* cfg takes the new-machine defaults path (`config == NULL`), while an empty or stub cfg takes the normal parse path. Leaving the cfg to 86Box keeps first-start behaviour identical to today.
 
+### 4.0 SUPERSEDED (2026-10-16): metadata moves to 86Box's `vmm.ini`. See §4.2. The sidecar and `Icon.png` rows above are historical.
+
+### 4.2 `vmm.ini` as the metadata store (T3b, owner decision 2026-10-16)
+
+Verified against 86Box master source and the owner's real file:
+- **Location:** `~/Library/Preferences/86Box/vmm.ini`. This is Qt `AppConfigLocation` for app name "86Box", and its `plat_get_global_config_dir()` → `vmm.ini`. Stored as `AppConfig.vmmIniPath` with that default; no UI.
+- **Format:** Qt `QSettings::IniFormat`, UTF-8.
+  - `[General]` comes first (manager prefs: never touched by Swift86).
+  - Then one section per VM, named by its **UUIDv5**: `QUuid::createUuidV5(QUuid{}, canonicalDirPath + "/")`, i.e. SHA-1 with the nil namespace, lowercase, no braces. Verified: `…/86Box/Windows Me/` → `0fec96c9-8090-50c5-8cc6-0860eda29f5d`. `canonicalPath` resolves symlinks.
+  - Keys in each section: `config_dir`, `config_file`, `system_name` (= folder name), `display_name` (only when ≠ folder name), `notes`, `icon` (absolute image path or an 86Box built-in icon name), `timestamp` (ISO-8601 UTC, last started).
+  - Keys are sorted alphabetically within a section (QMap order).
+  - Values use Qt escaping: `\n`, `\t`, `\r`, `\\`, `\"`, control chars as `\xNN`. Non-ASCII is raw UTF-8. A value is wrapped in `"…"` if it contains `,` `;` `=` or has a leading or trailing space. The reader must also accept quoted values and `\x` escapes, and treat a leading `@@` as a literal `@`.
+- **Ownership:** Swift86 only edits its machines' sections and only these keys. Every other section, key and the `[General]` group are preserved **byte-for-byte**, including unknown keys and their order. Writes are atomic: temp file in the same directory, then rename, the same as Qt's QSaveFile. The Qt lock protocol must be honoured: create `vmm.ini.lock` with `O_EXCL` containing `"<pid>\n<appname>\n<hostname>\n"`; retry for up to 2 s; treat the lock as stale if that pid is dead; remove it after writing.
+
+| Field | Source after T3b |
+|---|---|
+| Display name | `display_name` if present, else the folder name |
+| Notes | `notes` |
+| Icon | `icon`: if it is a loadable image file path, show it; otherwise (missing file, or an 86Box built-in icon name) show the default SF Symbol. **A custom icon is always `<machine folder>/Icon.png`** (owner, 2026-10-16), and `icon` stores its canonical path.
+- **Picking an image:** it is converted to PNG. The largest representation is used, capped at 1024 px.
+- **Writing it:** the PNG is staged in a temp file, then `vmm.ini` is written, then the temp file atomically replaces `Icon.png`. A failure before the swap leaves the old `Icon.png` untouched.
+- **"Default icon":** removes the key and deletes `Icon.png`, unless another section references it.
+- **Cleanup:** after any icon change, leftover `Icon <n>.*` / `Icon.<non-png>` copies from earlier test builds are deleted, unless they are referenced elsewhere.
+- **Existing icons outside the folder** are left as they are until the user picks a new one.
+- **Rename and clone** relocate an `icon` path that lies inside the source folder. |
+| Discovery | Folder has `86box.cfg` **or** a `vmm.ini` section whose `config_dir` equals the folder (canonical). The second case covers machines created in Swift86 but not yet configured. |
+| Rename (owner choice) | Move the folder (T4 code), then **move the section** to the new UUID: copy all keys, then update `config_dir`, `config_file` and `system_name`, remove `display_name`, then delete the old section. All in one atomic `vmm.ini` write, done after the folder move succeeds. |
+| Create | Folder plus a section with `config_dir`, `config_file`, `system_name`, and `notes`/`icon` if set. Never a `86box.cfg`. |
+| Start | Set `timestamp` (86Box manager parity). |
+| Delete (T6) | Also removes the section. |
+
+**Registration:** `load()` silently adds a minimal section (`config_dir`, `config_file`, `system_name`) for any discovered machine that has none, the same as the 86Box manager does on scan.
+
+**Scan for Machines:** a File-menu command that rescans and registers, then lists **stale** sections (`config_dir` directly inside `machinesPath`, folder missing, and only when `machinesPath` itself is reachable). It asks for confirmation before removing them.
+
+**Migration:**
+- A machine without `vmm.ini` notes but with legacy plist notes or `.swift86.json` notes gets them copied into `vmm.ini`.
+- A machine without a `vmm.ini` `icon` but with `Icon.png` gets `icon = <path to Icon.png>`.
+- After a successful `vmm.ini` write, Swift86 deletes **its own** `.swift86.json` files.
+- Plists stay read-only.
+
+`machineOrder` stays in `Settings.json`, because `vmm.ini` has no order.
+
+**CLAUDE.md conflicts the owner chose to accept:** "Keep existing PNG machine icons" (icons now come from `vmm.ini`), and the folder-local sidecar is gone. CLAUDE.md itself should be updated by the owner.
+
 ### 4.1 Per-machine legacy import (lazy, inside the scanner)
 For each **immediate** subfolder that contains `86box.plist`:
 - If `.swift86.json` is missing, write it with the plist's `Information.Notes`, or `""` if there are none. This also makes never-configured legacy machines (no `86box.cfg`) discoverable.

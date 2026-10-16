@@ -10,7 +10,7 @@ import Foundation
 
 // MARK: - Legacy Import
 
-// The only code that reads the old per-machine 86box.plist and the MachinesList UserDefaults key (read-only)
+// The only code that reads the old per-machine 86box.plist, the MachinesList UserDefaults key and the old .swift86.json sidecar
 enum LegacyImport {
     
     // MARK: - Helpers
@@ -29,17 +29,32 @@ enum LegacyImport {
     
     // MARK: - Machine Notes
     
-    // Create the sidecar from the legacy plist notes, never touching the plist
-    static func importMachineIfNeeded(at machineURL: URL) {
-        let sidecar = machineURL.appendingPathComponent(MachineMetadata.fileName)
-        guard !FileManager.default.fileExists(atPath: sidecar.path),
-              let info = information(at: machineURL) else { return }
-        
+    // Notes of the legacy plist, nil if absent
+    static func plistNotes(at machineURL: URL) -> String? {
+        information(at: machineURL)?["Notes"] as? String
+    }
+    
+    // Notes of Swift86's old .swift86.json sidecar (migration only), nil if absent or unreadable
+    static func sidecarNotes(at machineURL: URL) -> String? {
+        guard let data = try? Data(contentsOf: sidecarURL(at: machineURL)),
+              let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
+        return object["notes"] as? String ?? ""
+    }
+    
+    // Delete the old sidecar, if it is a regular file
+    static func removeSidecar(at machineURL: URL) {
+        let url = sidecarURL(at: machineURL)
+        let values = try? url.resourceValues(forKeys: [.isRegularFileKey, .isSymbolicLinkKey])
+        guard values?.isRegularFile == true, values?.isSymbolicLink != true else { return }
         do {
-            try MachineMetadata(notes: info["Notes"] as? String ?? "").save(to: machineURL)
+            try FileManager.default.removeItem(at: url)
         } catch {
-            NSLog("Swift86: could not import legacy machine \(machineURL.lastPathComponent): \(error)")
+            NSLog("Swift86: could not remove \(url.path): \(error)")
         }
+    }
+    
+    private static func sidecarURL(at machineURL: URL) -> URL {
+        machineURL.appendingPathComponent(".swift86.json")
     }
     
     // MARK: - Machine Order
@@ -47,7 +62,7 @@ enum LegacyImport {
     // Legacy sidebar order as folder names, mapped from the stored machine UUIDs
     static func legacyMachineOrder(machinesURL: URL, defaults: UserDefaults = .standard) -> [String] {
         guard let ids = defaults.stringArray(forKey: "MachinesList"), !ids.isEmpty,
-              let folders = MachineMetadata.candidateFolders(in: machinesURL) else { return [] }
+              let folders = MachineFiles.candidateFolders(in: machinesURL) else { return [] }
         
         // Map machine UUIDs to folder names
         var namesByID = [String: String]()

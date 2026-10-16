@@ -109,9 +109,9 @@ struct MachineView: View {
                         // Machine size
                         LabeledContent("Size", value: machineSize ?? "…")
                             .panelStyle()
-                            .task(id: "\(machine.name)|\(machine.status)") {
+                            .task(id: "\(machine.folderName)|\(machine.status)") {
                                 machineSize = nil
-                                let size = await sizeOf(machine.name)
+                                let size = await sizeOf(machine.folderName)
                                 guard !Task.isCancelled else { return }
                                 machineSize = size
                             }

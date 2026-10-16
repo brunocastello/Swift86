@@ -18,8 +18,11 @@ struct Machine: Identifiable {
     // Machine properties
     // In-memory only, never persisted: the folder name is the persistent identity
     var id = UUID()
+    // Display name: vmm.ini display_name, else the folder name
     var name: String = ""
-    // Derived from the presence of Icon.png when the machine is loaded
+    // Folder inside the machines folder, used for paths, -P and the sidebar order
+    var folderName: String = ""
+    // True when the vmm.ini icon is an image file that loads
     var iconCustom: Bool = false
     var icon: String = ""
     var notes: String = ""

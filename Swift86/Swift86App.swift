@@ -51,6 +51,12 @@ import SwiftUI
                     Text("New Machine")
                 }
                 .keyboardShortcut("N", modifiers: [.command])
+                
+                // Rescan the machines folder
+                Button("Scan for Machines") {
+                    library.scan()
+                }
+                .keyboardShortcut("R", modifiers: [.command, .shift])
             }
             
             // Sidebar Toggle

@@ -182,6 +182,7 @@ struct EditMachineView: View {
         .fileImporter(isPresented: $showIconImporter, allowedContentTypes: [.image], allowsMultipleSelection: false) { result in
             if case .success(let urls) = result, let url = urls.first {
                 machine.icon = url.path
+                machine.iconCustom = true
             }
         }
         .fileDialogStartingDirectory(iconStartingDirectory)
@@ -234,8 +235,9 @@ struct EditMachineView: View {
     
     // Folder the icon importer opens in
     private var iconStartingDirectory: URL {
-        if isUpdating, let original = library.machines.first(where: { $0.id == machine.id }) {
-            return library.machinesURL.appendingPathComponent(original.name)
+        // Start next to the current icon
+        if !machine.icon.isEmpty {
+            return URL(fileURLWithPath: machine.icon).deletingLastPathComponent()
         }
         return FileManager.default.homeDirectoryForCurrentUser
     }

@@ -22,6 +22,7 @@ struct AppConfig: Codable, Equatable {
     var machinesPath: String = ("~/Documents" as NSString).expandingTildeInPath
     var customROMs: Bool = false
     var romsPath: String = ("~/Library/Application Support/net.86box.86Box/roms" as NSString).expandingTildeInPath
+    var vmmIniPath: String = ("~/Library/Preferences/86Box/vmm.ini" as NSString).expandingTildeInPath
     var appearance: String = ""
     var showScreenshots: Bool = false
     var machineOrder: [String] = []
@@ -55,6 +56,7 @@ struct AppConfig: Codable, Equatable {
         machinesPath = path(.machinesPath, d.machinesPath)
         customROMs = value(.customROMs, d.customROMs)
         romsPath = path(.romsPath, d.romsPath)
+        vmmIniPath = path(.vmmIniPath, d.vmmIniPath)
         appearance = value(.appearance, d.appearance)
         showScreenshots = value(.showScreenshots, d.showScreenshots)
         machineOrder = value(.machineOrder, d.machineOrder)
