@@ -54,7 +54,7 @@ struct SidebarView: View {
                                         .frame(maxWidth: .infinity, alignment: .leading)
                                     
                                     // Machine status
-                                    Text(machine.status == .running ? "Running" : (machine.status == .stopped ? "Stopped" : "Configuring"))
+                                    Text(machine.status == .running ? "Running" : (machine.status == .paused ? "Paused" : (machine.status == .stopped ? "Powered Off" : "Configuring")))
                                         .font(.caption)
                                         .lineLimit(1)
                                 }
@@ -64,13 +64,41 @@ struct SidebarView: View {
                     }
                     // Context menu
                     .contextMenu {
-                        // Start/Stop machine
-                        Button(action: {
-                            library.runMachine(machine: machine)
-                        }) {
-                            Text("Start")
+                        // Start / Pause / Resume
+                        if machine.status == .running || machine.status == .paused {
+                            Button(machine.status == .paused ? "Resume" : "Pause") {
+                                library.togglePause(machine)
+                            }
+                            .disabled(!machine.isControllable)
+                        } else {
+                            Button("Start") {
+                                library.runMachine(machine: machine)
+                            }
+                            .disabled(machine.status == .configuring)
                         }
-                        .disabled(machine.status == .running)
+                        Divider()
+                        
+                        // Machine control
+                        let isLive = (machine.status == .running || machine.status == .paused) && machine.isControllable
+                        Button("Hard Reset") {
+                            library.hardReset(machine)
+                        }
+                        .disabled(!isLive)
+                        
+                        Button("Force Shutdown") {
+                            library.forceShutdown(machine)
+                        }
+                        .disabled(!isLive)
+                        
+                        Button("Ctrl + Alt + Del") {
+                            library.ctrlAltDel(machine)
+                        }
+                        .disabled(!(isLive && machine.status == .running))
+                        
+                        Button("Kill") {
+                            library.pendingKill = machine
+                        }
+                        .disabled(machine.status == .stopped)
                         Divider()
                         
                         // Edit machine
@@ -87,7 +115,7 @@ struct SidebarView: View {
                         }) {
                             Text("Configure...")
                         }
-                        .disabled(machine.status == .configuring)
+                        .disabled(machine.status == .configuring || ((machine.status == .running || machine.status == .paused) && !machine.isControllable))
                         Divider()
                         
                         // Clone machine

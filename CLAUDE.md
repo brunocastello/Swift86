@@ -26,7 +26,7 @@ Bring Swift86 to feature parity with the useful parts of 86Box Manager / 86Box�
 ## Final Right-Click Context Menu Order
 
 ```
-Start / Stop / Pause
+Start / Pause / Resume
 ────────────────────────
 Hard Reset
 Force Shutdown
@@ -45,9 +45,15 @@ Remove “Machine Name”…
 ```
 
 ### Context Menu Notes
-- **Start / Stop / Pause** appear at the top and are state-dependent. Only Start existed before this project; Stop and Pause are new.
-- **Manager protocol:** use 86Box's Unix manager socket. Swift86 hosts a Unix-domain socket and passes its path in the env var `86BOX_MANAGER_SOCKET`. 86Box connects to it and accepts newline-terminated commands: `pause`, `reset`, `cad`, `shutdown`, `shutdownnoprompt`, `showsettings`. Send one command per write. Pause state is not reported back, so Swift86 tracks it locally.
-- **Stop** = `shutdown` (graceful). **Force Shutdown** = `shutdownnoprompt`.
+- **Start / Pause / Resume** appear at the top and are state-dependent: Start when powered off, Pause when running, Resume when paused. There is **no "Stop" item** (owner decision, matching 86Box Manager); Force Shutdown and Kill cover it.
+- The powered-off status is shown as **"Powered Off"**, not "Stopped".
+- The Kill confirmation copies 86Box Manager. The text is "Killing a virtual machine can cause data loss. Only do this if the 86Box process gets stuck.\n\nDo you really wish to kill the virtual machine "<name>"?". The buttons are **No** (the default) and **Yes**.
+- **Manager protocol** (owner decision, 2026-10-16): use **86Box's official v5 manager protocol**, the same one as its built-in manager. Swift86 hosts a Unix-domain socket and passes its path in `VMM_86BOX_SOCKET`.
+  - Framing: messages are framed as a 4-byte big-endian length plus compact JSON.
+  - Commands: `Pause`, `CtrlAltDel`, `ShowSettings`, `ResetVM`, `RequestShutdown`, `ForceShutdown`.
+  - State: 86Box reports `RunningStateChanged` (running/paused, with or without a modal), so the status is authoritative.
+  - **Fallback:** if the 86Box app is older than 5.0, or its version is unknown (e.g. forks), use the legacy line protocol via `86BOX_MANAGER_SOCKET`. It accepts `pause`, `reset`, `cad`, `shutdown`, `shutdownnoprompt` and `showsettings`, and its pause state is tracked locally.
+- **Force Shutdown** = `ForceShutdown` (official protocol) / `shutdownnoprompt` (legacy).
   **Kill** = last-resort process termination (SIGKILL), matching the old 86Box Manager "Kill" behaviour. Keep both; they are different. **Kill** requires a confirmation sheet.
 - **Edit…** already opens the existing modal for name + icon + description. No separate "Change display name" or "Set icon" items.
 - **Configure…** stays (owner decision). It opens 86Box settings; if the machine is already running, it sends `showsettings`.
@@ -74,7 +80,8 @@ Every sub-agent task must be given:
 ## Plan & Status
 The detailed plan, schemas and task breakdown are in `PLAN.md`; keep it in sync with decisions.
 - Phase 0: done.
-- Phase 1: T1, T2, T3 and T4 done. T3b (`vmm.ini` metadata) is in progress.
+- Phase 1: done (T1–T4, T3b).
+- Phase 2: T5 (manager protocol, menu groups 1–2) done on branch `phase-2-menu`. Next: T6 (rest of the menu: Edit/Configure/Clone, Show in Finder, Open Printer Tray, Wipe NVRAM, Remove).
 - Builds are verified locally from the terminal with `xcodebuild`.
 
 ## Priority Order (this iteration)
@@ -132,7 +139,7 @@ Implement / optimise the final menu defined above:
 ## Out of Scope for this pass
 - Localization
 - Changing the visual style away from Fusion
-- Full 86Box v5+ JSON manager protocol (can be a later enhancement)
+- 86Box v5 manager-protocol extras beyond machine control, e.g. reacting to `ConfigurationChanged`/`GlobalConfigurationChanged` or window IDs. Machine control itself uses the official protocol (see Context Menu Notes).
 - System 7 / classic Mac ports of anything
 - Open Screenshots Folder
 - Show config file

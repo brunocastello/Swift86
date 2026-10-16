@@ -29,6 +29,8 @@ struct Machine: Identifiable {
         
     // Machine status
     var status: MachineStatus = .stopped
+    // True once the running 86Box has connected to the manager socket
+    var isControllable: Bool = false
     
     // Default machine icon
     let defaultIcon: Image = Image(systemName: "desktopcomputer")
@@ -52,5 +54,6 @@ struct Machine: Identifiable {
 enum MachineStatus: String, Codable {
     case stopped
     case running
+    case paused
     case configuring
 }

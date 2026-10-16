@@ -38,6 +38,14 @@ struct ContentView: View {
         )
     }
     
+    // The kill confirmation is shown while a machine is pending
+    private var killAlertShown: Binding<Bool> {
+        Binding(
+            get: { library.pendingKill != nil },
+            set: { if !$0 { library.pendingKill = nil } }
+        )
+    }
+    
     // MARK: - Scene
 
     // Content view
@@ -88,6 +96,12 @@ struct ContentView: View {
         // Edit machine
         .sheet(item: $library.editMachine) { machine in
             EditMachineView(machine: machine, isUpdating: true)
+        }
+        // Confirm killing a machine
+        .alert("Killing a virtual machine can cause data loss. Only do this if the 86Box process gets stuck.\n\nDo you really wish to kill the virtual machine \"\(library.pendingKill?.name ?? "")\"?", isPresented: killAlertShown, presenting: library.pendingKill) { machine in
+            Button("No", role: .cancel) { }
+                .keyboardShortcut(.defaultAction)
+            Button("Yes") { library.kill(machine) }
         }
         // Reusable alerts for errors
         .alert(library.alertTitle, isPresented: $library.showAlert) {

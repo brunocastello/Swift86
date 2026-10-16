@@ -8,6 +8,25 @@
 // Import necessary frameworks and libraries
 import SwiftUI
 
+// MARK: - Machine Session
+
+// A running 86Box process and its manager socket
+final class MachineSession {
+    let process: Process
+    let socket: ManagerSocket?
+    // Settings-only (-S) sessions stay "configuring" whatever 86Box reports
+    let isSettingsOnly: Bool
+    // Mirrors the machine's state so a reload of the machines list can restore it
+    var status: MachineStatus = .stopped
+    var isControllable = false
+    
+    init(process: Process, socket: ManagerSocket?, isSettingsOnly: Bool = false) {
+        self.process = process
+        self.socket = socket
+        self.isSettingsOnly = isSettingsOnly
+    }
+}
+
 // MARK: - Machines Library Model
 
 // Machines library model
@@ -62,6 +81,11 @@ import SwiftUI
         
         // Load machines
         load()
+        
+        // Remove the socket files on quit, the machines keep running
+        NotificationCenter.default.addObserver(forName: NSApplication.willTerminateNotification, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.closeAllSockets() }
+        }
     }
     
     // MARK: - First Run App Actions
@@ -124,7 +148,14 @@ import SwiftUI
             icon: hasIcon ? iconPath : "",
             notes: ini.string("notes", in: section) ?? ""
         )
-        machine.status = existing?.status ?? .stopped
+        // A running session survives reloads and machines-folder changes
+        if let session = sessions[MachineFiles.canonicalPath(folder)] {
+            machine.status = session.status
+            machine.isControllable = session.isControllable
+        } else {
+            machine.status = existing?.status ?? .stopped
+            machine.isControllable = false
+        }
         return machine
     }
     
@@ -614,11 +645,97 @@ import SwiftUI
     
     // MARK: - Run Machine
     
-    // Running machine process IDs
-    @Published var runningProcesses: [UUID: Process] = [:]
+    // Running machine sessions, keyed by the machine folder's canonical path
+    // (a machine's UUID changes on reload, the folder does not)
+    private(set) var sessions: [String: MachineSession] = [:]
+    
+    // Machine waiting for the Kill confirmation
+    @Published var pendingKill: Machine?
+    
+    // Session key of a machine
+    private func sessionKey(_ machine: Machine) -> String {
+        MachineFiles.canonicalPath(machinesURL.appendingPathComponent(machine.folderName))
+    }
+    
+    // Running session of a machine, if any
+    private func session(for machine: Machine) -> MachineSession? {
+        sessions[sessionKey(machine)]
+    }
+    
+    // Set a machine's status and control flag, in its session and in the list
+    private func setState(of key: String, status: MachineStatus? = nil, controllable: Bool? = nil) {
+        if let status { sessions[key]?.status = status }
+        if let controllable { sessions[key]?.isControllable = controllable }
+        guard let index = machines.firstIndex(where: { sessionKey($0) == key }) else { return }
+        if let status { machines[index].status = status }
+        if let controllable { machines[index].isControllable = controllable }
+    }
+    
+    // Forget a session once its process ended
+    private func sessionEnded(_ key: String, process: Process) {
+        // A newer session may have replaced this one
+        guard sessions[key]?.process === process else { return }
+        sessions[key]?.socket?.close()
+        sessions.removeValue(forKey: key)
+        setState(of: key, status: .stopped, controllable: false)
+    }
+    
+    // The emulator's major-version based protocol choice (official from 86Box 5.0)
+    private func detectProtocol() -> ManagerProtocol {
+        let appURL = URL(filePath: SettingsStore.shared.config.emulatorPath)
+        let version = ManagerProtocol.version(ofApp: appURL)
+        let chosen = ManagerProtocol.forVersion(version)
+        NSLog("Swift86: 86Box version \(version ?? "unknown"), using the \(chosen == .official ? "official" : "legacy") manager protocol")
+        return chosen
+    }
+    
+    // Create the manager socket for a launch, wire its callbacks and set the environment
+    // A legacy 86Box exits before the socket code in settings-only mode, so it gets none
+    private func makeSession(key: String, process: Process, settingsOnly: Bool) -> MachineSession {
+        let managerProtocol = detectProtocol()
+        var socket: ManagerSocket?
+        if !(settingsOnly && managerProtocol == .legacy) {
+            do {
+                let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "Swift86"
+                socket = try ManagerSocket(protocol: managerProtocol, version: version)
+            } catch {
+                NSLog("Swift86: could not create the manager socket, starting without control: \(error)")
+            }
+        }
+        // Only the chosen variable is set, and only with a socket
+        process.environment = ManagerProtocol.environment(inherited: ProcessInfo.processInfo.environment, socketPath: socket?.path, protocol: managerProtocol)
+        
+        let session = MachineSession(process: process, socket: socket, isSettingsOnly: settingsOnly)
+        
+        socket?.onConnectionChange = { [weak self, weak session] connected in
+            guard let self, let session, self.sessions[key] === session else { return }
+            if !session.isSettingsOnly { self.setState(of: key, controllable: connected) }
+        }
+        if managerProtocol == .official {
+            socket?.onRunningStateChange = { [weak self, weak session] state in
+                guard let self, let session, self.sessions[key] === session, !session.isSettingsOnly else { return }
+                switch state {
+                case .running, .runningWaiting: self.setState(of: key, status: .running)
+                case .paused, .pausedWaiting: self.setState(of: key, status: .paused)
+                }
+            }
+        }
+        
+        // Handle process termination (set before run so a quick exit is not missed)
+        process.terminationHandler = { [weak self] process in
+            DispatchQueue.main.async {
+                self?.sessionEnded(key, process: process)
+            }
+        }
+        return session
+    }
     
     // Run machine
     func runMachine(machine: Machine) {
+        // One process per machine: a session means it is already running or being configured
+        let key = sessionKey(machine)
+        guard sessions[key] == nil else { return }
+        
         // Prepare process to run machine
         let process = Process()
         process.executableURL = emulatorURL
@@ -628,36 +745,23 @@ import SwiftUI
             "-P", machinesURL.appendingPathComponent(machine.folderName).path
         ]
         
+        let session = makeSession(key: key, process: process, settingsOnly: false)
+        
         do {
             // Start process
             try process.run()
             
             // Record the start time in 86Box's machine list, like its own manager does
             recordStart(of: machinesURL.appendingPathComponent(machine.folderName))
-                            
-            DispatchQueue.main.async {
-                // Add the running process to the queue
-                self.runningProcesses[machine.id] = process
-
-                // Update machine status to running
-                if let index = self.machines.firstIndex(where: { $0.id == machine.id }) {
-                    self.machines[index].status = .running
-                }
-            }
             
-            // Handle process termination
-            process.terminationHandler = { [weak self] process in
-                DispatchQueue.main.async {
-                    // Remove the process from the queue when terminated
-                    self?.runningProcesses.removeValue(forKey: machine.id)
-                    
-                    // Update the machine status to stopped
-                    if let index = self?.machines.firstIndex(where: { $0.id == machine.id }) {
-                        self?.machines[index].status = .stopped
-                    }
-                }
-            }
+            // Add the running process to the sessions
+            sessions[key] = session
+            
+            // Update machine status to running
+            setState(of: key, status: .running, controllable: false)
         } catch {
+            session.socket?.close()
+            
             // Error running machine
             self.alertTitle = NSLocalizedString("An error occurred", comment: "")
             self.alertMessage = NSLocalizedString(error.localizedDescription, comment: "")
@@ -665,6 +769,58 @@ import SwiftUI
             self.showCancel = false
             self.showAlert = true
         }
+    }
+    
+    // MARK: - Control Machine
+    
+    // Send a command to a running machine, true when it was sent
+    @discardableResult
+    private func send(_ command: ManagerCommand, to machine: Machine) -> Bool {
+        guard let session = session(for: machine), let socket = session.socket else { return false }
+        guard socket.send(command) else {
+            NSLog("Swift86: could not send \"\(command.rawValue)\" to \"\(machine.name)\"")
+            return false
+        }
+        return true
+    }
+    
+    // Pause or resume, legacy 86Box only toggles and never reports the state back
+    func togglePause(_ machine: Machine) {
+        guard send(.pause, to: machine) else { return }
+        // An official 86Box reports its state, only the legacy protocol needs a local flip
+        guard session(for: machine)?.socket?.managerProtocol == .legacy,
+              let index = machines.firstIndex(where: { $0.id == machine.id }) else { return }
+        switch machines[index].status {
+        case .running: machines[index].status = .paused
+        case .paused: machines[index].status = .running
+        default: break
+        }
+    }
+    
+    // Hard reset (the paused state is left as is, 86Box does not report it)
+    func hardReset(_ machine: Machine) {
+        send(.reset, to: machine)
+    }
+    
+    // Send Ctrl+Alt+Del to the guest
+    func ctrlAltDel(_ machine: Machine) {
+        send(.cad, to: machine)
+    }
+    
+    // Shut down without 86Box's confirmation prompt
+    func forceShutdown(_ machine: Machine) {
+        send(.forceShutdown, to: machine)
+    }
+    
+    // Last resort: terminate the process, the termination handler cleans up
+    func kill(_ machine: Machine) {
+        guard let process = session(for: machine)?.process, process.isRunning else { return }
+        Darwin.kill(process.processIdentifier, SIGKILL)
+    }
+    
+    // Close every socket when the app quits, the machines keep running
+    private func closeAllSockets() {
+        for session in sessions.values { session.socket?.close() }
     }
     
     // Set the section's timestamp to now (off the main thread, a busy lock must not freeze the UI)
@@ -688,6 +844,13 @@ import SwiftUI
     
     // Configure machine
     func configureMachine(machine: Machine) {
+        // A machine with a session never gets a second process: a controllable one opens its Settings in place
+        let key = sessionKey(machine)
+        if let existing = sessions[key] {
+            if existing.isControllable && !existing.isSettingsOnly { send(.showSettings, to: machine) }
+            return
+        }
+        
         // Prepare process to configure machine
         let process = Process()
         process.executableURL = emulatorURL
@@ -697,34 +860,21 @@ import SwiftUI
             "-P", machinesURL.appendingPathComponent(machine.folderName).path,
             "-S"
         ]
+        
+        let session = makeSession(key: key, process: process, settingsOnly: true)
 
         do {
             // Start process
             try process.run()
 
-            DispatchQueue.main.async {
-                // Add the running process to the queue
-                self.runningProcesses[machine.id] = process
-                
-                // Update machine status to configuring
-                if let index = self.machines.firstIndex(where: { $0.id == machine.id }) {
-                    self.machines[index].status = .configuring
-                }
-            }
-
-            // Handle process termination
-            process.terminationHandler = { [weak self] process in
-                DispatchQueue.main.async {
-                    // Remove the process from the queue when terminated
-                    self?.runningProcesses.removeValue(forKey: machine.id)
-                    
-                    // Update the machine status to stopped
-                    if let index = self?.machines.firstIndex(where: { $0.id == machine.id }) {
-                        self?.machines[index].status = .stopped
-                    }
-                }
-            }
+            // Add the running process to the sessions (only an official 86Box has a socket here)
+            sessions[key] = session
+            
+            // Update machine status to configuring
+            setState(of: key, status: .configuring, controllable: false)
         } catch {
+            session.socket?.close()
+            
             // Error configuring machine
             self.alertTitle = NSLocalizedString("An error occurred", comment: "")
             self.alertMessage = NSLocalizedString(error.localizedDescription, comment: "")

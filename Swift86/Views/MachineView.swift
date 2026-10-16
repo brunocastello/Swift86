@@ -28,6 +28,15 @@ struct MachineView: View {
     
     // MARK: - Scene
     
+    // Configure needs a stopped machine, or a running one that can open its Settings
+    private func configureDisabled(_ machine: Machine) -> Bool {
+        switch machine.status {
+        case .stopped: return false
+        case .running, .paused: return !machine.isControllable
+        case .configuring: return true
+        }
+    }
+    
     var body: some View {
         if let machine = library.machines.first(where: { $0.id == machine?.id }) {
             ScrollView {
@@ -41,15 +50,15 @@ struct MachineView: View {
                             Image(systemName: "power")
                                 .imageScale(.large)
                         }
-                        .disabled(machine.status == .running)
-                        .buttonStyle(MachineButtonStyle(isDisabled: machine.status == .running))
+                        .disabled(machine.status != .stopped)
+                        .buttonStyle(MachineButtonStyle(isDisabled: machine.status != .stopped))
                         
                         // Machine name and status
                         VStack(alignment: .leading, spacing: 0) {
                             Text(machine.name)
                                 .font(.system(.title2, design: .rounded))
                                 .fontWeight(.semibold)
-                            Text(machine.status == .running ? "Running" : (machine.status == .stopped ? "Stopped" : "Configuring"))
+                            Text(machine.status == .running ? "Running" : (machine.status == .paused ? "Paused" : (machine.status == .stopped ? "Powered Off" : "Configuring")))
                                 .font(.callout)
                                 .foregroundColor(.secondary)
                         }
@@ -74,8 +83,8 @@ struct MachineView: View {
                             Image(systemName: "gearshape")
                                 .imageScale(.large)
                         }
-                        .disabled(machine.status == .configuring)
-                        .buttonStyle(MachineButtonStyle(isDisabled: machine.status == .configuring))
+                        .disabled(configureDisabled(machine))
+                        .buttonStyle(MachineButtonStyle(isDisabled: configureDisabled(machine)))
                         
                         // Delete machine
                         Button(action: {
