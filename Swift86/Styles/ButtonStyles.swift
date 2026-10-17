@@ -36,25 +36,10 @@ struct PanelStyle: ViewModifier {
     }
 }
 
-// MARK: - Tile Surface
-
-// Rounded glass tile behind the icon thumbnail in the Edit sheet
-struct TileSurface: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 8))
-    }
-}
-
 extension View {
     // Bordered rounded panel
     func panelStyle() -> some View {
         modifier(PanelStyle())
-    }
-
-    // Tile behind the icon thumbnail
-    func tileSurface() -> some View {
-        modifier(TileSurface())
     }
 }
 
@@ -90,8 +75,9 @@ struct WelcomeButtonStyle: ButtonStyle {
         var body: some View {
             configuration.label
                 .fontWeight(.medium)
+                .background(Color.tileBackground)
                 .foregroundColor(.secondary)
-                .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 8))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
 }
@@ -115,16 +101,10 @@ struct MachineButtonStyle: ButtonStyle {
 
         // Button style
         var body: some View {
-            // Same frame, icon and colours; the glass appears under the pointer
             configuration.label
                 .fontWeight(.bold)
                 .frame(maxWidth: 38, maxHeight: 38)
-                .background {
-                    if isHovering {
-                        Color.clear
-                            .glassEffect(.regular.interactive(), in: RoundedRectangle(cornerRadius: 8))
-                    }
-                }
+                .background(isHovering ? Color.tileBackground : .clear)
                 .foregroundColor(configuration.isPressed ? .primary : (isHovering ? .accentColor : .gray))
                 .opacity(configuration.isPressed ? 0.5 : (isDisabled ? 0.5 : 1.0))
                 .clipShape(RoundedRectangle(cornerRadius: 8))

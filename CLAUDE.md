@@ -141,8 +141,8 @@ Implement / optimise the final menu defined above:
 - Ensure the Fusion-inspired layout still feels native.
 - **Decisions (owner, 2026-10-17):**
   - **Deployment target:** **macOS 26.0**, built with Xcode 27.
-  - **Look:** **Liquid Glass only.** There is no classic option; it was tried and removed by the owner. System chrome (toolbar, sidebar, buttons, Settings tabs) follows macOS 27 defaults. Swift86's header buttons, Welcome tiles and Edit icon thumbnail use glass.
-  - **Exception:** the machine view's notes and size panels keep the **old box design** (light fill, 1 pt border, 8 pt corner radius), never glass, matching how macOS Settings draws grouped boxes.
+  - **Look:** system chrome (toolbar, sidebar, buttons, Settings tabs) follows macOS 27 defaults, which is Liquid Glass. There is no classic option; it was tried and removed by the owner.
+  - **Swift86-drawn surfaces are flat, never glass** (owner): the notes and size panels (light fill, 1 pt border, 8 pt corner radius), the header button hover tiles, the Welcome tiles and the Edit icon thumbnail all use the original pre-T9 code. Do not add `.glassEffect` to custom views.
 - **Settings tabs (owner):**
   - **General:** Check for Updates, Show machine screenshots.
   - **Application:** 86Box app, machines folder, ROMs.
