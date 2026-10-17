@@ -9,7 +9,7 @@
 
 100% SwiftUI Native 86Box Machine Manager for macOS
 
-<img width="1638" height="948" alt="image" src="https://github.com/user-attachments/assets/0e7eff2f-d175-47b6-97bc-330b51eceef5" />
+<img width="819" height="474" alt="Screenshot 2026-10-17 at 3 13 44 PM" src="https://github.com/user-attachments/assets/b6627519-1c75-4bad-b5cf-98eaef4d3e67" />
 
 **A NOTE REGARDING TRANSLATIONS**
 
