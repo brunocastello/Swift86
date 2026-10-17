@@ -27,13 +27,10 @@ struct GeneralSettingsView: View {
         Form {
             VStack(alignment: .leading, spacing: 10) {
                 // Updates
-                Toggle(isOn: Bindable(settings).config.checkForUpdates) {
+                Toggle(isOn: Bindable(updater).automaticallyChecks) {
                     Text("Check for Updates")
                 }
                 .accessibilityLabel("Check for Updates")
-                .onChange(of: settings.config.checkForUpdates) { _, checks in
-                    updater.automaticallyChecks = checks
-                }
                 
                 // Machine screenshot preview
                 Toggle("Show machine screenshots", isOn: Bindable(settings).config.showScreenshots)

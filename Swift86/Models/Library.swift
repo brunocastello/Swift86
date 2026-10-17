@@ -109,9 +109,6 @@ enum PendingConfirmation: Identifiable {
     
     // First run actions
     func firstRun() {
-        // Leave an unreadable settings file alone, it would be overwritten with defaults
-        guard SettingsStore.shared.loadError == nil else { return }
-        
         // Check if it's the first launch
         if !SettingsStore.shared.config.hasCompletedFirstRun {
             // Set the flag indicating that the app has launched before (deferred, we may be inside a view update)
@@ -259,7 +256,7 @@ enum PendingConfirmation: Identifiable {
     
     // Add the machines vmm.ini doesn't list yet, in one write
     private func registerNew(_ found: [(url: URL, section: String)]) {
-        guard SettingsStore.shared.loadError == nil, !found.isEmpty else { return }
+        guard !found.isEmpty else { return }
         do {
             try VMMIni.update(at: vmmIniURL) { ini in
                 let sections = Set(ini.sections())

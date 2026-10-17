@@ -6,6 +6,8 @@ Author: strong model (Phase 0). Implementation tasks in §7 are written to be ha
 ---
 
 
+> **Decision (owner, 2026-10-17): settings in `UserDefaults`.** `Settings.json` and the Application Support folder are gone; wherever this plan says `Settings.json`, read the app's standard `UserDefaults` (keys = the property names, camelCase). The update toggle is Sparkle's `SUEnableAutomaticChecks`. The "no `UserDefaults`" rule in §3 and the T2 check are withdrawn.
+>
 > **Decision (owner, 2026-10-17): no legacy support.** Everything below about importing old Swift86 data (per-machine `86box.plist`, UserDefaults settings and `MachinesList`, `.swift86.json` sidecars, legacy `Icon.png`, icon-copy cleanup) is withdrawn and the code is removed. First launch starts from defaults and the Welcome flow. The legacy socket protocol for 86Box older than 5.0 stays.
 
 ## 1. Current state (as of `c44bfc2`)

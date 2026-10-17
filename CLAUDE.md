@@ -16,7 +16,7 @@ Bring Swift86 to feature parity with the useful parts of 86Box Manager / 86Box�
   - 86Box built-in icon names are preserved untouched and shown with the default symbol.
 - **Renaming** a machine moves its folder **and** moves its `vmm.ini` section to the new UUID. It is blocked while the machine is running.
 - Never write a stub `86box.cfg`. 86Box creates it on first configure.
-- Settings live in `~/Library/Application Support/Swift86/Settings.json`. It is a single JSON file holding the 86Box app path, VMs folder, ROMs, appearance, screenshot toggle, `vmm.ini` path and sidebar order (folder names). Unknown or missing keys are tolerated. No `UserDefaults`/`@AppStorage` (Sparkle keeps its own defaults).
+- **App settings live in the app's standard `UserDefaults`** (`~/Library/Preferences/com.castellodesigns.Swift86.plist`), per Apple's guidelines (owner decision, 2026-10-17; replaces the earlier `Settings.json`). `SettingsStore` holds the 86Box app path, VMs folder, custom-ROMs toggle and ROMs folder, appearance, screenshot toggle, `vmm.ini` path, sidebar order (folder names) and the first-run flag. The keys are the property names (camelCase, e.g. `customROMs`). Missing or wrongly typed values fall back to the defaults. The update-check toggle is Sparkle's own `SUEnableAutomaticChecks` (default on via Info.plist). There is no Application Support folder.
 - **UI layer is 100% SwiftUI.** No `NSViewRepresentable`, `NSOpenPanel` (use `.fileImporter`), `NSColor`, or AppKit subclass hacks. AppKit *services* are allowed: `NSWorkspace`, `NSApp.appearance`, `NSImage` for image data, `Process`, and BSD sockets.
 - SwiftUI code must be updated for macOS 27 UI conventions. The deployment target is **macOS 26.0** from Phase 4 on (owner decision).
 - User-facing workflow must feel unchanged; only internal representation and persistence change.
@@ -93,12 +93,12 @@ The detailed plan, schemas and task breakdown are in `PLAN.md`; keep it in sync 
 
 ### Phase 0 – Planning (strong model only)
 - Produce a short migration plan that maps current plist-based machines → new folder + `86box.cfg` model.
-- Confirm the exact schema of the new Application Support config file.
+- ~~Confirm the exact schema of the new Application Support config file.~~ Superseded 2026-10-17: settings are in `UserDefaults`.
 - Identify all places in the current SwiftUI code that still assume per-machine plists.
 - Document how display name, description and icon (existing PNG) will be stored/read after the migration.
 
 ### Phase 1 – Settings & Discovery (core)
-1. Create `~/Library/Application Support/Swift86/` and the new config file.
+1. ~~Create `~/Library/Application Support/Swift86/` and the new config file.~~ Superseded 2026-10-17: settings are in `UserDefaults`.
 2. ~~Migrate existing settings into it.~~ Withdrawn 2026-10-17: first launch starts from defaults.
 3. Implement folder scanner that discovers machines by presence of `86box.cfg`.
 4. Load display name, description, and icon (existing PNG) from the machine folder or a lightweight sidecar if needed.
@@ -125,7 +125,7 @@ Implement / optimise the final menu defined above:
 - **Decisions (owner, 2026-10-17): VMware Fusion style.**
   - **Shown:** `<machine>/screenshots/Screenshot.png` if the user chose one. Otherwise the latest `Monitor_1*` screenshot 86Box took, newest by modification date.
   - **Choosing:** click the preview, or right-click → "Choose Screenshot…", to open the standard macOS Open dialog (`.fileImporter`). Any image is allowed. It is converted and copied to `screenshots/Screenshot.png` (staged, then atomically swapped). Right-click → "Remove Screenshot" deletes it (back to the latest 86Box screenshot, or the "No screenshot" box).
-  - **Storage:** the choice lives only in that file, which follows rename and clone automatically. Nothing is written to `vmm.ini` or `Settings.json`.
+  - **Storage:** the choice lives only in that file, which follows rename and clone automatically. Nothing is written to `vmm.ini` or the app settings.
   - **Look:** placed **above the machine header**, as in Fusion, centred. Square corners, no border, no arrows, and a subtle drop shadow below.
   - **Size (owner, 2026-10-17):**
     - Start from a 3:2 box (86Box's 240 × 160 shape), scaled to at most 55% of the visible height. The header, notes and size panel must stay visible. The minimum is 200 pt.
@@ -134,7 +134,7 @@ Implement / optimise the final menu defined above:
     - The "No screenshot" box is the 3:2 width × that height.
   - **No screenshots:** a "No screenshot" box is shown when the toggle is on.
   - **No "Open Screenshots Folder"** item (rejected earlier).
-- **Never store per-machine data in `Settings.json`** (owner). For machine features, match 86Box's built-in manager.
+- **Never store per-machine data in the app settings** (owner). For machine features, match 86Box's built-in manager.
 
 ### Phase 4 – macOS 27 UI polish
 - Update SwiftUI views, materials, and controls for macOS 27.
@@ -151,7 +151,7 @@ Implement / optimise the final menu defined above:
 
 ### Updates (T10, owner decisions 2026-10-17)
 - **Sparkle 2** via Swift Package Manager. Its standard update windows (AppKit) are the one accepted exception to the SwiftUI-only rule.
-- **Menu:** "Check for Updates…" in the app menu. **Settings → General → "Check for Updates"** (default on) enables a daily automatic check. The setting lives in `Settings.json`.
+- **Menu:** "Check for Updates…" in the app menu. **Settings → General → "Check for Updates"** (default on) enables a daily automatic check. It is Sparkle's own `SUEnableAutomaticChecks` setting.
 - **Feed:** `https://github.com/brunocastello/Swift86/releases/latest/download/appcast.xml`, so only the release marked **Latest** is offered and pre-releases never are.
 - **Versions:** plain `1.0`, `1.1`, … (`MARKETING_VERSION`), with an integer build number (`CURRENT_PROJECT_VERSION`). The first Sparkle release is 1.0, build 1.
 - **Release flow:** `scripts/release.sh <version> <build>` builds, zips (`Swift86.zip`) and signs the appcast. The owner publishes with the printed `gh release create` command. Setup is in `docs/UPDATES.md`.
@@ -164,7 +164,7 @@ Implement / optimise the final menu defined above:
 
 ## Success Criteria
 - Swift86 launches, discovers all existing machines from the VMs folder without any `.plist` files.
-- App settings are read from and written to Application Support/Swift86 only. Per-machine metadata is read from and written to 86Box's `vmm.ini`, so 86Box's own manager and Swift86 always agree.
+- App settings are read from and written to the app's `UserDefaults` only. Per-machine metadata is read from and written to 86Box's `vmm.ini`, so 86Box's own manager and Swift86 always agree.
 - The exact context menu defined above works correctly.
 - Screenshot feature is optional and limited to one image per machine.
 - UI still looks and feels like the current VMware Fusion-inspired design, updated for macOS 27.

@@ -12,7 +12,7 @@ import Sparkle
 
 // MARK: - Updater
 
-// Wraps Sparkle's standard updater; the setting itself lives in Settings.json
+// Wraps Sparkle's standard updater; Sparkle keeps the automatic-check setting in the user defaults
 @MainActor @Observable final class Updater {
     
     // MARK: - Properties
@@ -26,10 +26,9 @@ import Sparkle
     // Keeps canCheckForUpdates in sync with Sparkle
     @ObservationIgnored private var observation: NSKeyValueObservation?
     
-    // Whether Sparkle checks for updates automatically
-    var automaticallyChecks: Bool {
-        get { controller.updater.automaticallyChecksForUpdates }
-        set { controller.updater.automaticallyChecksForUpdates = newValue }
+    // Whether Sparkle checks for updates automatically (on by default, SUEnableAutomaticChecks in Info.plist)
+    var automaticallyChecks = true {
+        didSet { controller.updater.automaticallyChecksForUpdates = automaticallyChecks }
     }
     
     // MARK: - Initialization
@@ -37,8 +36,8 @@ import Sparkle
     init() {
         controller = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
         
-        // Apply the persisted setting; updates are never installed without asking
-        controller.updater.automaticallyChecksForUpdates = SettingsStore.shared.config.checkForUpdates
+        // Show Sparkle's saved setting; updates are never installed without asking
+        automaticallyChecks = controller.updater.automaticallyChecksForUpdates
         controller.updater.automaticallyDownloadsUpdates = false
         
         // Follow Sparkle's canCheckForUpdates

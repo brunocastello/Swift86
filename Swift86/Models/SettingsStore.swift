@@ -11,13 +11,12 @@ import Observation
 
 // MARK: - Configuration Model
 
-// The persisted application configuration (Settings.json)
-struct AppConfig: Codable, Equatable {
+// The application configuration, kept in the app's standard user defaults
+struct AppConfig: Equatable {
     
     // MARK: - Properties
     
-    // Settings properties with their default values
-    var schemaVersion: Int = 1
+    // Settings properties with their default values (the user defaults keys are the property names)
     var emulatorPath: String = "/Applications/86Box.app"
     var machinesPath: String = ("~/Documents" as NSString).expandingTildeInPath
     var customROMs: Bool = false
@@ -27,7 +26,6 @@ struct AppConfig: Codable, Equatable {
     var showScreenshots: Bool = false
     var machineOrder: [String] = []
     var hasCompletedFirstRun: Bool = false
-    var checkForUpdates: Bool = true
     
     // Default configuration, the single source of the default values
     static let defaults = AppConfig()
@@ -36,46 +34,50 @@ struct AppConfig: Codable, Equatable {
     
     init() {}
     
-    // Decode every key leniently, falling back to the default when missing
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
+    // Read every key, falling back to the default when missing or wrongly typed
+    init(from store: UserDefaults) {
         let d = AppConfig()
         
-        // Decode one key, falling back to the default if missing or wrongly typed
-        func value<T: Decodable>(_ key: CodingKeys, _ fallback: T) -> T {
-            ((try? container.decodeIfPresent(T.self, forKey: key)) ?? nil) ?? fallback
-        }
-        
         // Same, for paths: blank counts as missing and a leading tilde is expanded
-        func path(_ key: CodingKeys, _ fallback: String) -> String {
-            let s: String = value(key, fallback)
-            return s.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? fallback : Self.expand(s)
+        func path(_ key: String, _ fallback: String) -> String {
+            guard let s = store.object(forKey: key) as? String,
+                  !s.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return fallback }
+            return s.hasPrefix("~") ? (s as NSString).expandingTildeInPath : s
+        }
+        func bool(_ key: String, _ fallback: Bool) -> Bool {
+            store.object(forKey: key) as? Bool ?? fallback
         }
         
-        schemaVersion = value(.schemaVersion, d.schemaVersion)
-        emulatorPath = path(.emulatorPath, d.emulatorPath)
-        machinesPath = path(.machinesPath, d.machinesPath)
-        customROMs = value(.customROMs, d.customROMs)
-        romsPath = path(.romsPath, d.romsPath)
-        vmmIniPath = path(.vmmIniPath, d.vmmIniPath)
-        appearance = value(.appearance, d.appearance)
-        showScreenshots = value(.showScreenshots, d.showScreenshots)
-        machineOrder = value(.machineOrder, d.machineOrder)
-        hasCompletedFirstRun = value(.hasCompletedFirstRun, d.hasCompletedFirstRun)
-        checkForUpdates = value(.checkForUpdates, d.checkForUpdates)
+        emulatorPath = path("emulatorPath", d.emulatorPath)
+        machinesPath = path("machinesPath", d.machinesPath)
+        customROMs = bool("customROMs", d.customROMs)
+        romsPath = path("romsPath", d.romsPath)
+        vmmIniPath = path("vmmIniPath", d.vmmIniPath)
+        appearance = store.object(forKey: "appearance") as? String ?? d.appearance
+        showScreenshots = bool("showScreenshots", d.showScreenshots)
+        machineOrder = store.object(forKey: "machineOrder") as? [String] ?? d.machineOrder
+        hasCompletedFirstRun = bool("hasCompletedFirstRun", d.hasCompletedFirstRun)
     }
     
     // MARK: - Methods
     
-    // Expand a leading tilde in a path
-    private static func expand(_ path: String) -> String {
-        path.hasPrefix("~") ? (path as NSString).expandingTildeInPath : path
+    // Write every key
+    func write(to store: UserDefaults) {
+        store.set(emulatorPath, forKey: "emulatorPath")
+        store.set(machinesPath, forKey: "machinesPath")
+        store.set(customROMs, forKey: "customROMs")
+        store.set(romsPath, forKey: "romsPath")
+        store.set(vmmIniPath, forKey: "vmmIniPath")
+        store.set(appearance, forKey: "appearance")
+        store.set(showScreenshots, forKey: "showScreenshots")
+        store.set(machineOrder, forKey: "machineOrder")
+        store.set(hasCompletedFirstRun, forKey: "hasCompletedFirstRun")
     }
 }
 
 // MARK: - Settings Store
 
-// Owns the configuration and persists every change to disk
+// Owns the configuration and saves every change to the user defaults
 @MainActor @Observable final class SettingsStore {
     
     // MARK: - Properties
@@ -85,75 +87,16 @@ struct AppConfig: Codable, Equatable {
     
     // Current configuration, saved on every change
     var config: AppConfig {
-        didSet { if config != oldValue { save() } }
+        didSet { if config != oldValue { config.write(to: store) } }
     }
     
-    // Error found while decoding an existing file, if any
-    @ObservationIgnored private(set) var loadError: Error?
-    
-    // Whether the unreadable file has already been backed up
-    @ObservationIgnored private var didBackUpCorruptFile = false
-    
-    // Location of the settings file
-    @ObservationIgnored private let fileURL: URL
-    
-    // Default location: ~/Library/Application Support/Swift86/Settings.json
-    nonisolated static var defaultFileURL: URL {
-        (FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
-            ?? URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Library/Application Support"))
-            .appendingPathComponent("Swift86", isDirectory: true)
-            .appendingPathComponent("Settings.json")
-    }
+    // Where the settings live (the app's standard user defaults)
+    @ObservationIgnored private let store: UserDefaults
     
     // MARK: - Initialization
     
-    init(fileURL: URL = SettingsStore.defaultFileURL) {
-        self.fileURL = fileURL
-        
-        // Make sure the containing folder exists
-        try? FileManager.default.createDirectory(at: fileURL.deletingLastPathComponent(), withIntermediateDirectories: true)
-        
-        if FileManager.default.fileExists(atPath: fileURL.path) {
-            // Load the existing file, keeping it untouched if it cannot be decoded
-            do {
-                let data = try Data(contentsOf: fileURL)
-                config = try JSONDecoder().decode(AppConfig.self, from: data)
-            } catch {
-                config = .defaults
-                loadError = error
-                NSLog("Swift86: could not read settings: \(error)")
-            }
-        } else {
-            // First launch: defaults
-            config = .defaults
-            save()
-        }
-    }
-    
-    // MARK: - Methods
-    
-    // Write the configuration atomically as pretty-printed JSON
-    func save() {
-        // Keep a copy of an unreadable file before the first overwrite
-        if loadError != nil, !didBackUpCorruptFile {
-            didBackUpCorruptFile = true
-            let formatter = DateFormatter()
-            formatter.locale = Locale(identifier: "en_US_POSIX")
-            formatter.dateFormat = "yyyyMMdd-HHmmss"
-            let backup = fileURL.deletingLastPathComponent()
-                .appendingPathComponent("Settings.corrupt-\(formatter.string(from: Date())).json")
-            do {
-                try FileManager.default.copyItem(at: fileURL, to: backup)
-            } catch {
-                NSLog("Swift86: could not back up unreadable settings: \(error)")
-            }
-        }
-        do {
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
-            try encoder.encode(config).write(to: fileURL, options: .atomic)
-        } catch {
-            NSLog("Swift86: could not save settings: \(error)")
-        }
+    init(store: UserDefaults = .standard) {
+        self.store = store
+        config = AppConfig(from: store)
     }
 }
