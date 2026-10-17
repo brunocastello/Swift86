@@ -140,6 +140,7 @@ struct MachineView: View {
                         Group {
                             if !machine.notes.isEmpty {
                                 Text(machine.notes)
+                                    .lineSpacing(3)
                             } else {
                                 Text("Click here to add a note")
                                     .foregroundColor(.gray)

@@ -21,9 +21,6 @@ struct EditMachineView: View {
     // Environment variable to dismiss the current view
     @Environment(\.dismiss) var dismiss
     
-    // Application theme
-    @Environment(\.colorScheme) var colorScheme
-    
     // MARK: - Properties
     
     // Machine instance
@@ -55,7 +52,7 @@ struct EditMachineView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
                         TextField("", text: $machine.name)
-                            .textFieldStyle(.squareBorder)
+                            .textFieldStyle(.roundedBorder)
                             .frame(minWidth: 200)
                             .lineLimit(1)
                             .truncationMode(.middle)
@@ -67,14 +64,17 @@ struct EditMachineView: View {
                 // Machine notes input
                 Text("Notes:")
                 HStack {
+                    // TextEditor, not a vertical-axis TextField: Return must insert a newline, not submit
                     TextEditor(text: $machine.notes)
-                        .textFieldStyle(.squareBorder)
-                        .padding(.vertical, 5)
-                        .frame(minWidth: 200, minHeight: 100)
-                        .lineLimit(4)
-                        .border(colorScheme == .dark ? Color(.darkGray).opacity(0.5) : Color(.darkGray).opacity(0.25), width: 0.5)
+                        .lineSpacing(3)
                         .scrollContentBackground(.hidden)
-                        .background(colorScheme == .dark ? AnyShapeStyle(.background.opacity(0.5)) : AnyShapeStyle(Color.clear))
+                        // Same text margins as the notes panel in the machine view (8 pt top/bottom, 10 pt sides;
+                        // the editor already adds 5 pt of line padding on each side)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 5)
+                        .background(.background, in: RoundedRectangle(cornerRadius: 6))
+                        .overlay(RoundedRectangle(cornerRadius: 6).stroke(.separator))
+                        .frame(minWidth: 200, minHeight: 100)
                 }
                 .padding([.bottom], 8)
             
@@ -101,11 +101,14 @@ struct EditMachineView: View {
                     // Toggle default or custom icon
                     VStack {
                         // Radio Button toggle
-                        Picker(selection: $machine.iconCustom, label: EmptyView()) {
+                        Picker(selection: $machine.iconCustom) {
                             Text("Default icon").tag(false)
                             Text("Custom icon").tag(true)
+                        } label: {
+                            EmptyView()
                         }
-                        .pickerStyle(RadioGroupPickerStyle())
+                        .pickerStyle(.radioGroup)
+                        .labelsHidden()
                     }
                     .padding(.leading, 2)
                 }
@@ -130,17 +133,14 @@ struct EditMachineView: View {
                 HStack {
                     Spacer()
                     // Cancel button
-                    Button(action: {
+                    Button("Cancel", role: .cancel) {
                         // Dismiss view
                         dismiss()
-                    }) {
-                        Text("Cancel")
-                            .standardStyle()
                     }
                     .keyboardShortcut(.cancelAction)
                     
                     // Save button
-                    Button(action: {
+                    Button("Save") {
                         let nameBeforeSave = library.machines.first { $0.id == machine.id }?.name
                         do {
                             // Update or create?
@@ -163,9 +163,6 @@ struct EditMachineView: View {
                             }
                             error = FieldError(field: field(for: saveError), message: saveError.localizedDescription, snapshot: editSnapshot)
                         }
-                    }) {
-                        Text("Save")
-                            .standardStyle()
                     }
                     .disabled(machine.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || renameBlocked)
                     .keyboardShortcut(.defaultAction)
