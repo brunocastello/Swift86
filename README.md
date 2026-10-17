@@ -9,6 +9,8 @@
 
 100% SwiftUI Native 86Box Machine Manager for macOS
 
+<img width="1638" height="948" alt="image" src="https://github.com/user-attachments/assets/0e7eff2f-d175-47b6-97bc-330b51eceef5" />
+
 **A NOTE REGARDING TRANSLATIONS**
 
 If you want to translate Swift86 to other languages, I recommend you to watch this WWDC 2021 video to learn how to do it:
