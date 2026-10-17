@@ -80,15 +80,21 @@ struct MachineView: View {
                     VStack(spacing: 0) {
                     // Machine header title
                     HStack {
-                        // Start/Stop machine
+                        // Power: start when off, shut down (86Box asks to confirm) while running or paused
+                        let isLive = machine.status == .running || machine.status == .paused
+                        let powerDisabled = isLive ? !machine.isControllable : (machine.status == .configuring || library.isBusy(machine))
                         Button(action: {
-                            library.runMachine(machine: machine)
+                            if isLive {
+                                library.requestShutdown(machine)
+                            } else {
+                                library.runMachine(machine: machine)
+                            }
                         }) {
                             Image(systemName: "power")
                                 .imageScale(.large)
                         }
-                        .disabled(machine.status != .stopped || library.isBusy(machine))
-                        .buttonStyle(MachineButtonStyle(isDisabled: machine.status != .stopped || library.isBusy(machine)))
+                        .disabled(powerDisabled)
+                        .buttonStyle(MachineButtonStyle(isDisabled: powerDisabled))
                         
                         // Machine name and status
                         VStack(alignment: .leading, spacing: 0) {

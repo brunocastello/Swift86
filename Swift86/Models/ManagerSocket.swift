@@ -3,7 +3,8 @@
 //  Swift86
 //
 //  A Unix socket server that a running 86Box connects to (via the
-//  86BOX_MANAGER_SOCKET environment variable) so Swift86 can control it.
+//  VMM_86BOX_SOCKET environment variable, or 86BOX_MANAGER_SOCKET for
+//  older 86Box) so Swift86 can control it.
 //
 
 // Foundation and Darwin only, so this file can be compiled and tested standalone
@@ -21,6 +22,7 @@ enum ManagerCommand: String {
     case cad
     case reset
     case forceShutdown = "shutdownnoprompt"
+    // Shut down after 86Box's own confirmation prompt
     case shutdown
 }
 
@@ -106,7 +108,6 @@ final class ManagerSocket {
     
     // Called on the main queue
     var onConnectionChange: ((Bool) -> Void)?
-    var onModalChange: ((Bool) -> Void)?
     // Official protocol only
     var onRunningStateChange: ((ManagerRunningState) -> Void)?
     
@@ -122,7 +123,6 @@ final class ManagerSocket {
     private var acceptSource: DispatchSourceRead?
     private var readSource: DispatchSourceRead?
     private var closed = false
-    private var modalOpen = false
     private var receiveBuffer = [UInt8]()
     
     // MARK: - Initialization
@@ -258,11 +258,8 @@ final class ManagerSocket {
             if count > 0 {
                 switch managerProtocol {
                 case .legacy:
-                    for byte in buffer[0..<count] {
-                        // "1": a modal dialog opened in 86Box, "0": it closed
-                        if byte == UInt8(ascii: "1") { setModal(true) }
-                        else if byte == UInt8(ascii: "0") { setModal(false) }
-                    }
+                    // Only modal open/close notices ("1"/"0"), which Swift86 does not use
+                    break
                 case .official:
                     receiveBuffer.append(contentsOf: buffer[0..<count])
                     if !parseFrames() {
@@ -316,23 +313,12 @@ final class ManagerSocket {
             let params = object["params"] as? [String: Any]
             guard let raw = (params?["status"] as? NSNumber)?.intValue,
                   let state = ManagerRunningState(rawValue: raw) else { return }
-            setModal(state == .runningWaiting || state == .pausedWaiting)
             DispatchQueue.main.async { [weak self] in self?.onRunningStateChange?(state) }
-        case "WindowBlocked":
-            setModal(true)
-        case "WindowUnblocked":
-            setModal(false)
         case "ConfigurationChanged", "GlobalConfigurationChanged":
             NSLog("Swift86: 86Box reported \(message)")
         default:
             break
         }
-    }
-    
-    private func setModal(_ value: Bool) {
-        guard modalOpen != value else { return }
-        modalOpen = value
-        DispatchQueue.main.async { [weak self] in self?.onModalChange?(value) }
     }
     
     // The client went away (private queue)
@@ -341,7 +327,6 @@ final class ManagerSocket {
         readSource?.cancel()
         readSource = nil
         clientFD = -1
-        setModal(false)
         notifyConnection(false)
     }
     

@@ -29,7 +29,18 @@ for pair in "MARKETING_VERSION:$VERSION" "CURRENT_PROJECT_VERSION:$BUILD"; do
     fi
 done
 
-# 2. Build Release
+# 2. Build only committed code that is already on GitHub, so the tag matches the binary
+if [ -n "$(git status --porcelain --untracked-files=no -- . ':!*xcuserdata*')" ]; then
+    echo "error: uncommitted changes. Commit them first." >&2
+    exit 1
+fi
+git fetch -q origin
+if ! git merge-base --is-ancestor HEAD origin/main; then
+    echo "error: HEAD is not on origin/main. Push it first." >&2
+    exit 1
+fi
+
+# 3. Build Release
 xcodebuild -project Swift86.xcodeproj -scheme Swift86 -configuration Release \
     -derivedDataPath "$OUT" build
 
@@ -37,7 +48,7 @@ APP="$OUT/Build/Products/Release/Swift86.app"
 INFO="$APP/Contents/Info.plist"
 plist() { /usr/libexec/PlistBuddy -c "Print :$1" "$INFO"; }
 
-# 3. The built app must carry the right versions and a real public key
+# 4. The built app must carry the right versions and a real public key
 [ "$(plist CFBundleShortVersionString)" = "$VERSION" ] || { echo "error: built CFBundleShortVersionString is '$(plist CFBundleShortVersionString)'" >&2; exit 1; }
 [ "$(plist CFBundleVersion)" = "$BUILD" ] || { echo "error: built CFBundleVersion is '$(plist CFBundleVersion)'" >&2; exit 1; }
 KEY="$(plist SUPublicEDKey)"
@@ -46,23 +57,22 @@ if [ -z "$KEY" ] || [ "$KEY" = "REPLACE_WITH_PUBLIC_ED_KEY" ]; then
     exit 1
 fi
 
-# 4. Zip the app (the asset name Swift86.zip is kept from earlier releases)
+# 5. Zip the app (the asset name Swift86.zip is kept from earlier releases)
 rm -rf "$DIST"
 mkdir -p "$DIST"
 (cd "$(dirname "$APP")" && ditto -c -k --sequesterRsrc --keepParent Swift86.app "$OLDPWD/$DIST/Swift86.zip")
 
-# 5. Generate the signed appcast (uses the private key in your login Keychain)
+# 6. Generate the signed appcast (uses the private key in your login Keychain)
 GEN="$OUT/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_appcast"
 [ -x "$GEN" ] || { echo "error: $GEN not found. Build once so Sparkle's tools are fetched." >&2; exit 1; }
 "$GEN" "$DIST" \
     --download-url-prefix "$REPO/releases/download/v$VERSION/" \
     --link "$REPO"
 
-# 6. Print the publish command; this script never publishes
+# 7. Print the publish command; this script never publishes
 echo
 echo "Ready. Write release notes to a file (e.g. notes.md), then run:"
 echo
 echo "  gh release create v$VERSION $DIST/Swift86.zip $DIST/appcast.xml --target $(git rev-parse HEAD) --title \"$VERSION\" --notes-file notes.md"
-echo "(Push that commit first, so the v$VERSION tag points at the code you just built.)"
 echo
 echo "The release must be the one marked Latest (not a pre-release)."

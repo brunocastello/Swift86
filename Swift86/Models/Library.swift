@@ -130,8 +130,14 @@ enum PendingConfirmation: Identifiable {
     
     // MARK: - Load Machines
     
-    // Machines folder of the last successful load
+    // Machines folder of the last load
     @ObservationIgnored private var loadedMachinesURL: URL?
+    
+    // True when the last load could not list the machines folder
+    @ObservationIgnored private var listingFailed = false
+    
+    // The old install's sidebar order is looked up at most once per launch
+    @ObservationIgnored private var didTryLegacyOrder = false
     
     // 86Box's machine list, where display names, notes and icons live
     private var vmmIniURL: URL {
@@ -203,7 +209,14 @@ enum PendingConfirmation: Identifiable {
         let sameFolder = loadedMachinesURL?.standardizedFileURL == machinesURL.standardizedFileURL
         
         // List the machine folders
-        guard let folders = MachineFiles.candidateFolders(in: machinesURL) else { return }
+        guard let folders = MachineFiles.candidateFolders(in: machinesURL) else {
+            // Folder gone (e.g. an ejected disk): list nothing rather than machines that can't be used
+            self.machines = []
+            loadedMachinesURL = machinesURL
+            listingFailed = true
+            return
+        }
+        listingFailed = false
         removeCloneLeftovers()
         
         // Read 86Box's machine list once
@@ -212,7 +225,7 @@ enum PendingConfirmation: Identifiable {
         var found = [(url: URL, section: String)]()
         
         for machineURL in folders {
-            // Only folders with an 86Box config or a vmm.ini entry are machines
+            // Only folders with an 86Box config, a vmm.ini entry or a legacy plist are machines
             guard MachineFiles.isMachineFolder(machineURL, registered: registered) else { continue }
             found.append((machineURL, VMMIni.uuid(forMachineFolder: machineURL)))
             
@@ -221,9 +234,10 @@ enum PendingConfirmation: Identifiable {
             machines.append(makeMachine(folder: machineURL, ini: ini, existing: existing))
         }
         
-        // Take the sidebar order over from an old install, once (never over an unreadable settings file)
+        // Take the sidebar order over from an old install (once per launch, never over an unreadable settings file)
         var order = SettingsStore.shared.config.machineOrder
-        if order.isEmpty && SettingsStore.shared.loadError == nil {
+        if order.isEmpty && SettingsStore.shared.loadError == nil && !didTryLegacyOrder {
+            didTryLegacyOrder = true
             let legacyOrder = LegacyImport.legacyMachineOrder(machinesURL: machinesURL)
             if !legacyOrder.isEmpty {
                 order = legacyOrder
@@ -276,7 +290,7 @@ enum PendingConfirmation: Identifiable {
                     let existed = ini.sections().contains(machine.section)
                     if !existed { Self.register(&ini, section: machine.section, folder: machine.url) }
                     
-                    // Notes: the old sidecar is authoritative, the legacy plist only fills a new section
+                    // Notes: the old sidecar or the legacy plist only fill empty notes, never replace them
                     let sidecar = LegacyImport.sidecarNotes(at: machine.url)
                     let action = LegacyMigration.notes(
                         sectionExisted: existed,
@@ -365,6 +379,9 @@ enum PendingConfirmation: Identifiable {
     // Create new machine
     @discardableResult
     func create(_ draft: Machine) throws -> Machine {
+        // The folder may be back since a failed load; the sidebar order is rebuilt from the list below
+        if listingFailed { load() }
+        
         // Validate the name
         let name: String
         switch MachineFiles.validateName(draft.name, in: machinesURL) {
@@ -880,7 +897,7 @@ enum PendingConfirmation: Identifiable {
         }
     }
     
-    // Hard reset (the paused state is left as is, 86Box does not report it)
+    // Hard reset (official protocol: 86Box reports the new state; legacy: the pause state is left as is)
     func hardReset(_ machine: Machine) {
         send(.reset, to: machine)
     }
@@ -888,6 +905,11 @@ enum PendingConfirmation: Identifiable {
     // Send Ctrl+Alt+Del to the guest
     func ctrlAltDel(_ machine: Machine) {
         send(.cad, to: machine)
+    }
+    
+    // Ask 86Box to shut down; it asks the user to confirm
+    func requestShutdown(_ machine: Machine) {
+        send(.shutdown, to: machine)
     }
     
     // Shut down without 86Box's confirmation prompt

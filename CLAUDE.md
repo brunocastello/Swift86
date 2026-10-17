@@ -47,10 +47,11 @@ Remove “Machine Name”…
 ### Context Menu Notes
 - **Start / Pause / Resume** appear at the top and are state-dependent: Start when powered off, Pause when running, Resume when paused. There is **no "Stop" item** (owner decision, matching 86Box Manager); Force Shutdown and Kill cover it.
 - The powered-off status is shown as **"Powered Off"**, not "Stopped".
+- **Machine view power button** (owner decision, 2026-10-17): starts the machine when powered off. While it is running or paused, it sends `RequestShutdown` (legacy: `shutdown`), and 86Box asks the user to confirm. It is not a pause/resume button.
 - The Kill confirmation copies 86Box Manager. The text is "Killing a virtual machine can cause data loss. Only do this if the 86Box process gets stuck.\n\nDo you really wish to kill the virtual machine "<name>"?". The buttons are **No** (the default) and **Yes**.
 - **Manager protocol** (owner decision, 2026-10-16): use **86Box's official v5 manager protocol**, the same one as its built-in manager. Swift86 hosts a Unix-domain socket and passes its path in `VMM_86BOX_SOCKET`.
   - Framing: messages are framed as a 4-byte big-endian length plus compact JSON.
-  - Commands: `Pause`, `CtrlAltDel`, `ShowSettings`, `ResetVM`, `RequestShutdown`, `ForceShutdown`.
+  - Commands: `Pause`, `CtrlAltDel`, `ShowSettings`, `ResetVM`, `RequestShutdown` (machine view power button only), `ForceShutdown`.
   - State: 86Box reports `RunningStateChanged` (running/paused, with or without a modal), so the status is authoritative.
   - **Fallback:** if the 86Box app is older than 5.0, or its version is unknown (e.g. forks), use the legacy line protocol via `86BOX_MANAGER_SOCKET`. It accepts `pause`, `reset`, `cad`, `shutdown`, `shutdownnoprompt` and `showsettings`, and its pause state is tracked locally.
 - **Force Shutdown** = `ForceShutdown` (official protocol) / `shutdownnoprompt` (legacy).

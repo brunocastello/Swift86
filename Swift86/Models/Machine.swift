@@ -51,7 +51,7 @@ struct Machine: Identifiable {
 // MARK: - Machine Status Enumerator
 
 // Enumerator for machine status
-enum MachineStatus: String, Codable {
+enum MachineStatus: String {
     case stopped
     case running
     case paused

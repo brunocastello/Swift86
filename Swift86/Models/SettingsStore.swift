@@ -88,14 +88,8 @@ struct AppConfig: Codable, Equatable {
         didSet { if config != oldValue { save() } }
     }
     
-    // True only in the launch where the legacy UserDefaults import ran
-    @ObservationIgnored private(set) var didImportLegacySettings = false
-    
     // Error found while decoding an existing file, if any
     @ObservationIgnored private(set) var loadError: Error?
-    
-    // Error from the last failed save, if any
-    @ObservationIgnored private(set) var lastSaveError: Error?
     
     // Whether the unreadable file has already been backed up
     @ObservationIgnored private var didBackUpCorruptFile = false
@@ -132,7 +126,6 @@ struct AppConfig: Codable, Equatable {
         } else {
             // First launch of the new format: import the legacy UserDefaults values
             config = Self.importLegacy(from: legacyDefaults)
-            didImportLegacySettings = true
             save()
         }
     }
@@ -178,9 +171,7 @@ struct AppConfig: Codable, Equatable {
             let encoder = JSONEncoder()
             encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
             try encoder.encode(config).write(to: fileURL, options: .atomic)
-            lastSaveError = nil
         } catch {
-            lastSaveError = error
             NSLog("Swift86: could not save settings: \(error)")
         }
     }

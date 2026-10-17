@@ -164,21 +164,6 @@ enum MachineFiles {
         return RegisteredFolders.normalized(a) == RegisteredFolders.normalized(b)
     }
     
-    // Icon.<ext> or Icon <n>.<ext>, case-insensitive
-    private static func isInstalledIconName(_ name: String) -> Bool {
-        let lower = name.lowercased()
-        guard lower.hasPrefix("icon") else { return false }
-        let rest = lower.dropFirst(4)
-        guard let dot = rest.lastIndex(of: ".") else { return false }
-        let ext = rest[rest.index(after: dot)...]
-        let middle = rest[..<dot]
-        guard !ext.isEmpty else { return false }
-        if middle.isEmpty { return true }
-        guard middle.hasPrefix(" ") else { return false }
-        let digits = middle.dropFirst()
-        return !digits.isEmpty && digits.allSatisfy { $0 >= "0" && $0 <= "9" }
-    }
-    
     // Reasons an icon can't be installed
     enum IconError: LocalizedError {
         case invalidImage

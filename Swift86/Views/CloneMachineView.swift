@@ -50,7 +50,7 @@ struct CloneMachineView: View {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
                         TextField("", text: $name)
-                            .textFieldStyle(.squareBorder)
+                            .textFieldStyle(.roundedBorder)
                             .frame(minWidth: 200)
                             .lineLimit(1)
                             .truncationMode(.middle)
@@ -81,22 +81,16 @@ struct CloneMachineView: View {
                     }
                     Spacer()
                     // Cancel button
-                    Button(action: {
+                    Button("Cancel", role: .cancel) {
                         // Dismiss view
                         dismiss()
-                    }) {
-                        Text("Cancel")
-                            .standardStyle()
                     }
                     .keyboardShortcut(.cancelAction)
                     .disabled(isCloning)
                     
                     // Clone button
-                    Button(action: {
+                    Button("Clone") {
                         clone()
-                    }) {
-                        Text("Clone")
-                            .standardStyle()
                     }
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isCloning)
                     .keyboardShortcut(.defaultAction)

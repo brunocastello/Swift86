@@ -189,10 +189,10 @@ Command mapping:
 | Menu | Action | Enabled when |
 |---|---|---|
 | Start | launch (as today) | `.stopped` |
-| Stop | `shutdown` | `.running` / `.paused`, socket connected |
 | Pause / Resume | `pause`, flip local `.running` ↔ `.paused` | `.running` / `.paused`, connected |
 | Hard Reset | `reset` | `.running` / `.paused`, connected |
 | Force Shutdown | `shutdownnoprompt` | `.running` / `.paused`, connected |
+| Machine view power button, while live | `shutdown` (86Box asks to confirm) | `.running` / `.paused`, connected |
 | Ctrl + Alt + Del | `cad` | `.running`, connected |
 | Kill | confirmation → `kill(pid, SIGKILL)` | process exists (any non-stopped state) |
 
@@ -205,7 +205,7 @@ Known limitation: the legacy protocol does not report pause state. If the user p
 Order and dividers exactly as in CLAUDE.md. Additional rules:
 
 - **Confirmation sheets** (Kill, Wipe NVRAM, Remove…): replace the stringly `alertTitle` / `alertOK` closure pattern with a typed `enum PendingConfirmation: Identifiable { case kill(Machine), wipeNVRAM(Machine), remove(Machine) }`. Present it with `.alert(item:)`, which shows as a window-modal sheet on macOS, with a `.destructive` button. Keep the existing alert for plain errors.
-- **Clone…**: opens a small sheet with a Name field pre-filled with a unique `"<name> copy"` / `"<name> copy 2"`, plus Cancel / Clone buttons. Validate the name (§6.1). Copy the folder to a temporary sibling `.<name>.cloning` first, then `moveItem` to the final name, so a failed copy never shows up as a machine. Inside the cloned `86box.cfg`, rewrite any absolute path that starts with the source machine folder to point at the clone folder, so the clone never shares disk images with the original. Exclude `screenshots/` and `printer/` from the copy. Only allowed when `.stopped`.
+- **Clone…**: opens a small sheet with a Name field pre-filled with a unique `"<name> copy"` / `"<name> copy 2"`, plus Cancel / Clone buttons. Validate the name (§6.1). Copy the folder to a temporary sibling `.<name>.cloning` first, then `moveItem` to the final name, so a failed copy never shows up as a machine. Inside the cloned `86box.cfg`, rewrite any absolute path that starts with the source machine folder to point at the clone folder, so the clone never shares disk images with the original. Copy the whole folder, including `screenshots/` and `printer/`, as both 86Box managers do. Only allowed when `.stopped`.
 - **Remove "Name"…**: confirmation → **permanent delete** (`FileManager.removeItem`), keeping today's "You cannot undo this action." text (§8 D2b). Hard guards, all required: machine `.stopped`; resolved folder URL's parent == resolved `machinesPath`; folder contains `86box.cfg`; folder ≠ `machinesPath`. Remove from `machineOrder`.
 - **Wipe NVRAM**: confirmation → delete the *contents* of `<machine>/nvr/` (or remove and recreate the folder). Only when `.stopped`. No-op without error if the folder is absent.
 - **Open Printer Tray**: `<machine>/printer/`; create it with intermediates if missing; `NSWorkspace.shared.open(url)`.

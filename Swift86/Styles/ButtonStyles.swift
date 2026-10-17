@@ -43,23 +43,6 @@ extension View {
     }
 }
 
-// MARK: - Standard Button Style
-
-// Standard button style
-struct ButtonStandardStyle: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .frame(minWidth: 60)
-    }
-}
-
-// Extension for standard button style
-extension Text {
-    func standardStyle() -> some View {
-        self.modifier(ButtonStandardStyle())
-    }
-}
-
 // MARK: - Welcome View Button Style
 
 // Welcome button style
