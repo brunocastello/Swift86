@@ -13,3 +13,7 @@ Thumbs.db
 Builds/
 Swift86.iconset/
 build/
+
+# Signing keys (never commit) #
+######################
+*sparkle-private-key*

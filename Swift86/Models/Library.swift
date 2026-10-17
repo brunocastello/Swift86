@@ -136,9 +136,6 @@ enum PendingConfirmation: Identifiable {
     // True when the last load could not list the machines folder
     @ObservationIgnored private var listingFailed = false
     
-    // The old install's sidebar order is looked up at most once per launch
-    @ObservationIgnored private var didTryLegacyOrder = false
-    
     // 86Box's machine list, where display names, notes and icons live
     private var vmmIniURL: URL {
         URL(fileURLWithPath: SettingsStore.shared.config.vmmIniPath)
@@ -225,7 +222,7 @@ enum PendingConfirmation: Identifiable {
         var found = [(url: URL, section: String)]()
         
         for machineURL in folders {
-            // Only folders with an 86Box config, a vmm.ini entry or a legacy plist are machines
+            // Only folders with an 86Box config or a vmm.ini entry are machines
             guard MachineFiles.isMachineFolder(machineURL, registered: registered) else { continue }
             found.append((machineURL, VMMIni.uuid(forMachineFolder: machineURL)))
             
@@ -234,23 +231,7 @@ enum PendingConfirmation: Identifiable {
             machines.append(makeMachine(folder: machineURL, ini: ini, existing: existing))
         }
         
-        // Take the sidebar order over from an old install (once per launch, never over an unreadable settings file)
-        var order = SettingsStore.shared.config.machineOrder
-        if order.isEmpty && SettingsStore.shared.loadError == nil && !didTryLegacyOrder {
-            didTryLegacyOrder = true
-            let legacyOrder = LegacyImport.legacyMachineOrder(machinesURL: machinesURL)
-            if !legacyOrder.isEmpty {
-                order = legacyOrder
-                
-                // Store it (deferred, we may be inside a view update)
-                DispatchQueue.main.async {
-                    let store = SettingsStore.shared
-                    if store.config.machineOrder.isEmpty && store.loadError == nil {
-                        store.config.machineOrder = legacyOrder
-                    }
-                }
-            }
-        }
+        let order = SettingsStore.shared.config.machineOrder
         
         // Sort the machines: custom order first, then the rest alphabetically
         var orderIndex = [String: Int]()
@@ -270,69 +251,24 @@ enum PendingConfirmation: Identifiable {
         self.machines = machines
         loadedMachinesURL = machinesURL
         
-        // Register and migrate (deferred, we may be inside a view update)
+        // Register new machines in vmm.ini (deferred, we may be inside a view update)
         DispatchQueue.main.async {
-            self.registerAndMigrate(found)
+            self.registerNew(found)
         }
     }
     
-    // Add the machines vmm.ini doesn't list yet and bring over notes and icons from older Swift86 versions, in one write
-    private func registerAndMigrate(_ found: [(url: URL, section: String)]) {
+    // Add the machines vmm.ini doesn't list yet, in one write
+    private func registerNew(_ found: [(url: URL, section: String)]) {
         guard SettingsStore.shared.loadError == nil, !found.isEmpty else { return }
-        
-        var oldSidecars = [(url: URL, section: String, notes: String)]()
-        var result = VMMIni()
         do {
             try VMMIni.update(at: vmmIniURL) { ini in
-                oldSidecars = []
-                for machine in found {
-                    // Only a section created by this write may take anything over from the legacy plist or Icon.png
-                    let existed = ini.sections().contains(machine.section)
-                    if !existed { Self.register(&ini, section: machine.section, folder: machine.url) }
-                    
-                    // Notes: the old sidecar or the legacy plist only fill empty notes, never replace them
-                    let sidecar = LegacyImport.sidecarNotes(at: machine.url)
-                    let action = LegacyMigration.notes(
-                        sectionExisted: existed,
-                        currentNotes: ini.string("notes", in: machine.section),
-                        sidecarNotes: sidecar,
-                        plistNotes: existed ? nil : LegacyImport.plistNotes(at: machine.url)
-                    )
-                    switch action {
-                    case .none: break
-                    case .set(let notes): ini.set(notes, for: "notes", in: machine.section)
-                    case .remove: ini.set(nil, for: "notes", in: machine.section)
-                    }
-                    if let sidecar { oldSidecars.append((machine.url, machine.section, sidecar)) }
-                    
-                    // Icon: never over an existing key
-                    let icon = machine.url.appendingPathComponent("Icon.png")
-                    let isFile = (try? icon.resourceValues(forKeys: [.isRegularFileKey]))?.isRegularFile == true
-                    if LegacyMigration.importIcon(sectionExisted: existed, currentIcon: ini.string("icon", in: machine.section), hasIconPNG: isFile) {
-                        ini.set(icon.path, for: "icon", in: machine.section)
-                    }
+                let sections = Set(ini.sections())
+                for machine in found where !sections.contains(machine.section) {
+                    Self.register(&ini, section: machine.section, folder: machine.url)
                 }
-                result = ini
             }
         } catch {
             NSLog("Swift86: could not update \(vmmIniURL.path): \(error)")
-            return
-        }
-        
-        // The write went through: drop the old sidecars whose notes vmm.ini now holds
-        for sidecar in oldSidecars where (result.string("notes", in: sidecar.section) ?? "") == sidecar.notes {
-            LegacyImport.removeSidecar(at: sidecar.url)
-        }
-        
-        // Show what was migrated
-        for machine in found {
-            guard let index = machines.firstIndex(where: { $0.folderName == machine.url.lastPathComponent }) else { continue }
-            let updated = makeMachine(folder: machine.url, ini: result, existing: machines[index])
-            if updated.notes != machines[index].notes || updated.icon != machines[index].icon || updated.iconCustom != machines[index].iconCustom {
-                machines[index].notes = updated.notes
-                machines[index].icon = updated.icon
-                machines[index].iconCustom = updated.iconCustom
-            }
         }
     }
     
@@ -611,14 +547,9 @@ enum PendingConfirmation: Identifiable {
             }
         }
         
-        // Icon.png is the one icon file: drop the one "Default icon" leaves behind and any copies earlier builds made
-        switch iconPlan {
-        case .keep: break
-        case .remove:
+        // Icon.png is the one icon file: drop the one "Default icon" leaves behind
+        if case .remove = iconPlan {
             MachineFiles.removeIcon(in: finalURL, referencedBy: otherIcons)
-            MachineFiles.removeLeftoverIcons(in: finalURL, referencedBy: otherIcons)
-        case .set:
-            if committedIcon != nil { MachineFiles.removeLeftoverIcons(in: finalURL, referencedBy: otherIcons) }
         }
         
         if let commitError { throw MachineError.io(commitError) }

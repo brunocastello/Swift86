@@ -107,7 +107,7 @@ struct AppConfig: Codable, Equatable {
     
     // MARK: - Initialization
     
-    init(fileURL: URL = SettingsStore.defaultFileURL, legacyDefaults: UserDefaults = .standard) {
+    init(fileURL: URL = SettingsStore.defaultFileURL) {
         self.fileURL = fileURL
         
         // Make sure the containing folder exists
@@ -124,32 +124,13 @@ struct AppConfig: Codable, Equatable {
                 NSLog("Swift86: could not read settings: \(error)")
             }
         } else {
-            // First launch of the new format: import the legacy UserDefaults values
-            config = Self.importLegacy(from: legacyDefaults)
+            // First launch: defaults
+            config = .defaults
             save()
         }
     }
     
     // MARK: - Methods
-    
-    // Build a configuration from the legacy UserDefaults keys
-    private static func importLegacy(from defaults: UserDefaults) -> AppConfig {
-        var c = AppConfig()
-        
-        // A missing or empty string path keeps the default
-        func path(_ key: String) -> String? {
-            guard let s = defaults.object(forKey: key) as? String, !s.isEmpty else { return nil }
-            return (s as NSString).expandingTildeInPath
-        }
-        
-        if let p = path("EmulatorPath") { c.emulatorPath = p }
-        if let p = path("MachinesPath") { c.machinesPath = p }
-        if let p = path("RomsPath") { c.romsPath = p }
-        if let b = defaults.object(forKey: "CustomROMs") as? Bool { c.customROMs = b }
-        if let s = defaults.object(forKey: "Appearance") as? String { c.appearance = s }
-        if let b = defaults.object(forKey: "First Run") as? Bool { c.hasCompletedFirstRun = b }
-        return c
-    }
     
     // Write the configuration atomically as pretty-printed JSON
     func save() {

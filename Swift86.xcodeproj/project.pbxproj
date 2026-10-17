@@ -31,7 +31,6 @@
 		DE5E7A0F2C0B22220099AAAA /* MachineFiles.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE5E7A102C0B22220099AAAA /* MachineFiles.swift */; };
 		DE5E7A1A2C0C33330099AAAA /* VMMIni.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE5E7A1B2C0C33330099AAAA /* VMMIni.swift */; };
 		DE5E7A2A2C0C33330099AAAA /* ManagerSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE5E7A2B2C0C33330099AAAA /* ManagerSocket.swift */; };
-		DE5E7A0D2C0B22220099AAAA /* LegacyImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE5E7A0B2C0B22220099AAAA /* LegacyImport.swift */; };
 		DE5E7A3A2C0D44440099AAAA /* Updater.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE5E7A3B2C0D44440099AAAA /* Updater.swift */; };
 		DE5E7A3C2C0D44440099AAAA /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = DE5E7A3D2C0D44440099AAAA /* Sparkle */; };
 /* End PBXBuildFile section */
@@ -68,7 +67,6 @@
 		DE5E7A102C0B22220099AAAA /* MachineFiles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MachineFiles.swift; sourceTree = "<group>"; };
 		DE5E7A1B2C0C33330099AAAA /* VMMIni.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VMMIni.swift; sourceTree = "<group>"; };
 		DE5E7A2B2C0C33330099AAAA /* ManagerSocket.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManagerSocket.swift; sourceTree = "<group>"; };
-		DE5E7A0B2C0B22220099AAAA /* LegacyImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyImport.swift; sourceTree = "<group>"; };
 		DE5E7A3B2C0D44440099AAAA /* Updater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Updater.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -153,7 +151,6 @@
 				DE5E7A1B2C0C33330099AAAA /* VMMIni.swift */,
 				DE5E7A2B2C0C33330099AAAA /* ManagerSocket.swift */,
 				DE5E7A102C0B22220099AAAA /* MachineFiles.swift */,
-				DE5E7A0B2C0B22220099AAAA /* LegacyImport.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -260,7 +257,6 @@
 				DEE74D412A531D860029615E /* Library.swift in Sources */,
 				DE5E7A012C0A11110099AAAA /* SettingsStore.swift in Sources */,
 				DE5E7A3A2C0D44440099AAAA /* Updater.swift in Sources */,
-				DE5E7A0D2C0B22220099AAAA /* LegacyImport.swift in Sources */,
 				DE5E7A1A2C0C33330099AAAA /* VMMIni.swift in Sources */,
 				DE5E7A2A2C0C33330099AAAA /* ManagerSocket.swift in Sources */,
 				DE5E7A0F2C0B22220099AAAA /* MachineFiles.swift in Sources */,

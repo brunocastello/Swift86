@@ -5,6 +5,9 @@ Author: strong model (Phase 0). Implementation tasks in §7 are written to be ha
 
 ---
 
+
+> **Decision (owner, 2026-10-17): no legacy support.** Everything below about importing old Swift86 data (per-machine `86box.plist`, UserDefaults settings and `MachinesList`, `.swift86.json` sidecars, legacy `Icon.png`, icon-copy cleanup) is withdrawn and the code is removed. First launch starts from defaults and the Welcome flow. The legacy socket protocol for 86Box older than 5.0 stays.
+
 ## 1. Current state (as of `c44bfc2`)
 
 Swift86 is ~1.9k lines of SwiftUI. All machine logic lives in `Swift86/Models/Library.swift`.
@@ -142,7 +145,7 @@ Verified against 86Box master source and the owner's real file:
 - **Picking an image:** it is converted to PNG. The largest representation is used, capped at 1024 px.
 - **Writing it:** the PNG is staged in a temp file, then `vmm.ini` is written, then the temp file atomically replaces `Icon.png`. A failure before the swap leaves the old `Icon.png` untouched.
 - **"Default icon":** removes the key and deletes `Icon.png`, unless another section references it.
-- **Cleanup:** after any icon change, leftover `Icon <n>.*` / `Icon.<non-png>` copies from earlier test builds are deleted, unless they are referenced elsewhere.
+- **Cleanup:** withdrawn (owner, 2026-10-17). Only `Icon.png` is ever replaced or deleted.
 - **Existing icons outside the folder** are left as they are until the user picks a new one.
 - **Rename and clone** relocate an `icon` path that lies inside the source folder. |
 | Discovery | Folder has `86box.cfg` **or** a `vmm.ini` section whose `config_dir` equals the folder (canonical). The second case covers machines created in Swift86 but not yet configured. |
@@ -155,11 +158,7 @@ Verified against 86Box master source and the owner's real file:
 
 **Scan for Machines:** a File-menu command that rescans and registers, then lists **stale** sections (`config_dir` directly inside `machinesPath`, folder missing, and only when `machinesPath` itself is reachable). It asks for confirmation before removing them.
 
-**Migration:**
-- A machine without `vmm.ini` notes but with legacy plist notes or `.swift86.json` notes gets them copied into `vmm.ini`.
-- A machine without a `vmm.ini` `icon` but with `Icon.png` gets `icon = <path to Icon.png>`.
-- After a successful `vmm.ini` write, Swift86 deletes **its own** `.swift86.json` files.
-- Plists stay read-only.
+**Migration:** withdrawn (owner, 2026-10-17). Nothing is imported from plists, `.swift86.json` or a stray `Icon.png`.
 
 `machineOrder` stays in `Settings.json`, because `vmm.ini` has no order.
 

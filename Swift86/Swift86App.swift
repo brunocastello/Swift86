@@ -29,7 +29,7 @@ import SwiftUI
 
     // MARK: - Initialization
     
-    // Create the settings store (and run the legacy import) up front; Library also reaches it first through SettingsStore.shared
+    // Create the settings store up front; Library also reaches it first through SettingsStore.shared
     init() {
         _ = SettingsStore.shared
     }

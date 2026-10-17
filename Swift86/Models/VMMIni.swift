@@ -530,32 +530,3 @@ struct RegisteredFolders {
         return paths.contains(Self.normalized(path))
     }
 }
-
-// MARK: - Legacy Migration Rules
-
-// What to do with a machine's vmm.ini notes
-enum NotesMigration: Equatable {
-    case none
-    case set(String)
-    case remove
-}
-
-enum LegacyMigration {
-    
-    // Notes: an old sidecar may only fill empty notes, it never replaces or clears existing ones. The legacy plist only fills a section this very write creates.
-    static func notes(sectionExisted: Bool, currentNotes: String?, sidecarNotes: String?, plistNotes: String?) -> NotesMigration {
-        if let sidecarNotes {
-            if !(currentNotes ?? "").isEmpty || sidecarNotes.isEmpty { return .none }
-            return .set(sidecarNotes)
-        }
-        if !sectionExisted, (currentNotes ?? "").isEmpty, let plistNotes, !plistNotes.isEmpty {
-            return .set(plistNotes)
-        }
-        return .none
-    }
-    
-    // Icon.png is only brought over for a section this very write creates, and never over an existing icon key
-    static func importIcon(sectionExisted: Bool, currentIcon: String?, hasIconPNG: Bool) -> Bool {
-        !sectionExisted && currentIcon == nil && hasIconPNG
-    }
-}

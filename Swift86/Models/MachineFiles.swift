@@ -117,13 +117,8 @@ enum MachineFiles {
     
     // A folder is a machine if it holds a regular 86box.cfg or is listed in vmm.ini
     static func isMachineFolder(_ folderURL: URL, registered: RegisteredFolders) -> Bool {
-        // A configured machine, one already in vmm.ini, or one made by an old Swift86 that was never configured
-        // (only its legacy plist; it then gets registered in vmm.ini and stays discoverable)
-        func isRegularFile(_ name: String) -> Bool {
-            let values = try? folderURL.appendingPathComponent(name).resourceValues(forKeys: [.isRegularFileKey])
-            return values?.isRegularFile == true
-        }
-        return isRegularFile("86box.cfg") || registered.contains(folderURL) || isRegularFile("86box.plist")
+        let values = try? folderURL.appendingPathComponent("86box.cfg").resourceValues(forKeys: [.isRegularFileKey])
+        return values?.isRegularFile == true || registered.contains(folderURL)
     }
     
     // MARK: - Icons
@@ -242,21 +237,6 @@ enum MachineFiles {
         return VMMIni.canonicalPathString(destination) ?? iconPath(in: folder)
     }
     
-    // Icon.<ext> or Icon <n>.<ext>, case-insensitive
-    private static func isIconName(_ name: String) -> Bool {
-        let lower = name.lowercased()
-        guard lower.hasPrefix("icon") else { return false }
-        let rest = lower.dropFirst(4)
-        guard let dot = rest.lastIndex(of: ".") else { return false }
-        let ext = rest[rest.index(after: dot)...]
-        let middle = rest[..<dot]
-        guard !ext.isEmpty else { return false }
-        if middle.isEmpty { return true }
-        guard middle.hasPrefix(" ") else { return false }
-        let digits = middle.dropFirst()
-        return !digits.isEmpty && digits.allSatisfy { $0 >= "0" && $0 <= "9" }
-    }
-    
     // Delete a regular file unless another machine's icon is that very file
     private static func removeRegularFile(_ path: String, referencedBy others: [String]) {
         if others.contains(where: { sameFile(path, $0) }) { return }
@@ -268,17 +248,6 @@ enum MachineFiles {
     // "Default icon": delete the folder's Icon.png unless another machine uses it
     static func removeIcon(in folder: URL, referencedBy others: [String]) {
         removeRegularFile(folder.appendingPathComponent("Icon.png").path, referencedBy: others)
-    }
-    
-    // Delete icon copies earlier builds left in the folder: Icon <n>.<ext> and Icon.<ext> other than png
-    static func removeLeftoverIcons(in folder: URL, referencedBy others: [String]) {
-        let names = (try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []
-        // Only image copies; a user's own Icon.txt or icon.ico is never touched
-        let imageExtensions: Set<String> = ["png", "jpg", "jpeg", "gif", "tif", "tiff", "bmp", "icns", "heic"]
-        for name in names where isIconName(name) && name.lowercased() != "icon.png"
-            && imageExtensions.contains((name as NSString).pathExtension.lowercased()) {
-            removeRegularFile(folder.appendingPathComponent(name).path, referencedBy: others)
-        }
     }
     
     // MARK: - Remove

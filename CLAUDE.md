@@ -6,18 +6,17 @@ Bring Swift86 to feature parity with the useful parts of 86Box Manager / 86Box�
 ## Hard Constraints
 - UI must remain VMware Fusion-inspired. Do **not** adopt the 86Box Manager or VirtualBox-style system-specs view.
 - Screenshots: optional (user toggle in Settings), maximum **one** screenshot per machine.
-- Stop using per-machine `86box.plist` files. They are only read once, read-only, by the legacy importer, and never written or deleted.
-- Machine discovery uses the folder-scanning model of 86Box v5+. A machine is any **immediate**, non-hidden, non-symlink subfolder of the user-chosen Virtual Machines folder that contains `86box.cfg`, has a section in `vmm.ini`, or (legacy, never configured) contains only an old `86box.plist`. A legacy folder is registered in `vmm.ini` on first scan. The `vmm.ini` case covers machines created in Swift86 but not yet configured.
+- **No legacy support** (owner decision, 2026-10-17). Swift86 does not read old per-machine `86box.plist` files, the old UserDefaults settings or machine list, or `.swift86.json` sidecars. Everything follows 86Box's own manager. (The legacy *socket* protocol for 86Box older than 5.0 is separate and stays.)
+- Machine discovery uses the folder-scanning model of 86Box v5+. A machine is any **immediate**, non-hidden, non-symlink subfolder of the user-chosen Virtual Machines folder that contains `86box.cfg` or has a section in `vmm.ini`. The `vmm.ini` case covers machines created in Swift86 but not yet configured.
 - **Per-machine metadata lives in 86Box's own `vmm.ini`** (`~/Library/Preferences/86Box/vmm.ini`; Qt INI format; one section per machine, keyed by UUIDv5 of the canonical folder path). That covers the display name, notes, icon and last-used timestamp. These are 86Box's own keys only; Swift86 adds no keys of its own. Swift86 edits only its machines' sections and only those keys. Everything else stays byte-for-byte, writes are atomic, and Qt's `vmm.ini.lock` is honoured. No sidecar files in machine folders. The details are in PLAN.md §4.2.
 - **Icons follow 86Box's model:** the `vmm.ini` `icon` key, an image path, is the source. Swift86's own replacement UX stays: Default/Custom icon radio, plus a click on the thumbnail opens the picker, which accepts any image including `.icns`.
   - A picked image is converted and saved as **`<machine folder>/Icon.png`**, and `icon` points to it. Replacing the icon replaces that file (staged, then atomically swapped after `vmm.ini` is written). There is always exactly one `Icon.png`; there is no `Icon 2.png`.
   - "Default icon" removes the key and deletes `Icon.png`.
   - Existing icons are never overwritten except by an explicit user change.
   - 86Box built-in icon names are preserved untouched and shown with the default symbol.
-  - A legacy `Icon.png` becomes the icon only when `vmm.ini` has none.
 - **Renaming** a machine moves its folder **and** moves its `vmm.ini` section to the new UUID. It is blocked while the machine is running.
 - Never write a stub `86box.cfg`. 86Box creates it on first configure.
-- Settings live in `~/Library/Application Support/Swift86/Settings.json`. It is a single JSON file holding the 86Box app path, VMs folder, ROMs, appearance, screenshot toggle, `vmm.ini` path and sidebar order (folder names). Unknown or missing keys are tolerated. No `UserDefaults`/`@AppStorage` except the one-shot legacy importer.
+- Settings live in `~/Library/Application Support/Swift86/Settings.json`. It is a single JSON file holding the 86Box app path, VMs folder, ROMs, appearance, screenshot toggle, `vmm.ini` path and sidebar order (folder names). Unknown or missing keys are tolerated. No `UserDefaults`/`@AppStorage` (Sparkle keeps its own defaults).
 - **UI layer is 100% SwiftUI.** No `NSViewRepresentable`, `NSOpenPanel` (use `.fileImporter`), `NSColor`, or AppKit subclass hacks. AppKit *services* are allowed: `NSWorkspace`, `NSApp.appearance`, `NSImage` for image data, `Process`, and BSD sockets.
 - SwiftUI code must be updated for macOS 27 UI conventions. The deployment target is **macOS 26.0** from Phase 4 on (owner decision).
 - User-facing workflow must feel unchanged; only internal representation and persistence change.
@@ -100,7 +99,7 @@ The detailed plan, schemas and task breakdown are in `PLAN.md`; keep it in sync 
 
 ### Phase 1 – Settings & Discovery (core)
 1. Create `~/Library/Application Support/Swift86/` and the new config file.
-2. Migrate existing settings (86Box path, VMs path, ROMs, Appearance) into it.
+2. ~~Migrate existing settings into it.~~ Withdrawn 2026-10-17: first launch starts from defaults.
 3. Implement folder scanner that discovers machines by presence of `86box.cfg`.
 4. Load display name, description, and icon (existing PNG) from the machine folder or a lightweight sidecar if needed.
 5. Remove all code that reads/writes per-machine `86box.plist`.
