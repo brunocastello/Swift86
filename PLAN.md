@@ -264,6 +264,8 @@ Builds are verified locally from the terminal with `xcodebuild`.
 
 ### 7.1 Phase 4 scope note — "Classic styling" option (approved 2026-10-16)
 
+> **Dropped (owner, 2026-10-17):** the classic option was built, then removed. Swift86 is Liquid Glass only, except that the notes and size panels keep the old box design. See CLAUDE.md, Phase 4.
+
 The owner wants a user choice between the current Sequoia-style look and the new Liquid Glass look. Constraint: in the macOS 27 SDK the system ignores `UIDesignRequiresCompatibility` (per Apple forum reports; **verify against the Xcode 27 release notes at the start of Phase 4**). So **system chrome** (toolbar, sidebar container, standard controls, menus, sheets, alerts) is Liquid Glass on macOS 26+ regardless of the setting. The option covers **only Swift86-drawn surfaces**.
 
 - **Setting:** `interfaceStyle: String` in `Settings.json`, `"glass"` (default) | `"classic"`. Added in Phase 4. Tolerant decoding (§3) means no migration is needed. UI: Settings → Appearance → checkbox **"Use classic styling for machine views"** (English only). Don't call it "Sequoia mode", because it can't change system chrome.

@@ -86,7 +86,7 @@ The detailed plan, schemas and task breakdown are in `PLAN.md`; keep it in sync 
 - Phase 1: done (T1–T4, T3b).
 - Phase 2: done (T5, T6) on branch `phase-2-menu`.
 - Phase 3: done (T7) on branch `phase-3-screenshot`.
-- Phase 4: next. T8 raises the target to macOS 26 and modernises the APIs; T9 adds the Liquid Glass styling and the classic toggle.
+- Phase 4: T8 (macOS 26 + modern APIs), T9 (Liquid Glass), T10 (Sparkle) and T11 (Settings tabs; classic option removed) on branch `phase-4-polish`.
 - Builds are verified locally from the terminal with `xcodebuild`.
 
 ## Priority Order (this iteration)
@@ -139,16 +139,15 @@ Implement / optimise the final menu defined above:
 ### Phase 4 – macOS 27 UI polish
 - Update SwiftUI views, materials, and controls for macOS 27.
 - Ensure the Fusion-inspired layout still feels native.
-- Add Settings → Appearance → "Use classic styling for machine views". It switches only Swift86-drawn surfaces between the classic look and Liquid Glass, because system chrome follows the OS. See PLAN.md §7.1.
 - **Decisions (owner, 2026-10-17):**
-  - **Deployment target:** raise it to **macOS 26.0**. Built with Xcode 27.
-  - **Default look:** Liquid Glass. The **live** Settings checkbox switches to classic, with no relaunch.
-  - **What classic covers:**
-    - every Swift86-drawn surface, in the look of the current pre-Phase-4 build;
-    - a solid toolbar background;
-    - no scroll-edge effects;
-    - bordered or plain control styles instead of glass.
-  - **What always follows macOS 27:** the system sidebar container, window corners, menus and alerts. Apple ignores `UIDesignRequiresCompatibility` in Xcode 27 builds (confirmed 2026-10-17). A fully classic frame would need an Xcode 26 build, which was rejected.
+  - **Deployment target:** **macOS 26.0**, built with Xcode 27.
+  - **Look:** **Liquid Glass only.** There is no classic option; it was tried and removed by the owner. System chrome (toolbar, sidebar, buttons, Settings tabs) follows macOS 27 defaults. Swift86's header buttons, Welcome tiles and Edit icon thumbnail use glass.
+  - **Exception:** the machine view's notes and size panels keep the **old box design** (light fill, 1 pt border, 8 pt corner radius), never glass, matching how macOS Settings draws grouped boxes.
+- **Settings tabs (owner):**
+  - **General:** Check for Updates, Show machine screenshots.
+  - **Application:** 86Box app, machines folder, ROMs.
+  - **Appearance:** only the System/Light/Dark pop-up.
+  - The tabs are the system Settings `TabView`.
 
 ### Updates (T10, owner decisions 2026-10-17)
 - **Sparkle 2** via Swift Package Manager. Its standard update windows (AppKit) are the one accepted exception to the SwiftUI-only rule.

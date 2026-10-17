@@ -100,8 +100,6 @@ struct ContentView: View {
                 .help("New Machine")
             }
         }
-        // Toolbar background for the chosen interface style
-        .toolbarChrome()
         // Add new machine
         .sheet(item: Bindable(library).newMachine) { machine in
             EditMachineView(machine: machine, isUpdating: false)

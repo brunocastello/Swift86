@@ -25,7 +25,7 @@ struct SettingsView: View {
     
     // Enumerate tabs
     private enum Tabs: Hashable {
-        case general, appearance
+        case general, application, appearance
     }
     
     // MARK: - Scene
@@ -39,6 +39,12 @@ struct SettingsView: View {
                     Label("General", systemImage: "gearshape")
                 }
                 .tag(Tabs.general)
+            // Application tab
+            ApplicationSettingsView()
+                .tabItem {
+                    Label("Application", systemImage: "app")
+                }
+                .tag(Tabs.application)
             // Appearance tab
             AppearanceSettingsView()
                 .tabItem {

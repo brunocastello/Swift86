@@ -37,12 +37,6 @@ struct AppearanceSettingsView: View {
                     .fixedSize()
                     .accessibilityLabel("Appearance:")
                 }
-                
-                // Machine screenshot preview
-                Toggle("Show machine screenshots", isOn: Bindable(settings).config.showScreenshots)
-                
-                // Flat tiles and an opaque toolbar instead of Liquid Glass
-                Toggle("Use classic styling for machine views", isOn: Bindable(settings).config.useClassicStyling)
             }
             .frame(minWidth: 387, alignment: .leading)
             .onChange(of: settings.config.appearance) { _, theme in
