@@ -11,4 +11,5 @@ Thumbs.db
 # Folders #
 ######################
 Builds/
-Swift86.iconset/build/
+Swift86.iconset/
+build/

@@ -337,8 +337,8 @@ enum PendingConfirmation: Identifiable {
         var errorDescription: String? {
             switch self {
             case .invalidName(let error): return error.message
-            case .machineRunning: return "Stop the machine before renaming it."
-            case .notStopped: return "Stop the machine first."
+            case .machineRunning: return "Shut down the machine before renaming it."
+            case .notStopped: return "Shut down the machine first."
             case .busy: return "This machine is being cloned."
             case .invalidIcon: return "The selected file is not a valid image."
             case .notFound(let name): return String(format: NSLocalizedString("Could not find machine \"%@\"", comment: ""), name)

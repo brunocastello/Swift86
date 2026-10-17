@@ -62,6 +62,7 @@ GEN="$OUT/SourcePackages/artifacts/sparkle/Sparkle/bin/generate_appcast"
 echo
 echo "Ready. Write release notes to a file (e.g. notes.md), then run:"
 echo
-echo "  gh release create v$VERSION $DIST/Swift86.zip $DIST/appcast.xml --title \"$VERSION\" --notes-file notes.md"
+echo "  gh release create v$VERSION $DIST/Swift86.zip $DIST/appcast.xml --target $(git rev-parse HEAD) --title \"$VERSION\" --notes-file notes.md"
+echo "(Push that commit first, so the v$VERSION tag points at the code you just built.)"
 echo
 echo "The release must be the one marked Latest (not a pre-release)."

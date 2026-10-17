@@ -117,8 +117,13 @@ enum MachineFiles {
     
     // A folder is a machine if it holds a regular 86box.cfg or is listed in vmm.ini
     static func isMachineFolder(_ folderURL: URL, registered: RegisteredFolders) -> Bool {
-        let values = try? folderURL.appendingPathComponent("86box.cfg").resourceValues(forKeys: [.isRegularFileKey])
-        return values?.isRegularFile == true || registered.contains(folderURL)
+        // A configured machine, one already in vmm.ini, or one made by an old Swift86 that was never configured
+        // (only its legacy plist; it then gets registered in vmm.ini and stays discoverable)
+        func isRegularFile(_ name: String) -> Bool {
+            let values = try? folderURL.appendingPathComponent(name).resourceValues(forKeys: [.isRegularFileKey])
+            return values?.isRegularFile == true
+        }
+        return isRegularFile("86box.cfg") || registered.contains(folderURL) || isRegularFile("86box.plist")
     }
     
     // MARK: - Icons
@@ -283,7 +288,10 @@ enum MachineFiles {
     // Delete icon copies earlier builds left in the folder: Icon <n>.<ext> and Icon.<ext> other than png
     static func removeLeftoverIcons(in folder: URL, referencedBy others: [String]) {
         let names = (try? FileManager.default.contentsOfDirectory(atPath: folder.path)) ?? []
-        for name in names where isIconName(name) && name.lowercased() != "icon.png" {
+        // Only image copies; a user's own Icon.txt or icon.ico is never touched
+        let imageExtensions: Set<String> = ["png", "jpg", "jpeg", "gif", "tif", "tiff", "bmp", "icns", "heic"]
+        for name in names where isIconName(name) && name.lowercased() != "icon.png"
+            && imageExtensions.contains((name as NSString).pathExtension.lowercased()) {
             removeRegularFile(folder.appendingPathComponent(name).path, referencedBy: others)
         }
     }
